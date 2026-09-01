@@ -1,0 +1,106 @@
+"use client";
+
+import { useState, useTransition } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { AttemptFieldsFieldset } from "./AttemptFieldsFieldset";
+import { attemptFieldsSchema } from "@/lib/validation/attempts";
+import { updateAttemptAction } from "@/features/attempts/actions";
+import type { BrewAttemptRow } from "@/features/attempts/queries";
+
+const formSchema = z.object({ attempt: attemptFieldsSchema });
+type FormValues = z.infer<typeof formSchema>;
+
+export function EditAttemptForm({
+  attempt,
+  onSaved,
+  onCancel,
+}: {
+  attempt: BrewAttemptRow;
+  onSaved: () => void;
+  onCancel: () => void;
+}) {
+  const [isPending, startTransition] = useTransition();
+  const [formError, setFormError] = useState<string | null>(null);
+
+  const {
+    register,
+    control,
+    handleSubmit,
+    formState: { errors },
+  } = useForm({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      attempt: {
+        grindSetting: attempt.grind_setting ?? undefined,
+        grindSeconds: attempt.grind_seconds ?? undefined,
+        doseMode: (attempt.dose_mode as FormValues["attempt"]["doseMode"]) ?? undefined,
+        doseFeedback: (attempt.dose_feedback as FormValues["attempt"]["doseFeedback"]) ?? undefined,
+        usedBitMore: attempt.used_bit_more,
+        basketSize: (attempt.basket_size as FormValues["attempt"]["basketSize"]) ?? undefined,
+        basketWall: (attempt.basket_wall as FormValues["attempt"]["basketWall"]) ?? undefined,
+        temperatureOffsetC: attempt.temperature_offset_c ?? undefined,
+        upperBurrSetting: attempt.upper_burr_setting ?? undefined,
+        shotMode: (attempt.shot_mode as FormValues["attempt"]["shotMode"]) ?? undefined,
+        extractionMs: attempt.extraction_ms ?? undefined,
+        preinfusionMs: attempt.preinfusion_ms ?? undefined,
+        pressureObservation:
+          (attempt.pressure_observation as FormValues["attempt"]["pressureObservation"]) ?? undefined,
+        inputWeightG: attempt.input_weight_g ?? undefined,
+        outputWeightG: attempt.output_weight_g ?? undefined,
+        outputVolumeMl: attempt.output_volume_ml ?? undefined,
+        acidity: attempt.acidity ?? undefined,
+        sweetness: attempt.sweetness ?? undefined,
+        bitterness: attempt.bitterness ?? undefined,
+        body: attempt.body ?? undefined,
+        intensity: attempt.intensity ?? undefined,
+        balance: attempt.balance ?? undefined,
+        overallRating: attempt.overall_rating ?? undefined,
+        notes: attempt.notes ?? undefined,
+      },
+    },
+  });
+
+  function onSubmit(values: FormValues) {
+    startTransition(async () => {
+      const result = await updateAttemptAction({ attemptId: attempt.id, attempt: values.attempt });
+      if (!result.success) {
+        setFormError(result.message);
+        return;
+      }
+      onSaved();
+    });
+  }
+
+  return (
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-8 rounded-card border border-border bg-surface p-5">
+      <p className="text-xs text-ink-muted">
+        Corrige un dato erróneo. El intento #{attempt.attempt_no} no se sustituye, se sigue
+        conservando en el historial.
+      </p>
+      <AttemptFieldsFieldset register={register} control={control} errors={errors.attempt} />
+      {formError && (
+        <p role="alert" className="text-sm text-red-700">
+          {formError}
+        </p>
+      )}
+      <div className="flex gap-2">
+        <button
+          type="submit"
+          disabled={isPending}
+          className="min-h-11 rounded-input bg-ink px-4 text-sm font-medium text-surface disabled:opacity-60"
+        >
+          {isPending ? "Guardando..." : "Guardar cambios"}
+        </button>
+        <button
+          type="button"
+          onClick={onCancel}
+          className="min-h-11 rounded-input border border-border px-4 text-sm font-medium text-ink"
+        >
+          Cancelar
+        </button>
+      </div>
+    </form>
+  );
+}

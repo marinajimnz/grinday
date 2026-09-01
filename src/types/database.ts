@@ -39,6 +39,146 @@ export type Database = {
   }
   public: {
     Tables: {
+      brew_attempts: {
+        Row: {
+          acidity: number | null
+          attempt_no: number
+          balance: number | null
+          basket_size: string | null
+          basket_wall: string | null
+          bitterness: number | null
+          body: number | null
+          coffee_bag_id: string
+          coffee_id: string
+          created_at: string
+          dose_feedback: string | null
+          dose_mode: string | null
+          extraction_ms: number | null
+          grind_seconds: number | null
+          grind_setting: number | null
+          id: string
+          input_weight_g: number | null
+          intensity: number | null
+          machine_id: string
+          machine_snapshot: Json
+          notes: string | null
+          output_volume_ml: number | null
+          output_weight_g: number | null
+          overall_rating: number | null
+          parent_attempt_id: string | null
+          preinfusion_ms: number | null
+          pressure_observation: string | null
+          shot_mode: string | null
+          sweetness: number | null
+          temperature_offset_c: number | null
+          updated_at: string
+          upper_burr_setting: number | null
+          used_bit_more: boolean
+          user_id: string
+        }
+        Insert: {
+          acidity?: number | null
+          attempt_no?: number
+          balance?: number | null
+          basket_size?: string | null
+          basket_wall?: string | null
+          bitterness?: number | null
+          body?: number | null
+          coffee_bag_id: string
+          coffee_id: string
+          created_at?: string
+          dose_feedback?: string | null
+          dose_mode?: string | null
+          extraction_ms?: number | null
+          grind_seconds?: number | null
+          grind_setting?: number | null
+          id?: string
+          input_weight_g?: number | null
+          intensity?: number | null
+          machine_id: string
+          machine_snapshot?: Json
+          notes?: string | null
+          output_volume_ml?: number | null
+          output_weight_g?: number | null
+          overall_rating?: number | null
+          parent_attempt_id?: string | null
+          preinfusion_ms?: number | null
+          pressure_observation?: string | null
+          shot_mode?: string | null
+          sweetness?: number | null
+          temperature_offset_c?: number | null
+          updated_at?: string
+          upper_burr_setting?: number | null
+          used_bit_more?: boolean
+          user_id: string
+        }
+        Update: {
+          acidity?: number | null
+          attempt_no?: number
+          balance?: number | null
+          basket_size?: string | null
+          basket_wall?: string | null
+          bitterness?: number | null
+          body?: number | null
+          coffee_bag_id?: string
+          coffee_id?: string
+          created_at?: string
+          dose_feedback?: string | null
+          dose_mode?: string | null
+          extraction_ms?: number | null
+          grind_seconds?: number | null
+          grind_setting?: number | null
+          id?: string
+          input_weight_g?: number | null
+          intensity?: number | null
+          machine_id?: string
+          machine_snapshot?: Json
+          notes?: string | null
+          output_volume_ml?: number | null
+          output_weight_g?: number | null
+          overall_rating?: number | null
+          parent_attempt_id?: string | null
+          preinfusion_ms?: number | null
+          pressure_observation?: string | null
+          shot_mode?: string | null
+          sweetness?: number | null
+          temperature_offset_c?: number | null
+          updated_at?: string
+          upper_burr_setting?: number | null
+          used_bit_more?: boolean
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "brew_attempts_coffee_bag_id_fkey"
+            columns: ["coffee_bag_id"]
+            isOneToOne: false
+            referencedRelation: "coffee_bags"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "brew_attempts_coffee_id_fkey"
+            columns: ["coffee_id"]
+            isOneToOne: false
+            referencedRelation: "coffees"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "brew_attempts_machine_id_fkey"
+            columns: ["machine_id"]
+            isOneToOne: false
+            referencedRelation: "user_machines"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "brew_attempts_parent_attempt_id_fkey"
+            columns: ["parent_attempt_id"]
+            isOneToOne: false
+            referencedRelation: "brew_attempts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       coffee_bags: {
         Row: {
           coffee_id: string
@@ -206,7 +346,15 @@ export type Database = {
           user_id?: string
           varieties?: string[]
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "coffees_preferred_attempt_fk"
+            columns: ["preferred_attempt_id"]
+            isOneToOne: false
+            referencedRelation: "brew_attempts"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       machine_models: {
         Row: {
@@ -337,6 +485,35 @@ export type Database = {
         SetofOptions: {
           from: "*"
           to: "user_machines"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      set_preferred_attempt: {
+        Args: { p_attempt_id: string; p_coffee_id: string }
+        Returns: {
+          altitude_max_m: number | null
+          altitude_min_m: number | null
+          archived_at: string | null
+          country: string | null
+          created_at: string
+          farm: string | null
+          id: string
+          name: string
+          preferred_attempt_id: string | null
+          process: string | null
+          producer: string | null
+          region: string | null
+          roast_level: string | null
+          roaster: string
+          tasting_notes: string[]
+          updated_at: string
+          user_id: string
+          varieties: string[]
+        }
+        SetofOptions: {
+          from: "*"
+          to: "coffees"
           isOneToOne: true
           isSetofReturn: false
         }

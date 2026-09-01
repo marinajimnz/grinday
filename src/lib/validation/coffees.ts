@@ -5,27 +5,13 @@ import {
   MEDIA_KINDS,
   ROAST_LEVELS,
 } from "@/features/coffees/constants";
+import { optionalInt, optionalNonNegativeNumber, optionalPositiveNumber } from "./shared";
 
 const isoDate = z
   .string()
   .regex(/^\d{4}-\d{2}-\d{2}$/, "Fecha inválida")
   .optional()
   .or(z.literal("").transform(() => undefined));
-
-const optionalPositiveNumber = z
-  .union([z.number().positive(), z.nan(), z.undefined()])
-  .optional()
-  .transform((v) => (typeof v === "number" && !Number.isNaN(v) ? v : undefined));
-
-const optionalNonNegativeNumber = z
-  .union([z.number().min(0), z.nan(), z.undefined()])
-  .optional()
-  .transform((v) => (typeof v === "number" && !Number.isNaN(v) ? v : undefined));
-
-const optionalInt = z
-  .union([z.number().int(), z.nan(), z.undefined()])
-  .optional()
-  .transform((v) => (typeof v === "number" && !Number.isNaN(v) ? v : undefined));
 
 export const coffeeFieldsSchema = z
   .object({

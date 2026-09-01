@@ -1,0 +1,151 @@
+"use server";
+
+import { revalidatePath } from "next/cache";
+import type { z } from "zod";
+import { createClient } from "@/lib/supabase/server";
+import {
+  attemptFieldsSchema,
+  createAttemptSchema,
+  setPreferredAttemptSchema,
+  updateAttemptSchema,
+} from "@/lib/validation/attempts";
+import { getUserDefaultMachine } from "./queries";
+import type { Database, Json } from "@/types/database";
+
+type ActionResult<T = undefined> =
+  | { success: true; data: T }
+  | { success: false; message: string };
+
+type AttemptFields = Database["public"]["Tables"]["brew_attempts"]["Insert"];
+
+function toAttemptRow(
+  input: z.infer<typeof attemptFieldsSchema>,
+): Omit<AttemptFields, "id" | "user_id" | "coffee_id" | "coffee_bag_id" | "machine_id"> {
+  return {
+    grind_setting: input.grindSetting,
+    grind_seconds: input.grindSeconds,
+    dose_mode: input.doseMode,
+    dose_feedback: input.doseFeedback ?? null,
+    used_bit_more: input.usedBitMore,
+    basket_size: input.basketSize,
+    basket_wall: input.basketWall ?? null,
+    temperature_offset_c: input.temperatureOffsetC ?? null,
+    upper_burr_setting: input.upperBurrSetting ?? null,
+    shot_mode: input.shotMode,
+    extraction_ms: input.extractionMs ?? null,
+    preinfusion_ms: input.preinfusionMs ?? null,
+    pressure_observation: input.pressureObservation ?? null,
+    input_weight_g: input.inputWeightG ?? null,
+    output_weight_g: input.outputWeightG ?? null,
+    output_volume_ml: input.outputVolumeMl ?? null,
+    acidity: input.acidity ?? null,
+    sweetness: input.sweetness ?? null,
+    bitterness: input.bitterness ?? null,
+    body: input.body ?? null,
+    intensity: input.intensity ?? null,
+    balance: input.balance ?? null,
+    overall_rating: input.overallRating ?? null,
+    notes: input.notes ?? null,
+  };
+}
+
+export async function createAttemptAction(
+  rawInput: unknown,
+): Promise<ActionResult<{ attemptId: string }>> {
+  const parsed = createAttemptSchema.safeParse(rawInput);
+  if (!parsed.success) {
+    return { success: false, message: parsed.error.issues[0]?.message ?? "Datos inválidos" };
+  }
+  const { coffeeBagId, parentAttemptId, attempt } = parsed.data;
+
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { success: false, message: "No autenticado" };
+
+  const { data: bag, error: bagError } = await supabase
+    .from("coffee_bags")
+    .select("id, coffee_id")
+    .eq("id", coffeeBagId)
+    .maybeSingle();
+  if (bagError) return { success: false, message: bagError.message };
+  if (!bag) return { success: false, message: "Bolsa no encontrada" };
+
+  const machine = await getUserDefaultMachine(supabase);
+  if (!machine) {
+    return {
+      success: false,
+      message: "Selecciona una máquina en Ajustes → Máquinas antes de registrar un intento.",
+    };
+  }
+
+  const machineSnapshot: Json = {
+    machine_model_slug: machine.machine_model?.slug ?? null,
+    capabilities_version: machine.machine_model?.capabilities_version ?? null,
+    capabilities: machine.machine_model?.capabilities ?? {},
+    user_settings: machine.settings,
+  };
+
+  const { data: inserted, error } = await supabase
+    .from("brew_attempts")
+    .insert({
+      ...toAttemptRow(attempt),
+      user_id: user.id,
+      coffee_id: bag.coffee_id,
+      coffee_bag_id: bag.id,
+      machine_id: machine.id,
+      parent_attempt_id: parentAttemptId ?? null,
+      machine_snapshot: machineSnapshot,
+    })
+    .select("id")
+    .single();
+  if (error) return { success: false, message: error.message };
+
+  revalidatePath(`/coffees/${bag.coffee_id}`);
+  return { success: true, data: { attemptId: inserted.id } };
+}
+
+export async function updateAttemptAction(rawInput: unknown): Promise<ActionResult> {
+  const parsed = updateAttemptSchema.safeParse(rawInput);
+  if (!parsed.success) {
+    return { success: false, message: parsed.error.issues[0]?.message ?? "Datos inválidos" };
+  }
+  const { attemptId, attempt } = parsed.data;
+
+  const supabase = await createClient();
+  const { data: updated, error } = await supabase
+    .from("brew_attempts")
+    .update(toAttemptRow(attempt))
+    .eq("id", attemptId)
+    .select("coffee_id")
+    .single();
+  if (error) return { success: false, message: error.message };
+
+  revalidatePath(`/attempts/${attemptId}`);
+  if (updated) revalidatePath(`/coffees/${updated.coffee_id}`);
+  return { success: true, data: undefined };
+}
+
+export async function setPreferredAttemptAction(
+  rawInput: unknown,
+): Promise<ActionResult> {
+  const parsed = setPreferredAttemptSchema.safeParse(rawInput);
+  if (!parsed.success) {
+    return { success: false, message: parsed.error.issues[0]?.message ?? "Datos inválidos" };
+  }
+  const { coffeeId, attemptId } = parsed.data;
+
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("set_preferred_attempt", {
+    p_coffee_id: coffeeId,
+    // The generated type doesn't know this Postgres param accepts NULL
+    // (uuid params carry no nullability info to the type generator).
+    p_attempt_id: attemptId as unknown as string,
+  });
+  if (error) return { success: false, message: error.message };
+
+  revalidatePath(`/coffees/${coffeeId}`);
+  revalidatePath("/");
+  return { success: true, data: undefined };
+}

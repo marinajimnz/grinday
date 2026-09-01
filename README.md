@@ -61,8 +61,8 @@ npx supabase gen types typescript --linked > src/types/database.ts
 ## Estado del roadmap
 
 - [x] Fase 0 — Fundación.
-- [x] Fase 1 — Biblioteca de cafés y bolsas (este commit).
-- [ ] Fase 2 — Intentos, preferido, comparación y evolución.
+- [x] Fase 1 — Biblioteca de cafés y bolsas.
+- [x] Fase 2 — Intentos, preferido, comparación y evolución (este commit).
 - [ ] Fase 3 — Modo preparación, timer, cata y fotos de espresso.
 - [ ] Fase 4 — IA práctica: escaneo del paquete.
 - [ ] Fase 5 — Inventario.
