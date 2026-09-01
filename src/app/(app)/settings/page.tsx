@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ChevronRight, UserRound, Wrench } from "lucide-react";
+import { ThemeToggle } from "@/components/settings/ThemeToggle";
 
 const LINKS = [
   { href: "/settings/machines", label: "Máquinas", icon: Wrench },
@@ -14,7 +15,17 @@ export default function SettingsPage() {
         Máquinas, cuenta, exportación y preferencias de la app.
       </p>
 
-      <div className="mt-8 divide-y divide-border overflow-hidden rounded-card border border-border bg-surface">
+      <div className="mt-8 rounded-card border border-border bg-surface p-5">
+        <p className="text-sm font-medium text-ink">Apariencia</p>
+        <p className="mt-1 text-sm text-ink-muted">
+          Elige si la app sigue el modo del sistema o se queda fija en claro u oscuro.
+        </p>
+        <div className="mt-4">
+          <ThemeToggle />
+        </div>
+      </div>
+
+      <div className="mt-6 divide-y divide-border overflow-hidden rounded-card border border-border bg-surface">
         {LINKS.map(({ href, label, icon: Icon }) => (
           <Link
             key={href}

@@ -27,7 +27,7 @@ export default async function DashboardPage() {
             action={
               <Link
                 href="/coffees/new"
-                className="mt-2 inline-flex min-h-11 items-center rounded-input bg-ink px-4 text-sm font-medium text-surface"
+                className="mt-2 inline-flex min-h-11 items-center rounded-input bg-ink px-4 font-display text-base tracking-wide text-surface"
               >
                 Añadir café
               </Link>

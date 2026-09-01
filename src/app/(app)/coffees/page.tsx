@@ -42,7 +42,7 @@ export default async function CoffeesPage({
           </Link>
           <Link
             href="/coffees/new"
-            className="inline-flex min-h-11 items-center gap-1.5 rounded-input bg-ink px-4 text-sm font-medium text-surface"
+            className="inline-flex min-h-11 items-center gap-1.5 rounded-input bg-ink px-4 font-display text-base tracking-wide text-surface"
           >
             <Plus aria-hidden className="size-4" />
             Añadir café
@@ -74,7 +74,7 @@ export default async function CoffeesPage({
               !hasFilters ? (
                 <Link
                   href="/coffees/new"
-                  className="mt-2 inline-flex min-h-11 items-center rounded-input bg-ink px-4 text-sm font-medium text-surface"
+                  className="mt-2 inline-flex min-h-11 items-center rounded-input bg-ink px-4 font-display text-base tracking-wide text-surface"
                 >
                   Añadir café
                 </Link>
