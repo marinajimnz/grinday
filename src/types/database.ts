@@ -39,6 +39,175 @@ export type Database = {
   }
   public: {
     Tables: {
+      coffee_bags: {
+        Row: {
+          coffee_id: string
+          created_at: string
+          estimated_dose_g: number | null
+          finished_at: string | null
+          first_brew_at: string | null
+          id: string
+          inventory_mode: string
+          lot_label: string | null
+          opened_at: string | null
+          package_weight_g: number | null
+          purchase_date: string | null
+          remaining_g: number | null
+          roast_date: string | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          coffee_id: string
+          created_at?: string
+          estimated_dose_g?: number | null
+          finished_at?: string | null
+          first_brew_at?: string | null
+          id?: string
+          inventory_mode?: string
+          lot_label?: string | null
+          opened_at?: string | null
+          package_weight_g?: number | null
+          purchase_date?: string | null
+          remaining_g?: number | null
+          roast_date?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          coffee_id?: string
+          created_at?: string
+          estimated_dose_g?: number | null
+          finished_at?: string | null
+          first_brew_at?: string | null
+          id?: string
+          inventory_mode?: string
+          lot_label?: string | null
+          opened_at?: string | null
+          package_weight_g?: number | null
+          purchase_date?: string | null
+          remaining_g?: number | null
+          roast_date?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "coffee_bags_coffee_id_fkey"
+            columns: ["coffee_id"]
+            isOneToOne: false
+            referencedRelation: "coffees"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      coffee_media: {
+        Row: {
+          alt_text: string | null
+          coffee_bag_id: string
+          created_at: string
+          id: string
+          is_cover: boolean
+          kind: string
+          storage_path: string
+          user_id: string
+        }
+        Insert: {
+          alt_text?: string | null
+          coffee_bag_id: string
+          created_at?: string
+          id?: string
+          is_cover?: boolean
+          kind?: string
+          storage_path: string
+          user_id: string
+        }
+        Update: {
+          alt_text?: string | null
+          coffee_bag_id?: string
+          created_at?: string
+          id?: string
+          is_cover?: boolean
+          kind?: string
+          storage_path?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "coffee_media_coffee_bag_id_fkey"
+            columns: ["coffee_bag_id"]
+            isOneToOne: false
+            referencedRelation: "coffee_bags"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      coffees: {
+        Row: {
+          altitude_max_m: number | null
+          altitude_min_m: number | null
+          archived_at: string | null
+          country: string | null
+          created_at: string
+          farm: string | null
+          id: string
+          name: string
+          preferred_attempt_id: string | null
+          process: string | null
+          producer: string | null
+          region: string | null
+          roast_level: string | null
+          roaster: string
+          tasting_notes: string[]
+          updated_at: string
+          user_id: string
+          varieties: string[]
+        }
+        Insert: {
+          altitude_max_m?: number | null
+          altitude_min_m?: number | null
+          archived_at?: string | null
+          country?: string | null
+          created_at?: string
+          farm?: string | null
+          id?: string
+          name: string
+          preferred_attempt_id?: string | null
+          process?: string | null
+          producer?: string | null
+          region?: string | null
+          roast_level?: string | null
+          roaster: string
+          tasting_notes?: string[]
+          updated_at?: string
+          user_id: string
+          varieties?: string[]
+        }
+        Update: {
+          altitude_max_m?: number | null
+          altitude_min_m?: number | null
+          archived_at?: string | null
+          country?: string | null
+          created_at?: string
+          farm?: string | null
+          id?: string
+          name?: string
+          preferred_attempt_id?: string | null
+          process?: string | null
+          producer?: string | null
+          region?: string | null
+          roast_level?: string | null
+          roaster?: string
+          tasting_notes?: string[]
+          updated_at?: string
+          user_id?: string
+          varieties?: string[]
+        }
+        Relationships: []
+      }
       machine_models: {
         Row: {
           brand: string
