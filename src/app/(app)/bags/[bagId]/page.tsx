@@ -4,8 +4,7 @@ import { ChevronLeft } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { getBagDetail } from "@/features/coffees/queries";
 import { BagDetailPanel } from "@/components/coffee/BagDetailPanel";
-import { PhotoUploader } from "@/components/coffee/PhotoUploader";
-import { MediaGallery } from "@/components/coffee/MediaGallery";
+import { BagMediaSection } from "@/components/coffee/BagMediaSection";
 
 export default async function BagDetailPage({
   params,
@@ -36,10 +35,7 @@ export default async function BagDetailPage({
       <div className="mt-8">
         <h2 className="font-display text-xl text-ink">Galería del paquete</h2>
         <div className="mt-3">
-          <PhotoUploader coffeeBagId={bag.id} />
-        </div>
-        <div className="mt-4">
-          <MediaGallery media={media} coffeeBagId={bag.id} />
+          <BagMediaSection bagId={bag.id} media={media} />
         </div>
       </div>
     </div>

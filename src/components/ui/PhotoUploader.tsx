@@ -5,17 +5,23 @@ import { useRouter } from "next/navigation";
 import { ImagePlus } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { compressImage } from "@/lib/media/compressImage";
-import { registerCoffeeMediaAction } from "@/features/coffees/actions";
-import {
-  PACKAGE_MEDIA_KINDS,
-  MEDIA_KIND_LABELS,
-} from "@/features/coffees/constants";
 
-export function PhotoUploader({ coffeeBagId }: { coffeeBagId: string }) {
+export function PhotoUploader<K extends string>({
+  kinds,
+  kindLabels,
+  defaultKind,
+  buildPath,
+  onRegister,
+}: {
+  kinds: readonly K[];
+  kindLabels: Record<K, string>;
+  defaultKind: K;
+  buildPath: (userId: string) => string;
+  onRegister: (kind: K, storagePath: string) => Promise<{ success: boolean; message?: string }>;
+}) {
   const router = useRouter();
   const inputRef = useRef<HTMLInputElement>(null);
-  const [kind, setKind] =
-    useState<(typeof PACKAGE_MEDIA_KINDS)[number]>("package_front");
+  const [kind, setKind] = useState<K>(defaultKind);
   const [isUploading, setIsUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -30,18 +36,14 @@ export function PhotoUploader({ coffeeBagId }: { coffeeBagId: string }) {
       if (!user) throw new Error("No autenticado");
 
       const blob = await compressImage(file);
-      const path = `${user.id}/${coffeeBagId}/${Date.now()}.jpg`;
+      const path = buildPath(user.id);
 
       const { error: uploadError } = await supabase.storage
         .from("coffee-photos")
         .upload(path, blob, { contentType: "image/jpeg" });
       if (uploadError) throw uploadError;
 
-      const result = await registerCoffeeMediaAction({
-        coffeeBagId,
-        kind,
-        storagePath: path,
-      });
+      const result = await onRegister(kind, path);
       if (!result.success) throw new Error(result.message);
 
       router.refresh();
@@ -57,13 +59,13 @@ export function PhotoUploader({ coffeeBagId }: { coffeeBagId: string }) {
     <div className="flex flex-wrap items-center gap-2">
       <select
         value={kind}
-        onChange={(e) => setKind(e.target.value as (typeof PACKAGE_MEDIA_KINDS)[number])}
+        onChange={(e) => setKind(e.target.value as K)}
         className="min-h-11 rounded-input border border-border bg-surface px-3 text-sm text-ink"
         aria-label="Tipo de foto"
       >
-        {PACKAGE_MEDIA_KINDS.map((k) => (
+        {kinds.map((k) => (
           <option key={k} value={k}>
-            {MEDIA_KIND_LABELS[k]}
+            {kindLabels[k]}
           </option>
         ))}
       </select>

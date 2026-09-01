@@ -1,5 +1,6 @@
 import { z } from "zod";
 import {
+  ATTEMPT_MEDIA_KINDS,
   BASKET_SIZES,
   BASKET_WALLS,
   DOSE_FEEDBACKS,
@@ -61,4 +62,11 @@ export const updateAttemptSchema = z.object({
 export const setPreferredAttemptSchema = z.object({
   coffeeId: z.uuid(),
   attemptId: z.uuid().nullable(),
+});
+
+export const registerAttemptMediaSchema = z.object({
+  attemptId: z.uuid(),
+  kind: z.enum(ATTEMPT_MEDIA_KINDS).default("espresso"),
+  storagePath: z.string().min(1),
+  altText: z.string().trim().max(300).optional(),
 });

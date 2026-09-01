@@ -1,6 +1,7 @@
 import "server-only";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/types/database";
+import { attachSignedUrls } from "@/lib/supabase/storage";
 
 type Client = SupabaseClient<Database>;
 
@@ -18,8 +19,6 @@ export type CoffeeLibraryFilters = {
   roastLevel?: string;
   bagStatus?: string;
 };
-
-const SIGNED_URL_TTL_SECONDS = 60 * 10;
 
 export async function listCoffees(
   supabase: Client,
@@ -132,23 +131,4 @@ export async function getBagDetail(supabase: Client, bagId: string) {
   const mediaWithUrls = await attachSignedUrls(supabase, media ?? []);
 
   return { bag, media: mediaWithUrls };
-}
-
-export async function attachSignedUrls(
-  supabase: Client,
-  media: CoffeeMediaRow[],
-): Promise<(CoffeeMediaRow & { url: string | null })[]> {
-  if (!media.length) return [];
-  const { data, error } = await supabase.storage
-    .from("coffee-photos")
-    .createSignedUrls(
-      media.map((m) => m.storage_path),
-      SIGNED_URL_TTL_SECONDS,
-    );
-  if (error) {
-    console.error("[storage] failed to sign coffee photo URLs:", error.message);
-    return media.map((m) => ({ ...m, url: null }));
-  }
-  const urlByPath = new Map(data.map((d) => [d.path, d.signedUrl]));
-  return media.map((m) => ({ ...m, url: urlByPath.get(m.storage_path) ?? null }));
 }

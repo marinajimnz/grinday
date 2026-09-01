@@ -14,7 +14,7 @@ test("logs an attempt, marks it preferred, duplicates it, and compares both", as
   await page.getByRole("button", { name: "Guardar café" }).click();
   await expect(page).toHaveURL(/\/coffees\/[0-9a-f-]+$/);
 
-  await page.getByRole("link", { name: "Nuevo intento" }).click();
+  await page.getByRole("link", { name: "Registrar manual" }).click();
   await expect(page).toHaveURL(/\/attempts\/new/);
 
   await page.getByLabel("Molido").fill("12");

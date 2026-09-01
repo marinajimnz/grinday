@@ -4,22 +4,30 @@ import { useTransition } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { X } from "lucide-react";
-import { MEDIA_KIND_LABELS } from "@/features/coffees/constants";
-import { deleteCoffeeMediaAction } from "@/features/coffees/actions";
-import type { CoffeeMediaRow } from "@/features/coffees/queries";
 
-export function MediaGallery({
+type MediaItem = {
+  id: string;
+  url: string | null;
+  alt_text: string | null;
+  kind: string;
+};
+
+export function MediaGallery<T extends MediaItem>({
   media,
-  coffeeBagId,
+  labelForKind,
+  onDelete,
+  emptyLabel = "Sin fotos todavía.",
 }: {
-  media: (CoffeeMediaRow & { url: string | null })[];
-  coffeeBagId: string;
+  media: T[];
+  labelForKind: (kind: string) => string;
+  onDelete: (mediaId: string) => Promise<unknown>;
+  emptyLabel?: string;
 }) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
 
   if (!media.length) {
-    return <p className="text-sm text-ink-muted">Sin fotos todavía.</p>;
+    return <p className="text-sm text-ink-muted">{emptyLabel}</p>;
   }
 
   return (
@@ -29,11 +37,7 @@ export function MediaGallery({
           <div key={item.id} className="group relative aspect-square overflow-hidden rounded-input bg-canvas">
             <Image
               src={item.url}
-              alt={
-                item.alt_text ??
-                MEDIA_KIND_LABELS[item.kind as keyof typeof MEDIA_KIND_LABELS] ??
-                "Foto del paquete"
-              }
+              alt={item.alt_text ?? labelForKind(item.kind)}
               fill
               sizes="(max-width: 640px) 50vw, 33vw"
               className="object-cover"
@@ -44,7 +48,7 @@ export function MediaGallery({
               disabled={isPending}
               onClick={() =>
                 startTransition(async () => {
-                  await deleteCoffeeMediaAction(item.id, coffeeBagId);
+                  await onDelete(item.id);
                   router.refresh();
                 })
               }

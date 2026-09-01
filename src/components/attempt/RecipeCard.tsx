@@ -1,8 +1,21 @@
 import Link from "next/link";
 import { Star } from "lucide-react";
+import { PrepareWithRecipeButton } from "@/components/brew/PrepareWithRecipeButton";
 import type { BrewAttemptRow } from "@/features/attempts/queries";
 
-export function RecipeCard({ attempt }: { attempt: BrewAttemptRow }) {
+export function RecipeCard({
+  attempt,
+  coffeeId,
+  coffeeName,
+  roaster,
+  targetBagId,
+}: {
+  attempt: BrewAttemptRow;
+  coffeeId: string;
+  coffeeName: string;
+  roaster: string;
+  targetBagId: string;
+}) {
   return (
     <div className="rounded-card border border-coffee/40 bg-surface p-5">
       <div className="flex items-center gap-1.5 text-coffee">
@@ -38,12 +51,14 @@ export function RecipeCard({ attempt }: { attempt: BrewAttemptRow }) {
         >
           Ver intento #{attempt.attempt_no}
         </Link>
-        <Link
-          href={`/attempts/new?coffeeBagId=${attempt.coffee_bag_id}&duplicateFrom=${attempt.id}`}
-          className="min-h-11 flex-1 rounded-input bg-ink px-4 text-center text-sm font-medium leading-[2.75rem] text-surface"
-        >
-          Preparar con esta receta
-        </Link>
+        <PrepareWithRecipeButton
+          coffeeId={coffeeId}
+          coffeeBagId={targetBagId}
+          coffeeName={coffeeName}
+          roaster={roaster}
+          sourceAttempt={attempt}
+          className="min-h-11 flex-1 rounded-input bg-ink px-4 text-center text-sm font-medium text-surface"
+        />
       </div>
     </div>
   );

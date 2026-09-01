@@ -39,6 +39,47 @@ export type Database = {
   }
   public: {
     Tables: {
+      attempt_media: {
+        Row: {
+          alt_text: string | null
+          attempt_id: string
+          created_at: string
+          id: string
+          is_cover: boolean
+          kind: string
+          storage_path: string
+          user_id: string
+        }
+        Insert: {
+          alt_text?: string | null
+          attempt_id: string
+          created_at?: string
+          id?: string
+          is_cover?: boolean
+          kind?: string
+          storage_path: string
+          user_id: string
+        }
+        Update: {
+          alt_text?: string | null
+          attempt_id?: string
+          created_at?: string
+          id?: string
+          is_cover?: boolean
+          kind?: string
+          storage_path?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "attempt_media_attempt_id_fkey"
+            columns: ["attempt_id"]
+            isOneToOne: false
+            referencedRelation: "brew_attempts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       brew_attempts: {
         Row: {
           acidity: number | null

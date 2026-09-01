@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Plus } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { getCoffeeWithBags } from "@/features/coffees/queries";
 import { listAttemptsForCoffee } from "@/features/attempts/queries";
@@ -11,6 +10,7 @@ import { CoffeeTabs } from "@/components/coffee/CoffeeTabs";
 import { AttemptsTimeline } from "@/components/attempt/AttemptsTimeline";
 import { EvolutionTree } from "@/components/attempt/EvolutionTree";
 import { RecipeCard } from "@/components/attempt/RecipeCard";
+import { PrepareWithRecipeButton } from "@/components/brew/PrepareWithRecipeButton";
 
 export default async function CoffeeDetailPage({
   params,
@@ -36,9 +36,15 @@ export default async function CoffeeDetailPage({
     <div className="mx-auto max-w-2xl px-4 py-8 md:px-8">
       <CoffeeDetailPanel coffee={coffee} />
 
-      {preferredAttempt && (
+      {preferredAttempt && targetBag && (
         <div className="mt-6">
-          <RecipeCard attempt={preferredAttempt} />
+          <RecipeCard
+            attempt={preferredAttempt}
+            coffeeId={coffee.id}
+            coffeeName={coffee.name}
+            roaster={coffee.roaster}
+            targetBagId={targetBag.id}
+          />
         </div>
       )}
 
@@ -46,15 +52,26 @@ export default async function CoffeeDetailPage({
         <CoffeeTabs
           attemptsContent={
             <div>
-              <div className="mb-4 flex items-center justify-end">
+              <div className="mb-4 flex flex-wrap items-center justify-end gap-2">
                 {targetBag && (
-                  <Link
-                    href={`/attempts/new?coffeeBagId=${targetBag.id}`}
-                    className="inline-flex min-h-11 items-center gap-1.5 rounded-input bg-ink px-4 text-sm font-medium text-surface"
-                  >
-                    <Plus aria-hidden className="size-4" />
-                    Nuevo intento
-                  </Link>
+                  <>
+                    <Link
+                      href={`/attempts/new?coffeeBagId=${targetBag.id}`}
+                      className="inline-flex min-h-11 items-center rounded-input border border-border px-4 text-sm font-medium text-ink"
+                    >
+                      Registrar manual
+                    </Link>
+                    <PrepareWithRecipeButton
+                      coffeeId={coffee.id}
+                      coffeeBagId={targetBag.id}
+                      coffeeName={coffee.name}
+                      roaster={coffee.roaster}
+                      sourceAttempt={null}
+                      className="inline-flex min-h-11 items-center rounded-input bg-ink px-4 text-sm font-medium text-surface"
+                    >
+                      Preparar
+                    </PrepareWithRecipeButton>
+                  </>
                 )}
               </div>
               <AttemptsTimeline

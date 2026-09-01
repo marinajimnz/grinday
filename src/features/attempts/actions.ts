@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/server";
 import {
   attemptFieldsSchema,
   createAttemptSchema,
+  registerAttemptMediaSchema,
   setPreferredAttemptSchema,
   updateAttemptSchema,
 } from "@/lib/validation/attempts";
@@ -147,5 +148,63 @@ export async function setPreferredAttemptAction(
 
   revalidatePath(`/coffees/${coffeeId}`);
   revalidatePath("/");
+  return { success: true, data: undefined };
+}
+
+export async function registerAttemptMediaAction(
+  rawInput: unknown,
+): Promise<ActionResult<{ mediaId: string }>> {
+  const parsed = registerAttemptMediaSchema.safeParse(rawInput);
+  if (!parsed.success) {
+    return { success: false, message: parsed.error.issues[0]?.message ?? "Datos inválidos" };
+  }
+  const { attemptId, kind, storagePath, altText } = parsed.data;
+
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { success: false, message: "No autenticado" };
+
+  const { data, error } = await supabase
+    .from("attempt_media")
+    .insert({
+      attempt_id: attemptId,
+      user_id: user.id,
+      kind,
+      storage_path: storagePath,
+      alt_text: altText ?? null,
+    })
+    .select("id")
+    .single();
+  if (error) return { success: false, message: error.message };
+
+  revalidatePath(`/attempts/${attemptId}`);
+  return { success: true, data: { mediaId: data.id } };
+}
+
+export async function deleteAttemptMediaAction(
+  mediaId: string,
+  attemptId: string,
+): Promise<ActionResult> {
+  const supabase = await createClient();
+  const { data: media, error: fetchError } = await supabase
+    .from("attempt_media")
+    .select("storage_path")
+    .eq("id", mediaId)
+    .single();
+  if (fetchError) return { success: false, message: fetchError.message };
+
+  const { error: storageError } = await supabase.storage
+    .from("coffee-photos")
+    .remove([media.storage_path]);
+  if (storageError) {
+    console.error("[storage] failed to delete attempt photo:", storageError.message);
+  }
+
+  const { error } = await supabase.from("attempt_media").delete().eq("id", mediaId);
+  if (error) return { success: false, message: error.message };
+
+  revalidatePath(`/attempts/${attemptId}`);
   return { success: true, data: undefined };
 }

@@ -1,10 +1,12 @@
 import "server-only";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/types/database";
+import { attachSignedUrls } from "@/lib/supabase/storage";
 
 type Client = SupabaseClient<Database>;
 
 export type BrewAttemptRow = Database["public"]["Tables"]["brew_attempts"]["Row"];
+export type AttemptMediaRow = Database["public"]["Tables"]["attempt_media"]["Row"];
 
 export async function listAttemptsForCoffee(supabase: Client, coffeeId: string) {
   const { data, error } = await supabase
@@ -45,4 +47,88 @@ export async function getUserDefaultMachine(supabase: Client) {
     .maybeSingle();
   if (error) throw error;
   return data;
+}
+
+export async function getAttemptMedia(supabase: Client, attemptId: string) {
+  const { data, error } = await supabase
+    .from("attempt_media")
+    .select("*")
+    .eq("attempt_id", attemptId)
+    .order("created_at", { ascending: true });
+  if (error) throw error;
+  return attachSignedUrls(supabase, data ?? []);
+}
+
+const PREFERRED_ATTEMPT_RECIPE_FIELDS =
+  "id, attempt_no, grind_setting, grind_seconds, dose_mode, basket_size, basket_wall, temperature_offset_c, upper_burr_setting, shot_mode, preinfusion_ms";
+
+export type BrewableCoffee = {
+  coffeeId: string;
+  name: string;
+  roaster: string;
+  bagId: string;
+  preferredAttempt: Pick<
+    BrewAttemptRow,
+    | "id"
+    | "attempt_no"
+    | "grind_setting"
+    | "grind_seconds"
+    | "dose_mode"
+    | "basket_size"
+    | "basket_wall"
+    | "temperature_offset_c"
+    | "upper_burr_setting"
+    | "shot_mode"
+    | "preinfusion_ms"
+  > | null;
+};
+
+// Coffees the user can start a brew for: at least one bag that isn't
+// finished/archived, picking the most relevant one (open, else sealed, else
+// most recent) the same way the coffee detail page does.
+export async function listBrewableCoffees(supabase: Client): Promise<BrewableCoffee[]> {
+  const { data: coffees, error } = await supabase
+    .from("coffees")
+    .select("id, name, roaster, preferred_attempt_id")
+    .is("archived_at", null)
+    .order("updated_at", { ascending: false });
+  if (error) throw error;
+  if (!coffees?.length) return [];
+
+  const { data: bags, error: bagsError } = await supabase
+    .from("coffee_bags")
+    .select("id, coffee_id, status, created_at")
+    .in(
+      "coffee_id",
+      coffees.map((c) => c.id),
+    )
+    .order("created_at", { ascending: false });
+  if (bagsError) throw bagsError;
+
+  const preferredIds = coffees.map((c) => c.preferred_attempt_id).filter((id): id is string => Boolean(id));
+  const { data: preferredAttempts } = preferredIds.length
+    ? await supabase.from("brew_attempts").select(PREFERRED_ATTEMPT_RECIPE_FIELDS).in("id", preferredIds)
+    : { data: [] };
+  const preferredById = new Map((preferredAttempts ?? []).map((a) => [a.id, a]));
+
+  const result: BrewableCoffee[] = [];
+  for (const coffee of coffees) {
+    const coffeeBags = (bags ?? []).filter((b) => b.coffee_id === coffee.id);
+    const target =
+      coffeeBags.find((b) => b.status === "open") ??
+      coffeeBags.find((b) => b.status === "sealed") ??
+      coffeeBags[0];
+    if (!target) continue;
+
+    result.push({
+      coffeeId: coffee.id,
+      name: coffee.name,
+      roaster: coffee.roaster,
+      bagId: target.id,
+      preferredAttempt: coffee.preferred_attempt_id
+        ? (preferredById.get(coffee.preferred_attempt_id) ?? null)
+        : null,
+    });
+  }
+  return result;
 }

@@ -11,6 +11,9 @@ test("creates a coffee manually and finds it in the library", async ({ page }) =
 
   await expect(page).toHaveURL(/\/coffees\/[0-9a-f-]+$/);
   await expect(page.getByRole("heading", { name })).toBeVisible();
+
+  // The bag status lives under the "Bolsas" tab (added in Fase 2).
+  await page.getByRole("tab", { name: "Bolsas" }).click();
   await expect(page.getByText("Sin abrir")).toBeVisible();
 
   await page.goto(`/coffees?q=${encodeURIComponent(name)}`);

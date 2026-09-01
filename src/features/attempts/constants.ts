@@ -62,3 +62,10 @@ export const TASTE_DIMENSION_LABELS: Record<(typeof TASTE_DIMENSIONS)[number], s
 
 export const MAX_COMPARE_ATTEMPTS = 4;
 export const MIN_COMPARE_ATTEMPTS = 2;
+
+export const ATTEMPT_MEDIA_KINDS = ["espresso", "setup", "other"] as const;
+export const ATTEMPT_MEDIA_KIND_LABELS: Record<(typeof ATTEMPT_MEDIA_KINDS)[number], string> = {
+  espresso: "Espresso",
+  setup: "Setup",
+  other: "Otra",
+};
