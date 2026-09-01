@@ -17,12 +17,37 @@ export const coffeeFieldsSchema = z
   .object({
     name: z.string().trim().min(1, "El nombre es obligatorio").max(200),
     roaster: z.string().trim().min(1, "El tostador es obligatorio").max(200),
-    country: z.string().trim().max(100).optional().or(z.literal("").transform(() => undefined)),
-    region: z.string().trim().max(100).optional().or(z.literal("").transform(() => undefined)),
-    farm: z.string().trim().max(200).optional().or(z.literal("").transform(() => undefined)),
-    producer: z.string().trim().max(200).optional().or(z.literal("").transform(() => undefined)),
+    country: z
+      .string()
+      .trim()
+      .max(100)
+      .optional()
+      .transform((v) => (v === "" ? undefined : v)),
+    region: z
+      .string()
+      .trim()
+      .max(100)
+      .optional()
+      .transform((v) => (v === "" ? undefined : v)),
+    farm: z
+      .string()
+      .trim()
+      .max(200)
+      .optional()
+      .transform((v) => (v === "" ? undefined : v)),
+    producer: z
+      .string()
+      .trim()
+      .max(200)
+      .optional()
+      .transform((v) => (v === "" ? undefined : v)),
     varieties: z.array(z.string().trim().min(1)).default([]),
-    process: z.string().trim().max(50).optional().or(z.literal("").transform(() => undefined)),
+    process: z
+      .string()
+      .trim()
+      .max(50)
+      .optional()
+      .transform((v) => (v === "" ? undefined : v)),
     altitudeMinM: optionalInt,
     altitudeMaxM: optionalInt,
     roastLevel: z
@@ -49,7 +74,12 @@ export const bagFieldsSchema = z.object({
   inventoryMode: z.enum(INVENTORY_MODES).default("none"),
   estimatedDoseG: optionalPositiveNumber,
   status: z.enum(BAG_STATUSES).default("sealed"),
-  lotLabel: z.string().trim().max(200).optional().or(z.literal("").transform(() => undefined)),
+  lotLabel: z
+    .string()
+    .trim()
+    .max(200)
+    .optional()
+    .transform((v) => (v === "" ? undefined : v)),
 });
 
 export const createCoffeeAndBagSchema = z.object({

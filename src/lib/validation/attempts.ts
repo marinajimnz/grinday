@@ -45,7 +45,12 @@ export const attemptFieldsSchema = z.object({
   intensity: optionalRating,
   balance: optionalRating,
   overallRating: optionalRating,
-  notes: z.string().trim().max(2000).optional().or(z.literal("").transform(() => undefined)),
+  notes: z
+    .string()
+    .trim()
+    .max(2000)
+    .optional()
+    .transform((v) => (v === "" ? undefined : v)),
 });
 
 export const createAttemptSchema = z.object({
