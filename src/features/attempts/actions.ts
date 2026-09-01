@@ -57,13 +57,28 @@ export async function createAttemptAction(
   if (!parsed.success) {
     return { success: false, message: parsed.error.issues[0]?.message ?? "Datos inválidos" };
   }
-  const { coffeeBagId, parentAttemptId, attempt } = parsed.data;
+  const { coffeeBagId, parentAttemptId, idempotencyKey, attempt } = parsed.data;
 
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) return { success: false, message: "No autenticado" };
+
+  // Idempotent replay: a retried save (manual "Reintentar", or auto-retry on
+  // reconnect) for the same draft must land exactly once. If this key was
+  // already used, the attempt already exists — return it instead of
+  // inserting again (and, critically, without re-running inventory
+  // consumption below).
+  if (idempotencyKey) {
+    const { data: existing } = await supabase
+      .from("brew_attempts")
+      .select("id")
+      .eq("user_id", user.id)
+      .eq("idempotency_key", idempotencyKey)
+      .maybeSingle();
+    if (existing) return { success: true, data: { attemptId: existing.id } };
+  }
 
   const { data: bag, error: bagError } = await supabase
     .from("coffee_bags")
@@ -97,11 +112,25 @@ export async function createAttemptAction(
       coffee_bag_id: bag.id,
       machine_id: machine.id,
       parent_attempt_id: parentAttemptId ?? null,
+      idempotency_key: idempotencyKey ?? null,
       machine_snapshot: machineSnapshot,
     })
     .select("id")
     .single();
-  if (error) return { success: false, message: error.message };
+  if (error) {
+    // Lost the race to a concurrent retry of the same draft — the other
+    // request's insert already landed, so this is a success, not a failure.
+    if (error.code === "23505" && idempotencyKey) {
+      const { data: existing } = await supabase
+        .from("brew_attempts")
+        .select("id")
+        .eq("user_id", user.id)
+        .eq("idempotency_key", idempotencyKey)
+        .maybeSingle();
+      if (existing) return { success: true, data: { attemptId: existing.id } };
+    }
+    return { success: false, message: error.message };
+  }
 
   // Fase 5: consumo estimado al guardar el intento, cuando aplica —
   // aproximado por shots siempre resta una dosis estimada; en modo gramos

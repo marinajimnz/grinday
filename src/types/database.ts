@@ -98,6 +98,7 @@ export type Database = {
           grind_seconds: number | null
           grind_setting: number | null
           id: string
+          idempotency_key: string | null
           input_weight_g: number | null
           intensity: number | null
           machine_id: string
@@ -134,6 +135,7 @@ export type Database = {
           grind_seconds?: number | null
           grind_setting?: number | null
           id?: string
+          idempotency_key?: string | null
           input_weight_g?: number | null
           intensity?: number | null
           machine_id: string
@@ -170,6 +172,7 @@ export type Database = {
           grind_seconds?: number | null
           grind_setting?: number | null
           id?: string
+          idempotency_key?: string | null
           input_weight_g?: number | null
           intensity?: number | null
           machine_id?: string

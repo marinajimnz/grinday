@@ -67,4 +67,57 @@ npx supabase gen types typescript --linked > src/types/database.ts
 - [ ] Fase 4 — IA práctica: escaneo del paquete (aplazada — se retoma cuando el usuario quiera).
 - [x] Fase 5 — Inventario (este commit).
 - [x] Fase 6 — Estadísticas y dashboard (este commit).
-- [ ] Fase 7 — Hardening PWA, offline, cuenta y release.
+- [x] Fase 7 — Hardening PWA, offline, cuenta y release (este commit).
+
+## Offline y PWA
+
+La app es instalable (manifest + Service Worker con Serwist) y guarda un
+resumen del café activo en `localStorage` (`grinday:dashboard-snapshot`) cada
+vez que se visita el dashboard. Sin conexión, la navegación cae en
+`/offline`, que muestra ese resumen y avisa de cualquier intento de brew
+guardado localmente (`grinday:brew-draft:*`) pendiente de sincronizar.
+
+Los intentos creados sin red se guardan como borrador local con una
+`idempotencyKey` propia; en cuanto vuelve la conexión (evento `online`), el
+guardado se reintenta solo — no hace falta que la usuaria haga nada, y
+reintentarlo dos veces no duplica el intento gracias a la clave de
+idempotencia (`brew_attempts.idempotency_key`, único por usuario).
+
+**Nota de verificación:** el registro real del Service Worker no se puede
+comprobar de forma fiable dentro de un navegador automatizado (herramientas
+basadas en CDP interceptan las peticiones de red y eso rompe el fetch interno
+del navegador para instalar el SW, aunque `/sw.js` se sirva bien). El build
+de producción incluye correctamente `/offline` como ruta estática precacheada
+y la config `fallbacks` — para la comprobación final en un navegador normal:
+`npm run build && npm start`, abre `http://localhost:3000`, y revisa
+DevTools → Application → Service Workers.
+
+## Cuenta y datos
+
+Cada visitante empieza con una sesión anónima de Supabase (mismo `user_id`
+mientras no borre datos del navegador). Desde **Ajustes → Cuenta** puede
+vincular esa sesión a un email + contraseña sin perder ni mover nada
+(`supabase.auth.updateUser`), y volver a entrar desde otro dispositivo en
+`/login`.
+
+Desde la misma pantalla, **Exportar tus datos** descarga un backup manual:
+JSON completo (cafés, bolsas, intentos) o CSV solo de intentos
+(`/api/export?format=json|csv`). No hay backups automáticos — es la vía
+recomendada para respaldar antes de borrar datos del navegador o migrar de
+dispositivo.
+
+## Despliegue en Vercel
+
+1. En [vercel.com](https://vercel.com), **Add New → Project** e importa el
+   repo `marinajimnz/grinday` desde GitHub.
+2. Framework se detecta como Next.js automáticamente. En **Build & Development
+   Settings**, cambia el comando de build a `next build --webpack` (Serwist no
+   soporta Turbopack todavía).
+3. En **Environment Variables**, añade las mismas claves de `.env.local`:
+   `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`,
+   `SUPABASE_SERVICE_ROLE_KEY`, `SUPABASE_DB_PASSWORD`.
+4. Deploy. Vercel asigna un dominio `*.vercel.app`; para un dominio propio,
+   **Project → Settings → Domains** y sigue las instrucciones de DNS (puedes
+   comprarlo en Vercel o apuntar uno que ya tengas).
+5. Las migraciones de Supabase no las aplica Vercel — ejecútalas tú con
+   `npm run db:push` antes de desplegar cambios de esquema.

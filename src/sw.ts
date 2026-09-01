@@ -16,6 +16,17 @@ const serwist = new Serwist({
   clientsClaim: true,
   navigationPreload: true,
   runtimeCaching: defaultCache,
+  // Fase 7: when a navigation can't be served from network or cache, show
+  // the offline shell (café activo snapshot + pending drafts) instead of
+  // the browser's own error page.
+  fallbacks: {
+    entries: [
+      {
+        url: "/offline",
+        matcher: ({ request }) => request.destination === "document",
+      },
+    ],
+  },
 });
 
 serwist.addEventListeners();

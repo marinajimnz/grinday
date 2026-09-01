@@ -23,6 +23,7 @@ export function BrewLiveScreen({ draftId }: { draftId: string }) {
   const [draft, setDraft] = useState<BrewDraft | null | undefined>(undefined);
   const [isSaving, startSaving] = useTransition();
   const [saveError, setSaveError] = useState<string | null>(null);
+  const [pendingSync, setPendingSync] = useState(false);
 
   useEffect(() => {
     // localStorage doesn't exist during SSR, so this can only run client-side
@@ -59,10 +60,23 @@ export function BrewLiveScreen({ draftId }: { draftId: string }) {
   function handleSave() {
     if (!draft) return;
     setSaveError(null);
+
+    // No point even trying the request offline — go straight to "pendiente
+    // de sincronizar" and let the online-event listener below retry once
+    // connectivity actually returns (Fase 7 §11.2).
+    if (typeof navigator !== "undefined" && !navigator.onLine) {
+      setPendingSync(true);
+      return;
+    }
+
     startSaving(async () => {
       const result = await createAttemptAction({
         coffeeBagId: draft.coffeeBagId,
         parentAttemptId: draft.parentAttemptId,
+        // The draft's own id doubles as the idempotency key: a retried save
+        // (this listener, or the manual button) can never create a
+        // duplicate attempt — see createAttemptAction.
+        idempotencyKey: draft.draftId,
         attempt: {
           grindSetting: draft.recipe.grindSetting,
           grindSeconds: draft.recipe.grindSeconds,
@@ -93,15 +107,30 @@ export function BrewLiveScreen({ draftId }: { draftId: string }) {
 
       if (!result.success) {
         // Never clear the draft on failure — it's the only copy of this shot
-        // until the save actually succeeds.
+        // until the save actually succeeds. A failed fetch (not a rejected
+        // request) usually means we just lost connectivity mid-save.
+        setPendingSync(typeof navigator !== "undefined" && !navigator.onLine);
         setSaveError(result.message);
         return;
       }
 
+      setPendingSync(false);
       clearDraft(draftId);
       router.push(`/attempts/${result.data.attemptId}`);
     });
   }
+
+  // Auto-sync once: when connectivity returns, retry a save that's pending
+  // — no need for the user to notice and tap "Reintentar" themselves.
+  useEffect(() => {
+    if (!pendingSync) return;
+    function onOnline() {
+      handleSave();
+    }
+    window.addEventListener("online", onOnline);
+    return () => window.removeEventListener("online", onOnline);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pendingSync, draft]);
 
   if (draft === undefined) return null; // avoid a flash before localStorage read
 
@@ -158,10 +187,17 @@ export function BrewLiveScreen({ draftId }: { draftId: string }) {
 
           <PostShotFields value={draft.postShot} onChange={updatePostShot} />
 
-          {saveError && (
-            <p role="alert" className="text-sm text-red-700">
-              {saveError} El borrador sigue guardado en este dispositivo — puedes reintentar.
+          {pendingSync ? (
+            <p role="status" className="text-sm text-ink-muted">
+              Sin conexión — <strong className="text-ink">Pendiente de sincronizar</strong>. El
+              intento está guardado en este dispositivo y se enviará solo en cuanto vuelva la red.
             </p>
+          ) : (
+            saveError && (
+              <p role="alert" className="text-sm text-red-700">
+                {saveError} El borrador sigue guardado en este dispositivo — puedes reintentar.
+              </p>
+            )
           )}
 
           <button
@@ -170,7 +206,13 @@ export function BrewLiveScreen({ draftId }: { draftId: string }) {
             onClick={handleSave}
             className="min-h-11 w-full rounded-input bg-ink px-4 text-sm font-medium text-surface disabled:opacity-60 sm:w-auto"
           >
-            {isSaving ? "Guardando..." : saveError ? "Reintentar" : "Guardar intento"}
+            {isSaving
+              ? "Guardando..."
+              : pendingSync
+                ? "Reintentar ahora"
+                : saveError
+                  ? "Reintentar"
+                  : "Guardar intento"}
           </button>
         </div>
       )}

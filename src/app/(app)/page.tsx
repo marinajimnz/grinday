@@ -5,6 +5,7 @@ import { getDashboardData } from "@/features/dashboard/queries";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { RecipeCard } from "@/components/attempt/RecipeCard";
 import { PrepareWithRecipeButton } from "@/components/brew/PrepareWithRecipeButton";
+import { DashboardSnapshotWriter } from "@/components/dashboard/DashboardSnapshotWriter";
 
 export default async function DashboardPage() {
   const supabase = await createClient();
@@ -34,6 +35,13 @@ export default async function DashboardPage() {
           />
         ) : (
           <div className="space-y-6">
+            <DashboardSnapshotWriter
+              coffeeId={data.activeCoffee.id}
+              coffeeName={data.activeCoffee.name}
+              roaster={data.activeCoffee.roaster}
+              lastAttemptNo={data.lastAttempt?.attempt_no}
+              lastAttemptRating={data.lastAttempt?.overall_rating ?? undefined}
+            />
             <div className="rounded-card border border-border bg-surface p-5">
               <p className="text-xs font-medium uppercase tracking-wide text-ink-muted">
                 Café activo
