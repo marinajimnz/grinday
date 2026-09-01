@@ -1,0 +1,32 @@
+import Link from "next/link";
+import { ChevronRight, UserRound, Wrench } from "lucide-react";
+
+const LINKS = [
+  { href: "/settings/machines", label: "Máquinas", icon: Wrench },
+  { href: "/settings/account", label: "Cuenta y privacidad", icon: UserRound },
+] as const;
+
+export default function SettingsPage() {
+  return (
+    <div className="mx-auto max-w-2xl px-4 py-8 md:px-8">
+      <h1 className="font-display text-3xl text-ink">Ajustes</h1>
+      <p className="mt-1 text-sm text-ink-muted">
+        Máquinas, cuenta, exportación y preferencias de la app.
+      </p>
+
+      <div className="mt-8 divide-y divide-border overflow-hidden rounded-card border border-border bg-surface">
+        {LINKS.map(({ href, label, icon: Icon }) => (
+          <Link
+            key={href}
+            href={href}
+            className="flex min-h-14 items-center gap-3 px-4 text-sm font-medium text-ink"
+          >
+            <Icon aria-hidden className="size-5 text-ink-muted" />
+            <span className="flex-1">{label}</span>
+            <ChevronRight aria-hidden className="size-4 text-ink-muted" />
+          </Link>
+        ))}
+      </div>
+    </div>
+  );
+}
