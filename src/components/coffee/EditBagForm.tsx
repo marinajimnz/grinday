@@ -39,7 +39,6 @@ export function EditBagForm({
         firstBrewAt: bag.first_brew_at ?? undefined,
         finishedAt: bag.finished_at ?? undefined,
         packageWeightG: bag.package_weight_g ?? undefined,
-        remainingG: bag.remaining_g ?? undefined,
         inventoryMode: bag.inventory_mode as FormValues["bag"]["inventoryMode"],
         estimatedDoseG: bag.estimated_dose_g ?? undefined,
         status: bag.status as FormValues["bag"]["status"],

@@ -67,7 +67,7 @@ export async function createAttemptAction(
 
   const { data: bag, error: bagError } = await supabase
     .from("coffee_bags")
-    .select("id, coffee_id")
+    .select("id, coffee_id, inventory_mode, estimated_dose_g")
     .eq("id", coffeeBagId)
     .maybeSingle();
   if (bagError) return { success: false, message: bagError.message };
@@ -103,7 +103,30 @@ export async function createAttemptAction(
     .single();
   if (error) return { success: false, message: error.message };
 
+  // Fase 5: consumo estimado al guardar el intento, cuando aplica —
+  // aproximado por shots siempre resta una dosis estimada; en modo gramos
+  // solo si el usuario pesó la dosis real de este intento.
+  const consumedG =
+    bag.inventory_mode === "approximate_shots"
+      ? bag.estimated_dose_g
+      : bag.inventory_mode === "manual_grams"
+        ? attempt.inputWeightG
+        : null;
+  if (consumedG) {
+    const { error: inventoryError } = await supabase.from("inventory_events").insert({
+      coffee_bag_id: bag.id,
+      user_id: user.id,
+      attempt_id: inserted.id,
+      kind: "brew_consumption",
+      delta_g: -consumedG,
+    });
+    if (inventoryError) {
+      console.error("[inventory] failed to log brew consumption:", inventoryError.message);
+    }
+  }
+
   revalidatePath(`/coffees/${bag.coffee_id}`);
+  revalidatePath("/inventory");
   return { success: true, data: { attemptId: inserted.id } };
 }
 

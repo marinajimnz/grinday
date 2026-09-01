@@ -64,7 +64,7 @@ npx supabase gen types typescript --linked > src/types/database.ts
 - [x] Fase 1 — Biblioteca de cafés y bolsas.
 - [x] Fase 2 — Intentos, preferido, comparación y evolución.
 - [x] Fase 3 — Modo preparación, timer, cata y fotos de espresso (este commit).
-- [ ] Fase 4 — IA práctica: escaneo del paquete.
-- [ ] Fase 5 — Inventario.
+- [ ] Fase 4 — IA práctica: escaneo del paquete (aplazada — se retoma cuando el usuario quiera).
+- [x] Fase 5 — Inventario (este commit).
 - [ ] Fase 6 — Estadísticas y dashboard.
 - [ ] Fase 7 — Hardening PWA, offline, cuenta y release.

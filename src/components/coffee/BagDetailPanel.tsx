@@ -5,7 +5,9 @@ import { useRouter } from "next/navigation";
 import { Pencil } from "lucide-react";
 import { EditBagForm } from "./EditBagForm";
 import { BagStatusBadge } from "./BagStatusBadge";
+import { InventoryAdjustPanel } from "@/components/inventory/InventoryAdjustPanel";
 import { INVENTORY_MODE_LABELS } from "@/features/coffees/constants";
+import { formatRemaining } from "@/features/inventory/format";
 import type { CoffeeBagRow } from "@/features/coffees/queries";
 
 function formatDate(value: string | null) {
@@ -75,17 +77,24 @@ export function BagDetailPanel({ bag }: { bag: CoffeeBagRow }) {
       </dl>
 
       <div className="mt-5 border-t border-border pt-4">
-        <p className="text-xs text-ink-muted">Inventario</p>
-        <p className="mt-1 text-sm text-ink">
-          {INVENTORY_MODE_LABELS[bag.inventory_mode as keyof typeof INVENTORY_MODE_LABELS]}
-          {bag.package_weight_g ? ` · Paquete: ${bag.package_weight_g} g` : ""}
-          {bag.remaining_g != null
-            ? ` · Restante: aprox. ${bag.remaining_g} g`
-            : ""}
-          {bag.inventory_mode === "approximate_shots" && bag.estimated_dose_g
-            ? ` · Dosis estimada: ${bag.estimated_dose_g} g`
-            : ""}
-        </p>
+        <div className="flex items-center justify-between gap-3">
+          <div>
+            <p className="text-xs text-ink-muted">Inventario</p>
+            <p className="mt-1 text-sm text-ink">
+              {INVENTORY_MODE_LABELS[bag.inventory_mode as keyof typeof INVENTORY_MODE_LABELS]}
+              {bag.package_weight_g ? ` · Paquete: ${bag.package_weight_g} g` : ""}
+              {bag.inventory_mode === "approximate_shots" && bag.estimated_dose_g
+                ? ` · Dosis estimada: ${bag.estimated_dose_g} g`
+                : ""}
+            </p>
+            <p className="mt-1 font-display text-lg text-ink">{formatRemaining(bag)}</p>
+          </div>
+        </div>
+        {bag.inventory_mode !== "none" && (
+          <div className="mt-3">
+            <InventoryAdjustPanel coffeeBagId={bag.id} currentRemainingG={bag.remaining_g} />
+          </div>
+        )}
       </div>
     </div>
   );

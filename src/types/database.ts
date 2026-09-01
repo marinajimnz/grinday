@@ -397,6 +397,54 @@ export type Database = {
           },
         ]
       }
+      inventory_events: {
+        Row: {
+          attempt_id: string | null
+          coffee_bag_id: string
+          created_at: string
+          delta_g: number
+          id: string
+          kind: string
+          note: string | null
+          user_id: string
+        }
+        Insert: {
+          attempt_id?: string | null
+          coffee_bag_id: string
+          created_at?: string
+          delta_g: number
+          id?: string
+          kind: string
+          note?: string | null
+          user_id: string
+        }
+        Update: {
+          attempt_id?: string | null
+          coffee_bag_id?: string
+          created_at?: string
+          delta_g?: number
+          id?: string
+          kind?: string
+          note?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inventory_events_attempt_id_fkey"
+            columns: ["attempt_id"]
+            isOneToOne: false
+            referencedRelation: "brew_attempts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inventory_events_coffee_bag_id_fkey"
+            columns: ["coffee_bag_id"]
+            isOneToOne: false
+            referencedRelation: "coffee_bags"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       machine_models: {
         Row: {
           brand: string

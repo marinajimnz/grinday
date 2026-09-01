@@ -5,7 +5,7 @@ import {
   MEDIA_KINDS,
   ROAST_LEVELS,
 } from "@/features/coffees/constants";
-import { optionalInt, optionalNonNegativeNumber, optionalPositiveNumber } from "./shared";
+import { optionalInt, optionalPositiveNumber } from "./shared";
 
 const isoDate = z
   .string()
@@ -46,7 +46,6 @@ export const bagFieldsSchema = z.object({
   firstBrewAt: isoDate,
   finishedAt: isoDate,
   packageWeightG: optionalPositiveNumber,
-  remainingG: optionalNonNegativeNumber,
   inventoryMode: z.enum(INVENTORY_MODES).default("none"),
   estimatedDoseG: optionalPositiveNumber,
   status: z.enum(BAG_STATUSES).default("sealed"),

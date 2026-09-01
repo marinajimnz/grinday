@@ -61,29 +61,19 @@ export function BagFieldsFieldset({
         </Field>
       </div>
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <Field
-          label="Peso del paquete (g)"
-          htmlFor="bag.packageWeightG"
-          hint="Opcional"
-          error={errors?.packageWeightG?.message}
-        >
-          <input
-            id="bag.packageWeightG"
-            type="number"
-            className={inputClassName}
-            {...register("bag.packageWeightG", { valueAsNumber: true })}
-          />
-        </Field>
-        <Field label="Cantidad restante (g)" htmlFor="bag.remainingG" hint="Opcional">
-          <input
-            id="bag.remainingG"
-            type="number"
-            className={inputClassName}
-            {...register("bag.remainingG", { valueAsNumber: true })}
-          />
-        </Field>
-      </div>
+      <Field
+        label="Peso del paquete (g)"
+        htmlFor="bag.packageWeightG"
+        hint="Si lo indicas, arranca el seguimiento de inventario con este peso"
+        error={errors?.packageWeightG?.message}
+      >
+        <input
+          id="bag.packageWeightG"
+          type="number"
+          className={inputClassName}
+          {...register("bag.packageWeightG", { valueAsNumber: true })}
+        />
+      </Field>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <Field

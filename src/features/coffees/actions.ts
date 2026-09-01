@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
+import type { SupabaseClient } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/server";
 import {
   addBagSchema,
@@ -51,12 +52,31 @@ function toBagRow(
     first_brew_at: input.firstBrewAt ?? null,
     finished_at: input.finishedAt ?? null,
     package_weight_g: input.packageWeightG ?? null,
-    remaining_g: input.remainingG ?? null,
     inventory_mode: input.inventoryMode,
     estimated_dose_g: input.estimatedDoseG ?? null,
     status: input.status,
     lot_label: input.lotLabel ?? null,
   };
+}
+
+// Fase 5: seeds the inventory ledger so coffee_bags.remaining_g (kept in
+// sync by a DB trigger on inventory_events) starts from the package weight
+// instead of null. No-op when the weight wasn't given — inventory just
+// stays untracked for that bag until the first manual adjustment.
+async function seedInventoryEvent(
+  supabase: SupabaseClient<Database>,
+  bagId: string,
+  userId: string,
+  packageWeightG: number | undefined,
+) {
+  if (!packageWeightG) return;
+  const { error } = await supabase.from("inventory_events").insert({
+    coffee_bag_id: bagId,
+    user_id: userId,
+    kind: "initial",
+    delta_g: packageWeightG,
+  });
+  if (error) console.error("[inventory] failed to seed initial event:", error.message);
 }
 
 export async function findSimilarCoffeeAction(input: { name: string; roaster: string }) {
@@ -109,6 +129,8 @@ export async function createCoffeeAndBagAction(
     .single();
   if (bagError) return { success: false, message: bagError.message };
 
+  await seedInventoryEvent(supabase, insertedBag.id, user.id, bag.packageWeightG);
+
   revalidatePath("/coffees");
   revalidatePath("/");
   return { success: true, data: { coffeeId, bagId: insertedBag.id } };
@@ -135,6 +157,8 @@ export async function addBagAction(
     .select("id")
     .single();
   if (error) return { success: false, message: error.message };
+
+  await seedInventoryEvent(supabase, insertedBag.id, user.id, bag.packageWeightG);
 
   revalidatePath(`/coffees/${coffeeId}`);
   revalidatePath("/coffees");

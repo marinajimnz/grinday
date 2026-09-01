@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Library, Plus } from "lucide-react";
+import { Archive, Library, Plus } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { listCoffees } from "@/features/coffees/queries";
 import { CoffeeCard } from "@/components/coffee/CoffeeCard";
@@ -32,13 +32,22 @@ export default async function CoffeesPage({
             Biblioteca, búsqueda, filtros, bolsas e inventario.
           </p>
         </div>
-        <Link
-          href="/coffees/new"
-          className="inline-flex min-h-11 items-center gap-1.5 rounded-input bg-ink px-4 text-sm font-medium text-surface"
-        >
-          <Plus aria-hidden className="size-4" />
-          Añadir café
-        </Link>
+        <div className="flex gap-2">
+          <Link
+            href="/inventory"
+            aria-label="Inventario"
+            className="inline-flex min-h-11 items-center gap-1.5 rounded-input border border-border px-3 text-sm font-medium text-ink"
+          >
+            <Archive aria-hidden className="size-4" />
+          </Link>
+          <Link
+            href="/coffees/new"
+            className="inline-flex min-h-11 items-center gap-1.5 rounded-input bg-ink px-4 text-sm font-medium text-surface"
+          >
+            <Plus aria-hidden className="size-4" />
+            Añadir café
+          </Link>
+        </div>
       </div>
 
       <div className="mt-6">
