@@ -1,11 +1,11 @@
 import type { Metadata, Viewport } from "next";
-import { Fraunces, Inter } from "next/font/google";
+import { Bagel_Fat_One, Inter } from "next/font/google";
 import "./globals.css";
 
-const fraunces = Fraunces({
-  variable: "--font-fraunces",
+const bagelFatOne = Bagel_Fat_One({
+  variable: "--font-bagel-fat-one",
+  weight: "400",
   subsets: ["latin"],
-  axes: ["opsz"],
 });
 
 const inter = Inter({
@@ -20,7 +20,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#17324d",
+  themeColor: "#1b2a6e",
   width: "device-width",
   initialScale: 1,
 };
@@ -32,7 +32,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="es">
-      <body className={`${fraunces.variable} ${inter.variable} antialiased`}>
+      <body className={`${bagelFatOne.variable} ${inter.variable} antialiased`}>
         {children}
       </body>
     </html>

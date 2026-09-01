@@ -1,17 +1,17 @@
 @import "tailwindcss";
 
 :root {
-  --color-canvas: #f7f2e8;
+  --color-canvas: #f6f2e6;
   --color-surface: #ffffff;
-  --color-ink: #17324d;
-  --color-ink-muted: #69747e;
-  --color-coffee: #7a5b49;
-  --color-border: #d8d0c3;
+  --color-ink: #1b2a6e;
+  --color-ink-muted: #5b6485;
+  --color-coffee: #1b2a6e;
+  --color-border: #d9d3c2;
 
   --radius-card: 20px;
   --radius-input: 14px;
 
-  --shadow-soft: 0 1px 2px rgba(23, 50, 77, 0.04), 0 8px 24px rgba(23, 50, 77, 0.06);
+  --shadow-soft: 0 1px 2px rgba(27, 42, 110, 0.04), 0 8px 24px rgba(27, 42, 110, 0.06);
 }
 
 @theme inline {
@@ -27,18 +27,14 @@
 
   --shadow-soft: var(--shadow-soft);
 
-  --font-display: var(--font-fraunces);
+  --font-display: var(--font-bagel-fat-one);
   --font-sans: var(--font-inter);
 }
 
 body {
   background: var(--color-canvas);
   color: var(--color-ink);
-  font-family: var(--font-sans);
-}
-
-.font-display {
-  font-family: var(--font-display);
+  font-family: var(--font-inter);
 }
 
 .tabular-nums {
