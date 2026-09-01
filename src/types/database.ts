@@ -607,6 +607,46 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      stats_by_coffee: {
+        Args: { p_from?: string; p_to?: string }
+        Returns: {
+          avg_rating: number
+          coffee_id: string
+          has_preferred: boolean
+          name: string
+          rated_count: number
+          roaster: string
+        }[]
+      }
+      stats_by_dimension: {
+        Args: { p_dimension: string; p_from?: string; p_to?: string }
+        Returns: {
+          avg_rating: number
+          label: string
+          rated_count: number
+        }[]
+      }
+      stats_extraction_seconds_distribution: {
+        Args: { p_from?: string; p_to?: string }
+        Returns: {
+          attempt_count: number
+          bucket_seconds: number
+        }[]
+      }
+      stats_frequent_notes: {
+        Args: { p_from?: string; p_min_rating?: number; p_to?: string }
+        Returns: {
+          coffee_count: number
+          note: string
+        }[]
+      }
+      stats_grind_setting_distribution: {
+        Args: { p_from?: string; p_to?: string }
+        Returns: {
+          attempt_count: number
+          grind_setting: number
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never
