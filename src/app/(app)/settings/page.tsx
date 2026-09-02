@@ -1,8 +1,9 @@
 import Link from "next/link";
-import { ChevronRight, UserRound, Wrench } from "lucide-react";
+import { ChevronRight, IdCard, UserRound, Wrench } from "lucide-react";
 import { ThemeToggle } from "@/components/settings/ThemeToggle";
 
 const LINKS = [
+  { href: "/settings/profile", label: "Perfil", icon: IdCard },
   { href: "/settings/machines", label: "Máquinas", icon: Wrench },
   { href: "/settings/account", label: "Cuenta y privacidad", icon: UserRound },
 ] as const;
