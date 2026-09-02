@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Star } from "lucide-react";
+import { IconFavorita } from "@/components/icons/pencil-icons";
 import { PrepareWithRecipeButton } from "@/components/brew/PrepareWithRecipeButton";
 import type { BrewAttemptRow } from "@/features/attempts/queries";
 import { getLocale } from "@/lib/i18n/locale";
@@ -23,7 +23,7 @@ export async function RecipeCard({
   return (
     <div className="rounded-card border border-coffee/40 bg-surface p-5">
       <div className="flex items-center gap-1.5 text-coffee">
-        <Star aria-hidden className="size-4 fill-coffee" />
+        <IconFavorita aria-hidden className="size-4 text-coffee" />
         <span className="text-xs font-medium uppercase tracking-wide">
           {dict.dashboard.preferredRecipe}
         </span>

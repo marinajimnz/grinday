@@ -1,6 +1,6 @@
 import Link from "next/link";
-import { Coffee, Star } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
+import { IconCafe, IconFavorita } from "@/components/icons/pencil-icons";
 import { getDashboardData } from "@/features/dashboard/queries";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { RecipeCard } from "@/components/attempt/RecipeCard";
@@ -22,7 +22,7 @@ export default async function DashboardPage() {
       <div className="mt-8">
         {!data.hasAnyCoffee ? (
           <EmptyState
-            icon={Coffee}
+            icon={IconCafe}
             title={dict.dashboard.emptyTitle}
             description={dict.dashboard.emptyDescription}
             action={
@@ -60,7 +60,7 @@ export default async function DashboardPage() {
                   {dict.dashboard.lastAttempt}: #{data.lastAttempt.attempt_no}
                   {data.lastAttempt.overall_rating && (
                     <span className="flex items-center gap-0.5 text-ink">
-                      <Star aria-hidden className="size-3.5 fill-coffee text-coffee" />
+                      <IconFavorita aria-hidden className="size-3.5 text-coffee" />
                       {data.lastAttempt.overall_rating}/5
                     </span>
                   )}

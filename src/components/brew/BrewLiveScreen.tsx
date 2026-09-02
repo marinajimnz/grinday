@@ -3,7 +3,8 @@
 import { useEffect, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { CupSoda, Star } from "lucide-react";
+import { CupSoda } from "lucide-react";
+import { IconFavorita } from "@/components/icons/pencil-icons";
 import { TimerStage } from "./TimerStage";
 import { MiseEnPlaceFields } from "./MiseEnPlaceFields";
 import { PostShotFields } from "./PostShotFields";
@@ -162,7 +163,7 @@ export function BrewLiveScreen({ draftId }: { draftId: string }) {
       <h1 className="font-display text-2xl text-ink">{draft.coffeeName}</h1>
       {draft.parentAttemptNo && (
         <p className="mt-1 flex items-center gap-1 text-sm text-coffee">
-          <Star aria-hidden className="size-3.5 fill-coffee" />
+          <IconFavorita aria-hidden className="size-3.5 text-coffee" />
           {dict.brew.basedOnAttempt} #{draft.parentAttemptNo}
         </p>
       )}

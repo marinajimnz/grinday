@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Star } from "lucide-react";
+import { IconFavorita } from "@/components/icons/pencil-icons";
 import { cn } from "@/lib/cn";
 import { MAX_COMPARE_ATTEMPTS, MIN_COMPARE_ATTEMPTS } from "@/features/attempts/constants";
 import type { BrewAttemptRow } from "@/features/attempts/queries";
@@ -76,7 +76,7 @@ export function AttemptsTimeline({
                     {dict.attempts.attemptNo} #{attempt.attempt_no}
                   </span>
                   {isPreferred && (
-                    <Star aria-label={dict.attempts.preferred} className="size-4 fill-coffee text-coffee" />
+                    <IconFavorita aria-label={dict.attempts.preferred} className="size-4 text-coffee" />
                   )}
                   {attempt.overall_rating && (
                     <span className="rounded-full bg-canvas px-2 py-0.5 text-xs text-ink-muted">

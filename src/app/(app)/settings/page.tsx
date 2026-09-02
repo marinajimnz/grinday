@@ -1,16 +1,17 @@
 import Link from "next/link";
-import { ChevronRight, IdCard, UserRound, Wrench } from "lucide-react";
+import { ChevronRight } from "lucide-react";
 import { ThemeToggle } from "@/components/settings/ThemeToggle";
 import { getLocale } from "@/lib/i18n/locale";
 import { getDictionary } from "@/lib/i18n/get-dictionary";
+import { IconCuenta, IconMaquinas, IconPerfil } from "@/components/icons/pencil-icons";
 
 export default async function SettingsPage() {
   const dict = getDictionary(await getLocale());
 
   const LINKS = [
-    { href: "/settings/profile", label: dict.settings.profile, icon: IdCard },
-    { href: "/settings/machines", label: dict.settings.machines, icon: Wrench },
-    { href: "/settings/account", label: dict.settings.account, icon: UserRound },
+    { href: "/settings/profile", label: dict.settings.profile, icon: IconPerfil },
+    { href: "/settings/machines", label: dict.settings.machines, icon: IconMaquinas },
+    { href: "/settings/account", label: dict.settings.account, icon: IconCuenta },
   ] as const;
 
   return (

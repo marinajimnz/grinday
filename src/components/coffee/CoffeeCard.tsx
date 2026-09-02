@@ -1,6 +1,6 @@
 import Link from "next/link";
-import { Coffee as CoffeeIcon } from "lucide-react";
 import { BagStatusBadge } from "./BagStatusBadge";
+import { IconCafe as CoffeeIcon } from "@/components/icons/pencil-icons";
 import { type ROAST_LEVELS } from "@/features/coffees/constants";
 import type { CoffeeListItem } from "@/features/coffees/queries";
 import type { Dictionary } from "@/lib/i18n/dictionaries/es";

@@ -3,7 +3,8 @@
 import { useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Copy, Pencil, Star } from "lucide-react";
+import { Copy, Pencil } from "lucide-react";
+import { IconFavorita } from "@/components/icons/pencil-icons";
 import { EditAttemptForm } from "./EditAttemptForm";
 import { TASTE_DIMENSIONS } from "@/features/attempts/constants";
 import { setPreferredAttemptAction } from "@/features/attempts/actions";
@@ -83,7 +84,10 @@ export function AttemptDetailPanel({
           }
           className="inline-flex min-h-11 items-center gap-1.5 rounded-input border border-coffee px-3 text-sm font-medium text-coffee disabled:opacity-60"
         >
-          <Star aria-hidden className={isPreferred ? "size-4 fill-coffee" : "size-4"} />
+          <IconFavorita
+            aria-hidden
+            className={isPreferred ? "size-4 text-coffee" : "size-4 fill-none"}
+          />
           {isPreferred ? dict.attempts.removeFromPreferred : dict.attempts.markAsPreferred}
         </button>
 

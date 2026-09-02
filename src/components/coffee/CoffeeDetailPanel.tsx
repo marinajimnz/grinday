@@ -2,8 +2,12 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Coffee as CoffeeIcon } from "lucide-react";
-import { IconArchivar, IconEditar, IconEliminar } from "@/components/icons/pencil-icons";
+import {
+  IconArchivar,
+  IconCafe as CoffeeIcon,
+  IconEditar,
+  IconEliminar,
+} from "@/components/icons/pencil-icons";
 import { EditCoffeeForm } from "./EditCoffeeForm";
 import { Field, inputClassName } from "@/components/ui/Field";
 import { type ROAST_LEVELS } from "@/features/coffees/constants";

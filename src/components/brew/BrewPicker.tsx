@@ -1,10 +1,10 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { Coffee as CoffeeIcon, Star } from "lucide-react";
 import { buildDraftFromRecipe, saveDraft } from "@/features/brew/draft";
 import type { BrewableCoffee } from "@/features/attempts/queries";
 import { useDictionary } from "@/components/i18n/LocaleProvider";
+import { IconCafe as CoffeeIcon, IconFavorita } from "@/components/icons/pencil-icons";
 
 export function BrewPicker({ coffees }: { coffees: BrewableCoffee[] }) {
   const router = useRouter();
@@ -39,7 +39,7 @@ export function BrewPicker({ coffees }: { coffees: BrewableCoffee[] }) {
               <p className="truncate font-display text-base text-ink">{coffee.name}</p>
               {coffee.preferredAttempt ? (
                 <p className="mt-0.5 flex items-center gap-1 text-xs text-coffee">
-                  <Star aria-hidden className="size-3 fill-coffee" />
+                  <IconFavorita aria-hidden className="size-3" />
                   {dict.brew.preferredRecipeAttempt} #{coffee.preferredAttempt.attempt_no}
                 </p>
               ) : (

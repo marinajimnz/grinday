@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Star } from "lucide-react";
+import { IconFavorita } from "@/components/icons/pencil-icons";
 import type { BrewAttemptRow } from "@/features/attempts/queries";
 import type { Dictionary } from "@/lib/i18n/dictionaries/es";
 import type { Locale } from "@/lib/i18n/types";
@@ -47,7 +47,7 @@ function Node({
             </span>
           )}
           {attempt.id === preferredAttemptId && (
-            <Star aria-label={dict.attempts.preferred} className="size-3.5 fill-coffee text-coffee" />
+            <IconFavorita aria-label={dict.attempts.preferred} className="size-3.5 text-coffee" />
           )}
         </Link>
         {children.map((child) => (

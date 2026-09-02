@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Star } from "lucide-react";
+import { IconFavorita } from "@/components/icons/pencil-icons";
 import { cn } from "@/lib/cn";
 import { getCompareFields } from "@/features/attempts/compareFields";
 import type { BrewAttemptRow } from "@/features/attempts/queries";
@@ -41,7 +41,7 @@ export function CompareView({
           <div className="flex items-center gap-1.5">
             <span className="font-display text-lg text-ink">#{attempt.attempt_no}</span>
             {attempt.id === preferredAttemptId && (
-              <Star aria-label={dict.attempts.preferred} className="size-4 fill-coffee text-coffee" />
+              <IconFavorita aria-label={dict.attempts.preferred} className="size-4 text-coffee" />
             )}
           </div>
           <p className="text-xs text-ink-muted">{formatDate(attempt.created_at, locale)}</p>

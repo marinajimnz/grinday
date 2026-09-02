@@ -1,12 +1,10 @@
-import type { LucideIcon } from "lucide-react";
-
 export function EmptyState({
   icon: Icon,
   title,
   description,
   action,
 }: {
-  icon: LucideIcon;
+  icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
   title: string;
   description: string;
   action?: React.ReactNode;

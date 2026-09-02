@@ -1,5 +1,6 @@
-import { SquareChartGantt, Star } from "lucide-react";
+import { SquareChartGantt } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
+import { IconFavorita } from "@/components/icons/pencil-icons";
 import {
   getExtractionDistribution,
   getFrequentNotes,
@@ -73,7 +74,7 @@ export default async function StatsPage({
             />
             {topCoffees.some((c) => c.has_preferred) && (
               <p className="mt-3 flex items-center gap-1 text-xs text-ink-muted">
-                <Star aria-hidden className="size-3 fill-coffee text-coffee" />
+                <IconFavorita aria-hidden className="size-3 text-coffee" />
                 {dict.stats.hasPreferredRecipe}
               </p>
             )}
