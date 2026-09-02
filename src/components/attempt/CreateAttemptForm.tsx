@@ -22,7 +22,6 @@ function prefillFromParent(parent?: BrewAttemptRow | null): Partial<FormValues["
     doseMode: (parent.dose_mode as FormValues["attempt"]["doseMode"]) ?? undefined,
     usedBitMore: parent.used_bit_more,
     basketSize: (parent.basket_size as FormValues["attempt"]["basketSize"]) ?? undefined,
-    basketWall: (parent.basket_wall as FormValues["attempt"]["basketWall"]) ?? undefined,
     temperatureOffsetC: parent.temperature_offset_c ?? undefined,
     upperBurrSetting: parent.upper_burr_setting ?? undefined,
     shotMode: (parent.shot_mode as FormValues["attempt"]["shotMode"]) ?? undefined,

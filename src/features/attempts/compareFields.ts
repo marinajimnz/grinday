@@ -49,12 +49,6 @@ export function getCompareFields(dict: Dictionary): CompareField[] {
       format: (a) => fallback(a.basket_size && dict.enums.basketSize[a.basket_size as keyof typeof dict.enums.basketSize]),
     },
     {
-      key: "basket_wall",
-      label: dict.brew.basketWall,
-      group: "technical",
-      format: (a) => fallback(a.basket_wall && dict.enums.basketWall[a.basket_wall as keyof typeof dict.enums.basketWall]),
-    },
-    {
       key: "temperature_offset_c",
       label: dict.attempts.temperatureOffsetShort,
       group: "technical",

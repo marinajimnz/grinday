@@ -2,12 +2,7 @@
 
 import { Field, inputClassName } from "@/components/ui/Field";
 import { MetricStepper } from "@/components/ui/MetricStepper";
-import {
-  BASKET_SIZES,
-  BASKET_WALLS,
-  DOSE_MODES,
-  SHOT_MODES,
-} from "@/features/attempts/constants";
+import { BASKET_SIZES, DOSE_MODES, SHOT_MODES } from "@/features/attempts/constants";
 import type { BrewDraftRecipe } from "@/features/brew/draft";
 import { useDictionary } from "@/components/i18n/LocaleProvider";
 
@@ -92,38 +87,21 @@ export function MiseEnPlaceFields({
         </Field>
       </div>
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <Field label={dict.brew.basketSize} htmlFor="mep.basketSize">
-          <select
-            id="mep.basketSize"
-            className={inputClassName}
-            value={value.basketSize ?? ""}
-            onChange={(e) => set("basketSize", (e.target.value || undefined) as BrewDraftRecipe["basketSize"])}
-          >
-            <option value="">{dict.brew.choose}</option>
-            {BASKET_SIZES.map((s) => (
-              <option key={s} value={s}>
-                {dict.enums.basketSize[s]}
-              </option>
-            ))}
-          </select>
-        </Field>
-        <Field label={dict.brew.basketWall} htmlFor="mep.basketWall">
-          <select
-            id="mep.basketWall"
-            className={inputClassName}
-            value={value.basketWall ?? ""}
-            onChange={(e) => set("basketWall", (e.target.value || undefined) as BrewDraftRecipe["basketWall"])}
-          >
-            <option value="">{dict.coffees.notSpecified}</option>
-            {BASKET_WALLS.map((w) => (
-              <option key={w} value={w}>
-                {dict.enums.basketWall[w]}
-              </option>
-            ))}
-          </select>
-        </Field>
-      </div>
+      <Field label={dict.brew.basketSize} htmlFor="mep.basketSize">
+        <select
+          id="mep.basketSize"
+          className={inputClassName}
+          value={value.basketSize ?? ""}
+          onChange={(e) => set("basketSize", (e.target.value || undefined) as BrewDraftRecipe["basketSize"])}
+        >
+          <option value="">{dict.brew.choose}</option>
+          {BASKET_SIZES.map((s) => (
+            <option key={s} value={s}>
+              {dict.enums.basketSize[s]}
+            </option>
+          ))}
+        </select>
+      </Field>
     </div>
   );
 }

@@ -5,7 +5,6 @@ import { Field, inputClassName } from "@/components/ui/Field";
 import { TasteScale } from "@/components/ui/TasteScale";
 import {
   BASKET_SIZES,
-  BASKET_WALLS,
   DOSE_FEEDBACKS,
   DOSE_MODES,
   PRESSURE_OBSERVATIONS,
@@ -96,28 +95,16 @@ export function AttemptFieldsFieldset({
 
       <fieldset className="space-y-4">
         <legend className="font-display text-lg text-ink">{dict.attempts.basket}</legend>
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <Field label={dict.attempts.basketSize} htmlFor="attempt.basketSize" error={errors?.basketSize?.message}>
-            <select id="attempt.basketSize" className={inputClassName} {...register("attempt.basketSize")}>
-              <option value="">{dict.brew.choose}</option>
-              {BASKET_SIZES.map((s) => (
-                <option key={s} value={s}>
-                  {dict.enums.basketSize[s]}
-                </option>
-              ))}
-            </select>
-          </Field>
-          <Field label={dict.brew.basketWall} htmlFor="attempt.basketWall">
-            <select id="attempt.basketWall" className={inputClassName} {...register("attempt.basketWall")}>
-              <option value="">{dict.coffees.notSpecified}</option>
-              {BASKET_WALLS.map((w) => (
-                <option key={w} value={w}>
-                  {dict.enums.basketWall[w]}
-                </option>
-              ))}
-            </select>
-          </Field>
-        </div>
+        <Field label={dict.attempts.basketSize} htmlFor="attempt.basketSize" error={errors?.basketSize?.message}>
+          <select id="attempt.basketSize" className={inputClassName} {...register("attempt.basketSize")}>
+            <option value="">{dict.brew.choose}</option>
+            {BASKET_SIZES.map((s) => (
+              <option key={s} value={s}>
+                {dict.enums.basketSize[s]}
+              </option>
+            ))}
+          </select>
+        </Field>
       </fieldset>
 
       <fieldset className="space-y-4">

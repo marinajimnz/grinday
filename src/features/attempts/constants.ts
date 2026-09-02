@@ -4,8 +4,6 @@ export const DOSE_FEEDBACKS = ["under", "ideal", "over", "unknown"] as const;
 
 export const BASKET_SIZES = ["single", "double"] as const;
 
-export const BASKET_WALLS = ["single_wall", "dual_wall"] as const;
-
 export const SHOT_MODES = ["single", "double", "manual"] as const;
 
 export const PRESSURE_OBSERVATIONS = ["low", "espresso_range", "high", "unknown"] as const;

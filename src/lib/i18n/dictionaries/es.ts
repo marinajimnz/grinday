@@ -126,7 +126,6 @@ const es = {
     doseMode: { auto: "Automática", manual: "Manual" },
     doseFeedback: { under: "Por debajo", ideal: "Ideal", over: "Por encima", unknown: "No lo sé" },
     basketSize: { single: "1 taza", double: "2 tazas" },
-    basketWall: { single_wall: "Pared simple", dual_wall: "Pared doble" },
     shotMode: { single: "1 taza", double: "2 tazas", manual: "Manual" },
     pressureObservation: {
       low: "Baja",
@@ -308,7 +307,6 @@ const es = {
     doseMode: "Dosificación",
     shotMode: "Modo de shot",
     basketSize: "Cesta",
-    basketWall: "Pared",
     choose: "Elige…",
     doseFeedback: "Feedback de dosis",
     pressureObservation: "Presión observada",

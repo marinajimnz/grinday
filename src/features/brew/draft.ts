@@ -8,7 +8,6 @@ export type BrewDraftRecipe = {
   grindSeconds?: number;
   doseMode?: "auto" | "manual";
   basketSize?: "single" | "double";
-  basketWall?: "single_wall" | "dual_wall";
   temperatureOffsetC?: number;
   upperBurrSetting?: number;
   shotMode?: "single" | "double" | "manual";
@@ -89,7 +88,6 @@ export type RecipeSourceAttempt = {
   grind_seconds: number | null;
   dose_mode: string | null;
   basket_size: string | null;
-  basket_wall: string | null;
   temperature_offset_c: number | null;
   upper_burr_setting: number | null;
   shot_mode: string | null;
@@ -118,7 +116,6 @@ export function buildDraftFromRecipe(params: {
           grindSeconds: p.grind_seconds ?? undefined,
           doseMode: (p.dose_mode as BrewDraftRecipe["doseMode"]) ?? undefined,
           basketSize: (p.basket_size as BrewDraftRecipe["basketSize"]) ?? undefined,
-          basketWall: (p.basket_wall as BrewDraftRecipe["basketWall"]) ?? undefined,
           temperatureOffsetC: p.temperature_offset_c ?? undefined,
           upperBurrSetting: p.upper_burr_setting ?? undefined,
           shotMode: (p.shot_mode as BrewDraftRecipe["shotMode"]) ?? undefined,

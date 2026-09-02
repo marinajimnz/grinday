@@ -41,7 +41,6 @@ export function EditAttemptForm({
         doseFeedback: (attempt.dose_feedback as FormValues["attempt"]["doseFeedback"]) ?? undefined,
         usedBitMore: attempt.used_bit_more,
         basketSize: (attempt.basket_size as FormValues["attempt"]["basketSize"]) ?? undefined,
-        basketWall: (attempt.basket_wall as FormValues["attempt"]["basketWall"]) ?? undefined,
         temperatureOffsetC: attempt.temperature_offset_c ?? undefined,
         upperBurrSetting: attempt.upper_burr_setting ?? undefined,
         shotMode: (attempt.shot_mode as FormValues["attempt"]["shotMode"]) ?? undefined,

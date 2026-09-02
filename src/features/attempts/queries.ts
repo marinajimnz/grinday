@@ -60,7 +60,7 @@ export async function getAttemptMedia(supabase: Client, attemptId: string) {
 }
 
 const PREFERRED_ATTEMPT_RECIPE_FIELDS =
-  "id, attempt_no, grind_setting, grind_seconds, dose_mode, basket_size, basket_wall, temperature_offset_c, upper_burr_setting, shot_mode, preinfusion_ms";
+  "id, attempt_no, grind_setting, grind_seconds, dose_mode, basket_size, temperature_offset_c, upper_burr_setting, shot_mode, preinfusion_ms";
 
 export type BrewableCoffee = {
   coffeeId: string;
@@ -75,7 +75,6 @@ export type BrewableCoffee = {
     | "grind_seconds"
     | "dose_mode"
     | "basket_size"
-    | "basket_wall"
     | "temperature_offset_c"
     | "upper_burr_setting"
     | "shot_mode"

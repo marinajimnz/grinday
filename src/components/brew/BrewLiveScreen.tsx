@@ -85,7 +85,6 @@ export function BrewLiveScreen({ draftId }: { draftId: string }) {
           grindSeconds: draft.recipe.grindSeconds,
           doseMode: draft.recipe.doseMode,
           basketSize: draft.recipe.basketSize,
-          basketWall: draft.recipe.basketWall,
           temperatureOffsetC: draft.recipe.temperatureOffsetC,
           upperBurrSetting: draft.recipe.upperBurrSetting,
           shotMode: draft.recipe.shotMode,

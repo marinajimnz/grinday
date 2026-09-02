@@ -128,7 +128,6 @@ const en: Dictionary = {
     doseMode: { auto: "Automatic", manual: "Manual" },
     doseFeedback: { under: "Under", ideal: "Ideal", over: "Over", unknown: "Not sure" },
     basketSize: { single: "1 cup", double: "2 cups" },
-    basketWall: { single_wall: "Single wall", dual_wall: "Dual wall" },
     shotMode: { single: "1 cup", double: "2 cups", manual: "Manual" },
     pressureObservation: {
       low: "Low",
@@ -310,7 +309,6 @@ const en: Dictionary = {
     doseMode: "Dosing",
     shotMode: "Shot mode",
     basketSize: "Basket",
-    basketWall: "Wall",
     choose: "Choose…",
     doseFeedback: "Dose feedback",
     pressureObservation: "Observed pressure",

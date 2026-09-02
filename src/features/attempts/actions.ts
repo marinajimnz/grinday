@@ -29,7 +29,6 @@ function toAttemptRow(
     dose_feedback: input.doseFeedback ?? null,
     used_bit_more: input.usedBitMore,
     basket_size: input.basketSize,
-    basket_wall: input.basketWall ?? null,
     temperature_offset_c: input.temperatureOffsetC ?? null,
     upper_burr_setting: input.upperBurrSetting ?? null,
     shot_mode: input.shotMode,

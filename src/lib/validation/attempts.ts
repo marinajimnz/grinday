@@ -2,7 +2,6 @@ import { z } from "zod";
 import {
   ATTEMPT_MEDIA_KINDS,
   BASKET_SIZES,
-  BASKET_WALLS,
   DOSE_FEEDBACKS,
   DOSE_MODES,
   PRESSURE_OBSERVATIONS,
@@ -20,7 +19,6 @@ export const attemptFieldsSchema = z.object({
 
   // Cesta
   basketSize: z.enum(BASKET_SIZES, "Elige el tamaño de cesta"),
-  basketWall: optionalEnum(BASKET_WALLS),
 
   // Temperatura / muela
   temperatureOffsetC: optionalInt,

@@ -129,14 +129,6 @@ export function AttemptDetailPanel({
           }
         />
         <Stat
-          label={dict.brew.basketWall}
-          value={
-            attempt.basket_wall
-              ? dict.enums.basketWall[attempt.basket_wall as keyof typeof dict.enums.basketWall]
-              : null
-          }
-        />
-        <Stat
           label={dict.attempts.temperatureOffsetShort}
           value={attempt.temperature_offset_c != null ? `${attempt.temperature_offset_c} °C` : null}
         />

@@ -28,13 +28,11 @@ describe("attemptFieldsSchema", () => {
     const result = attemptFieldsSchema.safeParse({
       ...validAttempt,
       doseFeedback: "",
-      basketWall: "",
       pressureObservation: "",
     });
     expect(result.success).toBe(true);
     if (result.success) {
       expect(result.data.doseFeedback).toBeUndefined();
-      expect(result.data.basketWall).toBeUndefined();
       expect(result.data.pressureObservation).toBeUndefined();
     }
   });
