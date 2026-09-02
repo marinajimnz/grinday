@@ -35,7 +35,7 @@ export function BagDetailPanel({ bag }: { bag: CoffeeBagRow }) {
   }
 
   return (
-    <div className="rounded-card border border-border bg-surface p-5">
+    <div className="rounded-card border border-border bg-surface p-5" data-bag-id={bag.id}>
       <div className="flex items-start justify-between gap-4">
         <div className="flex items-center gap-2">
           <BagStatusBadge status={bag.status} dict={dict} />

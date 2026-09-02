@@ -39,9 +39,9 @@ test("dashboard shows the active coffee and stats aggregate once there's enough 
   await expect(page).toHaveURL(/\/coffees\/[0-9a-f-]+$/);
 
   await page.getByRole("tab", { name: "Bolsas" }).click();
-  await page.getByText("Sin abrir").click();
-  await expect(page).toHaveURL(/\/bags\/[0-9a-f-]+$/);
-  const bagId = page.url().split("/bags/")[1];
+  await expect(page.getByText("Sin abrir")).toBeVisible();
+  const bagId = await page.locator("[data-bag-id]").first().getAttribute("data-bag-id");
+  if (!bagId) throw new Error("Expected a bag panel with data-bag-id");
 
   // Below the n>=3 threshold: the page-level empty state must show.
   await logRatedAttempt(page, bagId, "4");

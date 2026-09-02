@@ -21,14 +21,18 @@ test("tracks inventory automatically for approximate_shots and never shows negat
   await page.getByRole("button", { name: "Guardar café" }).click();
   await expect(page).toHaveURL(/\/coffees\/[0-9a-f-]+$/);
 
+  // The "Bolsas" tab shows a compact card per bag; clicking it expands the
+  // full detail inline — no more navigating to a separate /bags/[id] page
+  // from here.
   await page.getByRole("tab", { name: "Bolsas" }).click();
-  await page.getByText("Sin abrir").click();
+
+  const bagCard = page.locator("[data-bag-id]").first();
+  const bagId = await bagCard.getAttribute("data-bag-id");
+  if (!bagId) throw new Error("Expected a bag panel with data-bag-id");
+  await bagCard.click();
 
   // 250g / 18g = 13 shots, labeled as an approximation.
   await expect(page.getByText("aprox. 13 shots", { exact: false })).toBeVisible();
-
-  const bagUrl = page.url();
-  const bagId = bagUrl.split("/bags/")[1];
 
   // Log an attempt against this bag — should auto-deduct one dose (18g).
   await page.goto(`/attempts/new?coffeeBagId=${bagId}`);

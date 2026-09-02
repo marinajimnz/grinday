@@ -2,10 +2,10 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { ChevronLeft } from "lucide-react";
-import { getCoffeeWithBags } from "@/features/coffees/queries";
+import { getCoffeeWithBags, listMediaForBags } from "@/features/coffees/queries";
 import { listAttemptsForCoffee } from "@/features/attempts/queries";
 import { CoffeeDetailPanel } from "@/components/coffee/CoffeeDetailPanel";
-import { BagListItem } from "@/components/coffee/BagListItem";
+import { BagAccordionItem } from "@/components/coffee/BagAccordionItem";
 import { AddBagPanel } from "@/components/coffee/AddBagPanel";
 import { CoffeeTabs } from "@/components/coffee/CoffeeTabs";
 import { AttemptsTimeline } from "@/components/attempt/AttemptsTimeline";
@@ -36,6 +36,11 @@ export default async function CoffeeDetailPage({
 
   const targetBag =
     bags.find((b) => b.status === "open") ?? bags.find((b) => b.status === "sealed") ?? bags[0];
+
+  const mediaByBag = await listMediaForBags(
+    supabase,
+    bags.map((b) => b.id),
+  );
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-8 md:px-8">
@@ -109,7 +114,7 @@ export default async function CoffeeDetailPage({
               <div className="space-y-3">
                 {bags.length ? (
                   bags.map((bag) => (
-                    <BagListItem key={bag.id} bag={bag} dict={dict} locale={locale} />
+                    <BagAccordionItem key={bag.id} bag={bag} media={mediaByBag.get(bag.id) ?? []} />
                   ))
                 ) : (
                   <p className="text-sm text-ink-muted">{dict.coffees.noBagsYet}</p>

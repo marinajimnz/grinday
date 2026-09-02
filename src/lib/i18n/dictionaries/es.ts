@@ -223,6 +223,7 @@ const es = {
     tabEvolution: "Evolución",
     tabBags: "Bolsas",
     tabsAriaLabel: "Secciones del café",
+    bagLabel: "Bolsa",
     logManual: "Registrar manual",
     altitude: "Altitud",
     roastedOn: "Tueste",

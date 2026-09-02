@@ -225,6 +225,7 @@ const en: Dictionary = {
     tabEvolution: "Evolution",
     tabBags: "Bags",
     tabsAriaLabel: "Coffee sections",
+    bagLabel: "Bag",
     logManual: "Log manually",
     altitude: "Altitude",
     roastedOn: "Roasted",

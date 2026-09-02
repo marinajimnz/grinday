@@ -96,6 +96,30 @@ export async function getCoffeeWithBags(supabase: Client, coffeeId: string) {
   return { coffee, bags: bags ?? [] };
 }
 
+// The coffee detail page shows every bag's full panel inline (dates,
+// inventory, photos) instead of linking out to a separate page per bag, so
+// it needs each bag's media up front, grouped by bag id.
+export async function listMediaForBags(supabase: Client, bagIds: string[]) {
+  if (!bagIds.length) return new Map<string, (CoffeeMediaRow & { url: string | null })[]>();
+
+  const { data: media, error } = await supabase
+    .from("coffee_media")
+    .select("*")
+    .in("coffee_bag_id", bagIds)
+    .order("created_at", { ascending: true });
+  if (error) throw error;
+
+  const mediaWithUrls = await attachSignedUrls(supabase, media ?? []);
+
+  const byBag = new Map<string, (CoffeeMediaRow & { url: string | null })[]>();
+  for (const item of mediaWithUrls) {
+    const list = byBag.get(item.coffee_bag_id) ?? [];
+    list.push(item);
+    byBag.set(item.coffee_bag_id, list);
+  }
+  return byBag;
+}
+
 export async function findSimilarCoffee(
   supabase: Client,
   name: string,
