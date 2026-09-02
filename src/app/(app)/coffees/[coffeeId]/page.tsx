@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { ChevronLeft } from "lucide-react";
 import { getCoffeeWithBags } from "@/features/coffees/queries";
 import { listAttemptsForCoffee } from "@/features/attempts/queries";
 import { CoffeeDetailPanel } from "@/components/coffee/CoffeeDetailPanel";
@@ -38,6 +39,14 @@ export default async function CoffeeDetailPage({
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-8 md:px-8">
+      <Link
+        href="/coffees"
+        className="mb-4 inline-flex min-h-11 items-center gap-1 text-sm text-ink-muted"
+      >
+        <ChevronLeft aria-hidden className="size-4" />
+        {dict.common.back}
+      </Link>
+
       <CoffeeDetailPanel coffee={coffee} />
 
       {preferredAttempt && targetBag && (

@@ -26,3 +26,7 @@ export async function listActiveBags(supabase: Client) {
 export async function listFinishedBags(supabase: Client) {
   return listBagsByStatus(supabase, ["finished"]);
 }
+
+export async function listArchivedBags(supabase: Client) {
+  return listBagsByStatus(supabase, ["archived"]);
+}
