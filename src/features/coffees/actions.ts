@@ -15,6 +15,8 @@ import {
   updateCoffeeSchema,
 } from "@/lib/validation/coffees";
 import type { Database } from "@/types/database";
+import { getLocale } from "@/lib/i18n/locale";
+import { getDictionary } from "@/lib/i18n/get-dictionary";
 
 type ActionResult<T = undefined> =
   | { success: true; data: T }
@@ -212,6 +214,30 @@ export async function archiveCoffeeAction(coffeeId: string): Promise<ActionResul
     .from("coffees")
     .update({ archived_at: new Date().toISOString() })
     .eq("id", coffeeId);
+  if (error) return { success: false, message: error.message };
+
+  revalidatePath("/coffees");
+  revalidatePath("/");
+  return { success: true, data: undefined };
+}
+
+// Unlike archiving, this is permanent — only allowed when the coffee has no
+// bags or attempts yet (a genuine mistake, not real history). Anything with
+// data has to be archived instead, never deleted.
+export async function deleteCoffeeAction(coffeeId: string): Promise<ActionResult> {
+  const supabase = await createClient();
+  const dict = getDictionary(await getLocale());
+
+  const [{ count: bagCount }, { count: attemptCount }] = await Promise.all([
+    supabase.from("coffee_bags").select("id", { count: "exact", head: true }).eq("coffee_id", coffeeId),
+    supabase.from("brew_attempts").select("id", { count: "exact", head: true }).eq("coffee_id", coffeeId),
+  ]);
+
+  if ((bagCount ?? 0) > 0 || (attemptCount ?? 0) > 0) {
+    return { success: false, message: dict.coffees.deleteBlocked };
+  }
+
+  const { error } = await supabase.from("coffees").delete().eq("id", coffeeId);
   if (error) return { success: false, message: error.message };
 
   revalidatePath("/coffees");

@@ -191,6 +191,13 @@ const es = {
     archiveConfirm: "¿Archivar",
     archiveConfirmSuffix: "? No se borra ningún dato.",
     noBagsYet: "Todavía no hay ninguna bolsa registrada para este café.",
+    deleteCoffee: "Eliminar café",
+    deleting: "Eliminando...",
+    deleteConfirmPrompt: "Escribe el nombre del café para confirmar que quieres eliminarlo. Esto no se puede deshacer.",
+    deleteConfirmPlaceholder: "Nombre del café",
+    deleteConfirmButton: "Eliminar definitivamente",
+    deleteBlocked:
+      "Este café ya tiene bolsas o intentos registrados — no se puede eliminar para no perder ese historial. Archívalo en su lugar.",
     tabAttempts: "Intentos",
     tabEvolution: "Evolución",
     tabBags: "Bolsas",

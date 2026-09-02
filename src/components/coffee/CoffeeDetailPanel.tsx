@@ -2,10 +2,11 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Coffee as CoffeeIcon, Pencil } from "lucide-react";
+import { Archive, Coffee as CoffeeIcon, Pencil, Trash2 } from "lucide-react";
 import { EditCoffeeForm } from "./EditCoffeeForm";
+import { Field, inputClassName } from "@/components/ui/Field";
 import { type ROAST_LEVELS } from "@/features/coffees/constants";
-import { archiveCoffeeAction } from "@/features/coffees/actions";
+import { archiveCoffeeAction, deleteCoffeeAction } from "@/features/coffees/actions";
 import type { CoffeeRow } from "@/features/coffees/queries";
 import { useDictionary } from "@/components/i18n/LocaleProvider";
 
@@ -14,6 +15,10 @@ export function CoffeeDetailPanel({ coffee }: { coffee: CoffeeRow }) {
   const dict = useDictionary();
   const [editing, setEditing] = useState(false);
   const [isArchiving, startArchive] = useTransition();
+  const [isDeletingOpen, setIsDeletingOpen] = useState(false);
+  const [deleteConfirmName, setDeleteConfirmName] = useState("");
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [isDeleting, startDelete] = useTransition();
 
   if (editing) {
     return (
@@ -126,21 +131,88 @@ export function CoffeeDetailPanel({ coffee }: { coffee: CoffeeRow }) {
         </div>
       )}
 
-      <button
-        type="button"
-        disabled={isArchiving}
-        onClick={() => {
-          if (!confirm(`${dict.coffees.archiveConfirm} "${coffee.name}"${dict.coffees.archiveConfirmSuffix}`))
-            return;
-          startArchive(async () => {
-            await archiveCoffeeAction(coffee.id);
-            router.push("/coffees");
-          });
-        }}
-        className="mt-6 text-xs text-ink-muted underline disabled:opacity-60"
-      >
-        {isArchiving ? dict.coffees.archiving : dict.coffees.archiveCoffee}
-      </button>
+      <div className="mt-6 flex flex-wrap gap-3">
+        <button
+          type="button"
+          disabled={isArchiving}
+          onClick={() => {
+            if (!confirm(`${dict.coffees.archiveConfirm} "${coffee.name}"${dict.coffees.archiveConfirmSuffix}`))
+              return;
+            startArchive(async () => {
+              await archiveCoffeeAction(coffee.id);
+              router.push("/coffees");
+            });
+          }}
+          className="inline-flex min-h-11 items-center gap-1.5 rounded-input border border-border px-3 text-sm font-medium text-ink disabled:opacity-60"
+        >
+          <Archive aria-hidden className="size-4" />
+          {isArchiving ? dict.coffees.archiving : dict.coffees.archiveCoffee}
+        </button>
+
+        {!isDeletingOpen && (
+          <button
+            type="button"
+            onClick={() => {
+              setIsDeletingOpen(true);
+              setDeleteError(null);
+              setDeleteConfirmName("");
+            }}
+            className="inline-flex min-h-11 items-center gap-1.5 rounded-input bg-[#F47174] px-3 text-sm font-medium text-[#1b2a6e]"
+          >
+            <Trash2 aria-hidden className="size-4" />
+            {dict.coffees.deleteCoffee}
+          </button>
+        )}
+      </div>
+
+      {isDeletingOpen && (
+        <div className="mt-4 rounded-input border border-red-700/40 bg-canvas p-4">
+          <p className="text-xs text-ink">{dict.coffees.deleteConfirmPrompt}</p>
+          <div className="mt-2">
+            <Field label={coffee.name} htmlFor="delete-confirm-name">
+              <input
+                id="delete-confirm-name"
+                className={inputClassName}
+                placeholder={dict.coffees.deleteConfirmPlaceholder}
+                value={deleteConfirmName}
+                onChange={(e) => setDeleteConfirmName(e.target.value)}
+              />
+            </Field>
+          </div>
+          {deleteError && (
+            <p role="alert" className="mt-2 text-xs text-red-700">
+              {deleteError}
+            </p>
+          )}
+          <div className="mt-3 flex gap-2">
+            <button
+              type="button"
+              disabled={isDeleting || deleteConfirmName.trim() !== coffee.name}
+              onClick={() => {
+                setDeleteError(null);
+                startDelete(async () => {
+                  const result = await deleteCoffeeAction(coffee.id);
+                  if (!result.success) {
+                    setDeleteError(result.message);
+                    return;
+                  }
+                  router.push("/coffees");
+                });
+              }}
+              className="min-h-11 rounded-input bg-[#F47174] px-4 text-sm font-medium text-[#1b2a6e] disabled:opacity-50"
+            >
+              {isDeleting ? dict.coffees.deleting : dict.coffees.deleteConfirmButton}
+            </button>
+            <button
+              type="button"
+              onClick={() => setIsDeletingOpen(false)}
+              className="min-h-11 rounded-input border border-border px-4 text-sm font-medium text-ink"
+            >
+              {dict.common.cancel}
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

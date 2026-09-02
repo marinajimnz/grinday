@@ -193,6 +193,13 @@ const en: Dictionary = {
     archiveConfirm: "Archive",
     archiveConfirmSuffix: "? Nothing gets deleted.",
     noBagsYet: "No bag registered for this coffee yet.",
+    deleteCoffee: "Delete coffee",
+    deleting: "Deleting...",
+    deleteConfirmPrompt: "Type the coffee's name to confirm you want to delete it. This can't be undone.",
+    deleteConfirmPlaceholder: "Coffee name",
+    deleteConfirmButton: "Delete permanently",
+    deleteBlocked:
+      "This coffee already has bags or attempts logged — it can't be deleted without losing that history. Archive it instead.",
     tabAttempts: "Attempts",
     tabEvolution: "Evolution",
     tabBags: "Bags",
