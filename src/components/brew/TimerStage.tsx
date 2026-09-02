@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { formatElapsed } from "@/features/brew/formatElapsed";
+import { useDictionary } from "@/components/i18n/LocaleProvider";
 
 /**
  * Timestamp-anchored timer: the displayed value is always
@@ -21,6 +22,7 @@ export function TimerStage({
   onStart: () => void;
   onStop: (elapsedMs: number) => void;
 }) {
+  const dict = useDictionary();
   const isRunning = startedAtEpochMs !== null;
   const [now, setNow] = useState(() => Date.now());
   const wakeLockRef = useRef<WakeLockSentinel | null>(null);
@@ -78,7 +80,7 @@ export function TimerStage({
           onClick={() => onStop(Date.now() - startedAtEpochMs!)}
           className="min-h-14 w-48 rounded-full bg-ink text-base font-medium text-surface"
         >
-          Parar
+          {dict.brew.stop}
         </button>
       ) : (
         <button
@@ -89,13 +91,11 @@ export function TimerStage({
           }}
           className="min-h-14 w-48 rounded-full bg-coffee text-base font-medium text-surface"
         >
-          Iniciar temporizador
+          {dict.brew.startTimer}
         </button>
       )}
 
-      <p className="max-w-[240px] text-center text-xs text-ink-muted">
-        El tiempo se guardará en este intento automáticamente.
-      </p>
+      <p className="max-w-[240px] text-center text-xs text-ink-muted">{dict.brew.timerNote}</p>
     </div>
   );
 }

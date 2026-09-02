@@ -17,9 +17,11 @@ import {
 } from "@/features/brew/draft";
 import { createAttemptAction } from "@/features/attempts/actions";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { useDictionary } from "@/components/i18n/LocaleProvider";
 
 export function BrewLiveScreen({ draftId }: { draftId: string }) {
   const router = useRouter();
+  const dict = useDictionary();
   const [draft, setDraft] = useState<BrewDraft | null | undefined>(undefined);
   const [isSaving, startSaving] = useTransition();
   const [saveError, setSaveError] = useState<string | null>(null);
@@ -138,14 +140,14 @@ export function BrewLiveScreen({ draftId }: { draftId: string }) {
     return (
       <EmptyState
         icon={CupSoda}
-        title="Este borrador ya no existe"
-        description="Puede que se haya guardado en otro dispositivo o que se haya limpiado el almacenamiento local. Empieza uno nuevo."
+        title={dict.brew.draftGoneTitle}
+        description={dict.brew.draftGoneDescription}
         action={
           <Link
             href="/brew/new"
             className="mt-2 inline-flex min-h-11 items-center rounded-input bg-ink px-4 text-sm font-medium text-surface"
           >
-            Volver a Preparar
+            {dict.brew.backToBrew}
           </Link>
         }
       />
@@ -161,7 +163,7 @@ export function BrewLiveScreen({ draftId }: { draftId: string }) {
       {draft.parentAttemptNo && (
         <p className="mt-1 flex items-center gap-1 text-sm text-coffee">
           <Star aria-hidden className="size-3.5 fill-coffee" />
-          Basado en intento #{draft.parentAttemptNo}
+          {dict.brew.basedOnAttempt} #{draft.parentAttemptNo}
         </p>
       )}
 
@@ -179,7 +181,7 @@ export function BrewLiveScreen({ draftId }: { draftId: string }) {
       {isReview && (
         <div className="mt-6 space-y-8">
           <div className="rounded-card border border-border bg-surface p-5 text-center">
-            <p className="text-xs text-ink-muted">Extracción</p>
+            <p className="text-xs text-ink-muted">{dict.brew.extraction}</p>
             <p className="font-display text-4xl tabular-nums text-ink">
               {((draft.extractionMs ?? 0) / 1000).toFixed(1)}s
             </p>
@@ -189,13 +191,13 @@ export function BrewLiveScreen({ draftId }: { draftId: string }) {
 
           {pendingSync ? (
             <p role="status" className="text-sm text-ink-muted">
-              Sin conexión — <strong className="text-ink">Pendiente de sincronizar</strong>. El
-              intento está guardado en este dispositivo y se enviará solo en cuanto vuelva la red.
+              {dict.brew.offlinePending} — <strong className="text-ink">{dict.brew.offlinePendingStrong}</strong>
+              {dict.brew.offlinePendingRest}
             </p>
           ) : (
             saveError && (
               <p role="alert" className="text-sm text-red-700">
-                {saveError} El borrador sigue guardado en este dispositivo — puedes reintentar.
+                {saveError} {dict.brew.savedLocallyRetry}
               </p>
             )
           )}
@@ -207,12 +209,12 @@ export function BrewLiveScreen({ draftId }: { draftId: string }) {
             className="min-h-11 w-full rounded-input bg-ink px-4 text-sm font-medium text-surface disabled:opacity-60 sm:w-auto"
           >
             {isSaving
-              ? "Guardando..."
+              ? dict.common.saving
               : pendingSync
-                ? "Reintentar ahora"
+                ? dict.brew.retryNow
                 : saveError
-                  ? "Reintentar"
-                  : "Guardar intento"}
+                  ? dict.common.retry
+                  : dict.brew.saveAttempt}
           </button>
         </div>
       )}

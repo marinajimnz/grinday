@@ -3,8 +3,10 @@
 import { useState } from "react";
 import { Plus } from "lucide-react";
 import { AddBagForm } from "./AddBagForm";
+import { useDictionary } from "@/components/i18n/LocaleProvider";
 
 export function AddBagPanel({ coffeeId }: { coffeeId: string }) {
+  const dict = useDictionary();
   const [adding, setAdding] = useState(false);
 
   if (adding) {
@@ -18,7 +20,7 @@ export function AddBagPanel({ coffeeId }: { coffeeId: string }) {
       className="inline-flex min-h-11 items-center gap-1.5 rounded-input border border-border px-4 text-sm font-medium text-ink"
     >
       <Plus aria-hidden className="size-4" />
-      Añadir bolsa
+      {dict.coffees.addBag}
     </button>
   );
 }

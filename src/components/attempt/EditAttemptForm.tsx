@@ -8,6 +8,7 @@ import { AttemptFieldsFieldset } from "./AttemptFieldsFieldset";
 import { attemptFieldsSchema } from "@/lib/validation/attempts";
 import { updateAttemptAction } from "@/features/attempts/actions";
 import type { BrewAttemptRow } from "@/features/attempts/queries";
+import { useDictionary } from "@/components/i18n/LocaleProvider";
 
 const formSchema = z.object({ attempt: attemptFieldsSchema });
 type FormValues = z.infer<typeof formSchema>;
@@ -21,6 +22,7 @@ export function EditAttemptForm({
   onSaved: () => void;
   onCancel: () => void;
 }) {
+  const dict = useDictionary();
   const [isPending, startTransition] = useTransition();
   const [formError, setFormError] = useState<string | null>(null);
 
@@ -76,8 +78,7 @@ export function EditAttemptForm({
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-8 rounded-card border border-border bg-surface p-5">
       <p className="text-xs text-ink-muted">
-        Corrige un dato erróneo. El intento #{attempt.attempt_no} no se sustituye, se sigue
-        conservando en el historial.
+        {dict.attempts.correctNote} #{attempt.attempt_no} {dict.attempts.correctNoteSuffix}
       </p>
       <AttemptFieldsFieldset register={register} control={control} errors={errors.attempt} />
       {formError && (
@@ -91,14 +92,14 @@ export function EditAttemptForm({
           disabled={isPending}
           className="min-h-11 rounded-input bg-ink px-4 text-sm font-medium text-surface disabled:opacity-60"
         >
-          {isPending ? "Guardando..." : "Guardar cambios"}
+          {isPending ? dict.common.saving : dict.coffees.saveChanges}
         </button>
         <button
           type="button"
           onClick={onCancel}
           className="min-h-11 rounded-input border border-border px-4 text-sm font-medium text-ink"
         >
-          Cancelar
+          {dict.common.cancel}
         </button>
       </div>
     </form>

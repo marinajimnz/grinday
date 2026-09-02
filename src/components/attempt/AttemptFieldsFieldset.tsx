@@ -5,22 +5,16 @@ import { Field, inputClassName } from "@/components/ui/Field";
 import { TasteScale } from "@/components/ui/TasteScale";
 import {
   BASKET_SIZES,
-  BASKET_SIZE_LABELS,
   BASKET_WALLS,
-  BASKET_WALL_LABELS,
   DOSE_FEEDBACKS,
-  DOSE_FEEDBACK_LABELS,
   DOSE_MODES,
-  DOSE_MODE_LABELS,
   PRESSURE_OBSERVATIONS,
-  PRESSURE_OBSERVATION_LABELS,
   SHOT_MODES,
-  SHOT_MODE_LABELS,
   TASTE_DIMENSIONS,
-  TASTE_DIMENSION_LABELS,
 } from "@/features/attempts/constants";
 import type { z } from "zod";
 import type { attemptFieldsSchema } from "@/lib/validation/attempts";
+import { useDictionary } from "@/components/i18n/LocaleProvider";
 
 export type AttemptFormValues = { attempt: z.infer<typeof attemptFieldsSchema> };
 
@@ -36,13 +30,15 @@ export function AttemptFieldsFieldset({
   control: any;
   errors?: FieldErrors<z.infer<typeof attemptFieldsSchema>>;
 }) {
+  const dict = useDictionary();
+
   return (
     <div className="space-y-8">
       <fieldset className="space-y-4">
-        <legend className="font-display text-lg text-ink">Molienda</legend>
+        <legend className="font-display text-lg text-ink">{dict.attempts.grinding}</legend>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <Field
-            label="Molido"
+            label={dict.brew.grindSetting}
             htmlFor="attempt.grindSetting"
             error={errors?.grindSetting?.message}
           >
@@ -55,7 +51,7 @@ export function AttemptFieldsFieldset({
             />
           </Field>
           <Field
-            label="Segundos de molienda"
+            label={dict.attempts.grindSeconds}
             htmlFor="attempt.grindSeconds"
             error={errors?.grindSeconds?.message}
           >
@@ -70,22 +66,22 @@ export function AttemptFieldsFieldset({
         </div>
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <Field label="Dosificación" htmlFor="attempt.doseMode" error={errors?.doseMode?.message}>
+          <Field label={dict.brew.doseMode} htmlFor="attempt.doseMode" error={errors?.doseMode?.message}>
             <select id="attempt.doseMode" className={inputClassName} {...register("attempt.doseMode")}>
-              <option value="">Elige…</option>
+              <option value="">{dict.brew.choose}</option>
               {DOSE_MODES.map((m) => (
                 <option key={m} value={m}>
-                  {DOSE_MODE_LABELS[m]}
+                  {dict.enums.doseMode[m]}
                 </option>
               ))}
             </select>
           </Field>
-          <Field label="Feedback de dosis" htmlFor="attempt.doseFeedback">
+          <Field label={dict.brew.doseFeedback} htmlFor="attempt.doseFeedback">
             <select id="attempt.doseFeedback" className={inputClassName} {...register("attempt.doseFeedback")}>
-              <option value="">Sin especificar</option>
+              <option value="">{dict.coffees.notSpecified}</option>
               {DOSE_FEEDBACKS.map((f) => (
                 <option key={f} value={f}>
-                  {DOSE_FEEDBACK_LABELS[f]}
+                  {dict.enums.doseFeedback[f]}
                 </option>
               ))}
             </select>
@@ -94,29 +90,29 @@ export function AttemptFieldsFieldset({
 
         <label className="flex min-h-11 items-center gap-2 text-sm text-ink">
           <input type="checkbox" className="size-4" {...register("attempt.usedBitMore")} />
-          Usé &quot;A Bit More&quot;
+          {dict.attempts.usedBitMore}
         </label>
       </fieldset>
 
       <fieldset className="space-y-4">
-        <legend className="font-display text-lg text-ink">Cesta</legend>
+        <legend className="font-display text-lg text-ink">{dict.attempts.basket}</legend>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <Field label="Tamaño" htmlFor="attempt.basketSize" error={errors?.basketSize?.message}>
+          <Field label={dict.attempts.basketSize} htmlFor="attempt.basketSize" error={errors?.basketSize?.message}>
             <select id="attempt.basketSize" className={inputClassName} {...register("attempt.basketSize")}>
-              <option value="">Elige…</option>
+              <option value="">{dict.brew.choose}</option>
               {BASKET_SIZES.map((s) => (
                 <option key={s} value={s}>
-                  {BASKET_SIZE_LABELS[s]}
+                  {dict.enums.basketSize[s]}
                 </option>
               ))}
             </select>
           </Field>
-          <Field label="Pared" htmlFor="attempt.basketWall">
+          <Field label={dict.brew.basketWall} htmlFor="attempt.basketWall">
             <select id="attempt.basketWall" className={inputClassName} {...register("attempt.basketWall")}>
-              <option value="">Sin especificar</option>
+              <option value="">{dict.coffees.notSpecified}</option>
               {BASKET_WALLS.map((w) => (
                 <option key={w} value={w}>
-                  {BASKET_WALL_LABELS[w]}
+                  {dict.enums.basketWall[w]}
                 </option>
               ))}
             </select>
@@ -125,9 +121,13 @@ export function AttemptFieldsFieldset({
       </fieldset>
 
       <fieldset className="space-y-4">
-        <legend className="font-display text-lg text-ink">Temperatura y muela</legend>
+        <legend className="font-display text-lg text-ink">{dict.attempts.temperatureAndBurr}</legend>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <Field label="Offset de temperatura (°C)" htmlFor="attempt.temperatureOffsetC" hint="-2 a +2">
+          <Field
+            label={dict.attempts.temperatureOffset}
+            htmlFor="attempt.temperatureOffsetC"
+            hint={dict.attempts.temperatureRange}
+          >
             <input
               id="attempt.temperatureOffsetC"
               type="number"
@@ -135,7 +135,7 @@ export function AttemptFieldsFieldset({
               {...register("attempt.temperatureOffsetC", { valueAsNumber: true })}
             />
           </Field>
-          <Field label="Muela superior" htmlFor="attempt.upperBurrSetting" hint="Opcional">
+          <Field label={dict.brew.upperBurr} htmlFor="attempt.upperBurrSetting" hint={dict.brew.optional}>
             <input
               id="attempt.upperBurrSetting"
               type="number"
@@ -147,19 +147,23 @@ export function AttemptFieldsFieldset({
       </fieldset>
 
       <fieldset className="space-y-4">
-        <legend className="font-display text-lg text-ink">Extracción</legend>
+        <legend className="font-display text-lg text-ink">{dict.attempts.extraction}</legend>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <Field label="Modo de shot" htmlFor="attempt.shotMode" error={errors?.shotMode?.message}>
+          <Field label={dict.brew.shotMode} htmlFor="attempt.shotMode" error={errors?.shotMode?.message}>
             <select id="attempt.shotMode" className={inputClassName} {...register("attempt.shotMode")}>
-              <option value="">Elige…</option>
+              <option value="">{dict.brew.choose}</option>
               {SHOT_MODES.map((m) => (
                 <option key={m} value={m}>
-                  {SHOT_MODE_LABELS[m]}
+                  {dict.enums.shotMode[m]}
                 </option>
               ))}
             </select>
           </Field>
-          <Field label="Tiempo de extracción (ms)" htmlFor="attempt.extractionMs" hint="Opcional en esta fase">
+          <Field
+            label={dict.attempts.extractionTime}
+            htmlFor="attempt.extractionMs"
+            hint={dict.attempts.optionalPhase}
+          >
             <input
               id="attempt.extractionMs"
               type="number"
@@ -170,7 +174,7 @@ export function AttemptFieldsFieldset({
         </div>
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <Field label="Preinfusión (ms)" htmlFor="attempt.preinfusionMs" hint="Opcional">
+          <Field label={dict.attempts.preinfusion} htmlFor="attempt.preinfusionMs" hint={dict.brew.optional}>
             <input
               id="attempt.preinfusionMs"
               type="number"
@@ -178,16 +182,16 @@ export function AttemptFieldsFieldset({
               {...register("attempt.preinfusionMs", { valueAsNumber: true })}
             />
           </Field>
-          <Field label="Presión observada" htmlFor="attempt.pressureObservation">
+          <Field label={dict.brew.pressureObservation} htmlFor="attempt.pressureObservation">
             <select
               id="attempt.pressureObservation"
               className={inputClassName}
               {...register("attempt.pressureObservation")}
             >
-              <option value="">Sin especificar</option>
+              <option value="">{dict.coffees.notSpecified}</option>
               {PRESSURE_OBSERVATIONS.map((p) => (
                 <option key={p} value={p}>
-                  {PRESSURE_OBSERVATION_LABELS[p]}
+                  {dict.enums.pressureObservation[p]}
                 </option>
               ))}
             </select>
@@ -196,12 +200,10 @@ export function AttemptFieldsFieldset({
       </fieldset>
 
       <fieldset className="space-y-4">
-        <legend className="font-display text-lg text-ink">Peso y volumen</legend>
-        <p className="text-xs text-ink-muted">
-          Opcional — preparado para una futura báscula, no lo necesitas si no tienes una.
-        </p>
+        <legend className="font-display text-lg text-ink">{dict.attempts.weightAndVolume}</legend>
+        <p className="text-xs text-ink-muted">{dict.attempts.weightVolumeNote}</p>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-          <Field label="Entrada (g)" htmlFor="attempt.inputWeightG">
+          <Field label={dict.brew.inputWeight} htmlFor="attempt.inputWeightG">
             <input
               id="attempt.inputWeightG"
               type="number"
@@ -209,7 +211,7 @@ export function AttemptFieldsFieldset({
               {...register("attempt.inputWeightG", { valueAsNumber: true })}
             />
           </Field>
-          <Field label="Salida (g)" htmlFor="attempt.outputWeightG">
+          <Field label={dict.brew.outputWeight} htmlFor="attempt.outputWeightG">
             <input
               id="attempt.outputWeightG"
               type="number"
@@ -217,7 +219,7 @@ export function AttemptFieldsFieldset({
               {...register("attempt.outputWeightG", { valueAsNumber: true })}
             />
           </Field>
-          <Field label="Volumen (ml)" htmlFor="attempt.outputVolumeMl">
+          <Field label={dict.brew.outputVolume} htmlFor="attempt.outputVolumeMl">
             <input
               id="attempt.outputVolumeMl"
               type="number"
@@ -229,7 +231,7 @@ export function AttemptFieldsFieldset({
       </fieldset>
 
       <fieldset className="space-y-4">
-        <legend className="font-display text-lg text-ink">Cata</legend>
+        <legend className="font-display text-lg text-ink">{dict.attempts.tasting}</legend>
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
           {TASTE_DIMENSIONS.map((dim) => (
             <Controller
@@ -239,7 +241,7 @@ export function AttemptFieldsFieldset({
               render={({ field }) => (
                 <TasteScale
                   id={`attempt.${dim}`}
-                  label={TASTE_DIMENSION_LABELS[dim]}
+                  label={dict.enums.tasteDimension[dim]}
                   value={field.value}
                   onChange={field.onChange}
                 />
@@ -254,14 +256,14 @@ export function AttemptFieldsFieldset({
           render={({ field }) => (
             <TasteScale
               id="attempt.overallRating"
-              label="Puntuación general"
+              label={dict.brew.overallRating}
               value={field.value}
               onChange={field.onChange}
             />
           )}
         />
 
-        <Field label="Notas" htmlFor="attempt.notes">
+        <Field label={dict.brew.notes} htmlFor="attempt.notes">
           <textarea
             id="attempt.notes"
             rows={4}

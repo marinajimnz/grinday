@@ -4,6 +4,7 @@ import { useTransition } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { X } from "lucide-react";
+import { useDictionary } from "@/components/i18n/LocaleProvider";
 
 type MediaItem = {
   id: string;
@@ -16,14 +17,15 @@ export function MediaGallery<T extends MediaItem>({
   media,
   labelForKind,
   onDelete,
-  emptyLabel = "Sin fotos todavía.",
+  emptyLabel,
 }: {
   media: T[];
   labelForKind: (kind: string) => string;
   onDelete: (mediaId: string) => Promise<unknown>;
-  emptyLabel?: string;
+  emptyLabel: string;
 }) {
   const router = useRouter();
+  const dict = useDictionary();
   const [isPending, startTransition] = useTransition();
 
   if (!media.length) {
@@ -52,7 +54,7 @@ export function MediaGallery<T extends MediaItem>({
                   router.refresh();
                 })
               }
-              aria-label="Eliminar foto"
+              aria-label={dict.ui.deletePhoto}
               className="absolute right-1.5 top-1.5 flex size-7 items-center justify-center rounded-full bg-ink/70 text-surface opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100"
             >
               <X className="size-3.5" aria-hidden />

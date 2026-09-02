@@ -3,8 +3,9 @@
 import { PhotoUploader } from "@/components/ui/PhotoUploader";
 import { MediaGallery } from "@/components/ui/MediaGallery";
 import { registerCoffeeMediaAction, deleteCoffeeMediaAction } from "@/features/coffees/actions";
-import { PACKAGE_MEDIA_KINDS, MEDIA_KIND_LABELS } from "@/features/coffees/constants";
+import { PACKAGE_MEDIA_KINDS, type MEDIA_KINDS } from "@/features/coffees/constants";
 import type { CoffeeMediaRow } from "@/features/coffees/queries";
+import { useDictionary } from "@/components/i18n/LocaleProvider";
 
 // Thin client wrapper: a Server Component page can't pass closures like
 // `onRegister`/`onDelete` as props (RSC only serializes data and Server
@@ -17,11 +18,13 @@ export function BagMediaSection({
   bagId: string;
   media: (CoffeeMediaRow & { url: string | null })[];
 }) {
+  const dict = useDictionary();
+
   return (
     <>
       <PhotoUploader
         kinds={PACKAGE_MEDIA_KINDS}
-        kindLabels={MEDIA_KIND_LABELS}
+        kindLabels={dict.enums.mediaKind}
         defaultKind="package_front"
         buildPath={(userId) => `${userId}/${bagId}/${Date.now()}.jpg`}
         onRegister={(kind, storagePath) =>
@@ -31,9 +34,9 @@ export function BagMediaSection({
       <div className="mt-4">
         <MediaGallery
           media={media}
-          labelForKind={(kind) => MEDIA_KIND_LABELS[kind as keyof typeof MEDIA_KIND_LABELS] ?? "Foto"}
+          labelForKind={(kind) => dict.enums.mediaKind[kind as (typeof MEDIA_KINDS)[number]] ?? dict.ui.photo}
           onDelete={(mediaId) => deleteCoffeeMediaAction(mediaId, bagId)}
-          emptyLabel="Sin fotos todavía."
+          emptyLabel={dict.ui.noPhotosYet}
         />
       </div>
     </>

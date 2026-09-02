@@ -6,7 +6,6 @@ import { createClient } from "@/lib/supabase/client";
 import { Field, inputClassName } from "@/components/ui/Field";
 import { resolveLoginEmailAction } from "@/features/auth/actions";
 import { useDictionary } from "@/components/i18n/LocaleProvider";
-import { LoginLanguageToggle } from "@/components/i18n/LoginLanguageToggle";
 
 export function LoginForm() {
   const router = useRouter();
@@ -67,8 +66,6 @@ export function LoginForm() {
           onChange={(e) => setPassword(e.target.value)}
         />
       </Field>
-
-      <LoginLanguageToggle />
 
       {error && (
         <p role="alert" className="text-sm text-red-700">

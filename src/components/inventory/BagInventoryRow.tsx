@@ -3,8 +3,9 @@ import { ChevronRight } from "lucide-react";
 import { BagStatusBadge } from "@/components/coffee/BagStatusBadge";
 import { formatRemaining } from "@/features/inventory/format";
 import type { InventoryBagRow } from "@/features/inventory/queries";
+import type { Dictionary } from "@/lib/i18n/dictionaries/es";
 
-export function BagInventoryRow({ bag }: { bag: InventoryBagRow }) {
+export function BagInventoryRow({ bag, dict }: { bag: InventoryBagRow; dict: Dictionary }) {
   return (
     <Link
       href={`/bags/${bag.id}`}
@@ -14,8 +15,8 @@ export function BagInventoryRow({ bag }: { bag: InventoryBagRow }) {
         <p className="text-xs text-ink-muted">{bag.coffee.roaster}</p>
         <p className="truncate font-display text-base text-ink">{bag.coffee.name}</p>
         <div className="mt-1 flex items-center gap-2">
-          <BagStatusBadge status={bag.status} />
-          <span className="text-sm text-ink">{formatRemaining(bag)}</span>
+          <BagStatusBadge status={bag.status} dict={dict} />
+          <span className="text-sm text-ink">{formatRemaining(bag, dict)}</span>
         </div>
       </div>
       <ChevronRight aria-hidden className="size-4 shrink-0 text-ink-muted" />

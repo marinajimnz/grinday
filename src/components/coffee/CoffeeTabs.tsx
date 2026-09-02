@@ -2,14 +2,9 @@
 
 import { useState } from "react";
 import { cn } from "@/lib/cn";
+import { useDictionary } from "@/components/i18n/LocaleProvider";
 
-const TABS = [
-  { key: "attempts", label: "Intentos" },
-  { key: "evolution", label: "Evolución" },
-  { key: "bags", label: "Bolsas" },
-] as const;
-
-type TabKey = (typeof TABS)[number]["key"];
+type TabKey = "attempts" | "evolution" | "bags";
 
 export function CoffeeTabs({
   attemptsContent,
@@ -20,7 +15,14 @@ export function CoffeeTabs({
   evolutionContent: React.ReactNode;
   bagsContent: React.ReactNode;
 }) {
+  const dict = useDictionary();
   const [active, setActive] = useState<TabKey>("attempts");
+
+  const TABS: { key: TabKey; label: string }[] = [
+    { key: "attempts", label: dict.coffees.tabAttempts },
+    { key: "evolution", label: dict.coffees.tabEvolution },
+    { key: "bags", label: dict.coffees.tabBags },
+  ];
 
   const content: Record<TabKey, React.ReactNode> = {
     attempts: attemptsContent,
@@ -30,7 +32,7 @@ export function CoffeeTabs({
 
   return (
     <div>
-      <div role="tablist" aria-label="Secciones del café" className="flex gap-1 border-b border-border">
+      <div role="tablist" aria-label={dict.coffees.tabsAriaLabel} className="flex gap-1 border-b border-border">
         {TABS.map((tab) => (
           <button
             key={tab.key}

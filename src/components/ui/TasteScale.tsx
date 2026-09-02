@@ -1,6 +1,7 @@
 "use client";
 
 import { cn } from "@/lib/cn";
+import { useDictionary } from "@/components/i18n/LocaleProvider";
 
 export function TasteScale({
   label,
@@ -13,6 +14,7 @@ export function TasteScale({
   onChange: (value: number | undefined) => void;
   id: string;
 }) {
+  const dict = useDictionary();
   return (
     <div>
       <div className="mb-1.5 flex items-center justify-between">
@@ -25,7 +27,7 @@ export function TasteScale({
             onClick={() => onChange(undefined)}
             className="text-xs text-ink-muted underline"
           >
-            Limpiar
+            {dict.common.clear}
           </button>
         )}
       </div>

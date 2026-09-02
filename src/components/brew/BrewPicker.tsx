@@ -4,9 +4,11 @@ import { useRouter } from "next/navigation";
 import { Coffee as CoffeeIcon, Star } from "lucide-react";
 import { buildDraftFromRecipe, saveDraft } from "@/features/brew/draft";
 import type { BrewableCoffee } from "@/features/attempts/queries";
+import { useDictionary } from "@/components/i18n/LocaleProvider";
 
 export function BrewPicker({ coffees }: { coffees: BrewableCoffee[] }) {
   const router = useRouter();
+  const dict = useDictionary();
 
   function startBrew(coffee: BrewableCoffee) {
     const draft = buildDraftFromRecipe({
@@ -38,10 +40,10 @@ export function BrewPicker({ coffees }: { coffees: BrewableCoffee[] }) {
               {coffee.preferredAttempt ? (
                 <p className="mt-0.5 flex items-center gap-1 text-xs text-coffee">
                   <Star aria-hidden className="size-3 fill-coffee" />
-                  Receta preferida · intento #{coffee.preferredAttempt.attempt_no}
+                  {dict.brew.preferredRecipeAttempt} #{coffee.preferredAttempt.attempt_no}
                 </p>
               ) : (
-                <p className="mt-0.5 text-xs text-ink-muted">Sin receta preferida todavía</p>
+                <p className="mt-0.5 text-xs text-ink-muted">{dict.brew.noPreferredYet}</p>
               )}
             </div>
           </button>

@@ -1,5 +1,6 @@
 import { cn } from "@/lib/cn";
-import { BAG_STATUS_LABELS, BAG_STATUSES } from "@/features/coffees/constants";
+import { BAG_STATUSES } from "@/features/coffees/constants";
+import type { Dictionary } from "@/lib/i18n/dictionaries/es";
 
 const STYLES: Record<(typeof BAG_STATUSES)[number], string> = {
   sealed: "bg-canvas text-ink-muted",
@@ -8,7 +9,7 @@ const STYLES: Record<(typeof BAG_STATUSES)[number], string> = {
   archived: "bg-border/60 text-ink-muted",
 };
 
-export function BagStatusBadge({ status }: { status: string }) {
+export function BagStatusBadge({ status, dict }: { status: string; dict: Dictionary }) {
   const key = status as (typeof BAG_STATUSES)[number];
   return (
     <span
@@ -17,7 +18,7 @@ export function BagStatusBadge({ status }: { status: string }) {
         STYLES[key] ?? STYLES.sealed,
       )}
     >
-      {BAG_STATUS_LABELS[key] ?? status}
+      {dict.enums.bagStatus[key] ?? status}
     </span>
   );
 }

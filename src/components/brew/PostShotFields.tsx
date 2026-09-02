@@ -4,13 +4,11 @@ import { Field, inputClassName } from "@/components/ui/Field";
 import { TasteScale } from "@/components/ui/TasteScale";
 import {
   DOSE_FEEDBACKS,
-  DOSE_FEEDBACK_LABELS,
   PRESSURE_OBSERVATIONS,
-  PRESSURE_OBSERVATION_LABELS,
   TASTE_DIMENSIONS,
-  TASTE_DIMENSION_LABELS,
 } from "@/features/attempts/constants";
 import type { BrewDraftPostShot } from "@/features/brew/draft";
+import { useDictionary } from "@/components/i18n/LocaleProvider";
 
 export function PostShotFields({
   value,
@@ -19,6 +17,8 @@ export function PostShotFields({
   value: BrewDraftPostShot;
   onChange: (next: BrewDraftPostShot) => void;
 }) {
+  const dict = useDictionary();
+
   function set<K extends keyof BrewDraftPostShot>(key: K, v: BrewDraftPostShot[K]) {
     onChange({ ...value, [key]: v });
   }
@@ -26,7 +26,7 @@ export function PostShotFields({
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <Field label="Feedback de dosis" htmlFor="postshot.doseFeedback">
+        <Field label={dict.brew.doseFeedback} htmlFor="postshot.doseFeedback">
           <select
             id="postshot.doseFeedback"
             className={inputClassName}
@@ -38,15 +38,15 @@ export function PostShotFields({
               )
             }
           >
-            <option value="">Sin especificar</option>
+            <option value="">{dict.coffees.notSpecified}</option>
             {DOSE_FEEDBACKS.map((f) => (
               <option key={f} value={f}>
-                {DOSE_FEEDBACK_LABELS[f]}
+                {dict.enums.doseFeedback[f]}
               </option>
             ))}
           </select>
         </Field>
-        <Field label="Presión observada" htmlFor="postshot.pressureObservation">
+        <Field label={dict.brew.pressureObservation} htmlFor="postshot.pressureObservation">
           <select
             id="postshot.pressureObservation"
             className={inputClassName}
@@ -58,10 +58,10 @@ export function PostShotFields({
               )
             }
           >
-            <option value="">Sin especificar</option>
+            <option value="">{dict.coffees.notSpecified}</option>
             {PRESSURE_OBSERVATIONS.map((p) => (
               <option key={p} value={p}>
-                {PRESSURE_OBSERVATION_LABELS[p]}
+                {dict.enums.pressureObservation[p]}
               </option>
             ))}
           </select>
@@ -69,7 +69,7 @@ export function PostShotFields({
       </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <Field label="Entrada (g)" htmlFor="postshot.inputWeightG" hint="Opcional">
+        <Field label={dict.brew.inputWeight} htmlFor="postshot.inputWeightG" hint={dict.brew.optional}>
           <input
             id="postshot.inputWeightG"
             type="number"
@@ -78,7 +78,7 @@ export function PostShotFields({
             onChange={(e) => set("inputWeightG", e.target.valueAsNumber || undefined)}
           />
         </Field>
-        <Field label="Salida (g)" htmlFor="postshot.outputWeightG" hint="Opcional">
+        <Field label={dict.brew.outputWeight} htmlFor="postshot.outputWeightG" hint={dict.brew.optional}>
           <input
             id="postshot.outputWeightG"
             type="number"
@@ -87,7 +87,7 @@ export function PostShotFields({
             onChange={(e) => set("outputWeightG", e.target.valueAsNumber || undefined)}
           />
         </Field>
-        <Field label="Volumen (ml)" htmlFor="postshot.outputVolumeMl" hint="Opcional">
+        <Field label={dict.brew.outputVolume} htmlFor="postshot.outputVolumeMl" hint={dict.brew.optional}>
           <input
             id="postshot.outputVolumeMl"
             type="number"
@@ -103,7 +103,7 @@ export function PostShotFields({
           <TasteScale
             key={dim}
             id={`postshot.${dim}`}
-            label={TASTE_DIMENSION_LABELS[dim]}
+            label={dict.enums.tasteDimension[dim]}
             value={value[dim]}
             onChange={(v) => set(dim, v)}
           />
@@ -112,12 +112,12 @@ export function PostShotFields({
 
       <TasteScale
         id="postshot.overallRating"
-        label="Puntuación general"
+        label={dict.brew.overallRating}
         value={value.overallRating}
         onChange={(v) => set("overallRating", v)}
       />
 
-      <Field label="Notas" htmlFor="postshot.notes">
+      <Field label={dict.brew.notes} htmlFor="postshot.notes">
         <textarea
           id="postshot.notes"
           rows={4}

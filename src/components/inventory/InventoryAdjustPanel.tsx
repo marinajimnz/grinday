@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Scale } from "lucide-react";
 import { inputClassName } from "@/components/ui/Field";
 import { adjustInventoryAction } from "@/features/inventory/actions";
+import { useDictionary } from "@/components/i18n/LocaleProvider";
 
 export function InventoryAdjustPanel({
   coffeeBagId,
@@ -14,6 +15,7 @@ export function InventoryAdjustPanel({
   currentRemainingG: number | null;
 }) {
   const router = useRouter();
+  const dict = useDictionary();
   const [editing, setEditing] = useState(false);
   const [value, setValue] = useState(currentRemainingG ?? 0);
   const [note, setNote] = useState("");
@@ -28,7 +30,7 @@ export function InventoryAdjustPanel({
         className="inline-flex min-h-11 items-center gap-1.5 rounded-input border border-border px-3 text-sm font-medium text-ink"
       >
         <Scale aria-hidden className="size-4" />
-        Ajustar inventario
+        {dict.inventoryPage.adjustInventory}
       </button>
     );
   }
@@ -36,7 +38,7 @@ export function InventoryAdjustPanel({
   return (
     <div className="rounded-input border border-border bg-canvas p-4">
       <label htmlFor="inventory-adjust-value" className="mb-1.5 block text-sm font-medium text-ink">
-        Cantidad restante actual (g)
+        {dict.inventoryPage.currentRemaining}
       </label>
       <input
         id="inventory-adjust-value"
@@ -47,14 +49,14 @@ export function InventoryAdjustPanel({
         onChange={(e) => setValue(e.target.valueAsNumber || 0)}
       />
       <label htmlFor="inventory-adjust-note" className="mb-1.5 mt-3 block text-sm font-medium text-ink">
-        Nota <span className="font-normal text-ink-muted">(opcional)</span>
+        {dict.inventoryPage.note} <span className="font-normal text-ink-muted">{dict.inventoryPage.optional}</span>
       </label>
       <input
         id="inventory-adjust-note"
         className={inputClassName}
         value={note}
         onChange={(e) => setNote(e.target.value)}
-        placeholder="Pesado de nuevo, regalé un poco…"
+        placeholder={dict.inventoryPage.notePlaceholder}
       />
 
       {error && (
@@ -84,14 +86,14 @@ export function InventoryAdjustPanel({
           }
           className="min-h-11 rounded-input bg-ink px-4 text-sm font-medium text-surface disabled:opacity-60"
         >
-          {isPending ? "Guardando..." : "Guardar"}
+          {isPending ? dict.common.saving : dict.common.save}
         </button>
         <button
           type="button"
           onClick={() => setEditing(false)}
           className="min-h-11 rounded-input border border-border px-4 text-sm font-medium text-ink"
         >
-          Cancelar
+          {dict.common.cancel}
         </button>
       </div>
     </div>

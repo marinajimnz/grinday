@@ -3,8 +3,9 @@
 import { PhotoUploader } from "@/components/ui/PhotoUploader";
 import { MediaGallery } from "@/components/ui/MediaGallery";
 import { registerAttemptMediaAction, deleteAttemptMediaAction } from "@/features/attempts/actions";
-import { ATTEMPT_MEDIA_KINDS, ATTEMPT_MEDIA_KIND_LABELS } from "@/features/attempts/constants";
+import { ATTEMPT_MEDIA_KINDS } from "@/features/attempts/constants";
 import type { AttemptMediaRow } from "@/features/attempts/queries";
+import { useDictionary } from "@/components/i18n/LocaleProvider";
 
 // See BagMediaSection for why this thin client wrapper exists: a Server
 // Component page can't pass action-calling closures as props across the
@@ -16,11 +17,13 @@ export function AttemptMediaSection({
   attemptId: string;
   media: (AttemptMediaRow & { url: string | null })[];
 }) {
+  const dict = useDictionary();
+
   return (
     <>
       <PhotoUploader
         kinds={ATTEMPT_MEDIA_KINDS}
-        kindLabels={ATTEMPT_MEDIA_KIND_LABELS}
+        kindLabels={dict.enums.attemptMediaKind}
         defaultKind="espresso"
         buildPath={(userId) => `${userId}/attempts/${attemptId}/${Date.now()}.jpg`}
         onRegister={(kind, storagePath) =>
@@ -31,10 +34,10 @@ export function AttemptMediaSection({
         <MediaGallery
           media={media}
           labelForKind={(kind) =>
-            ATTEMPT_MEDIA_KIND_LABELS[kind as keyof typeof ATTEMPT_MEDIA_KIND_LABELS] ?? "Foto"
+            dict.enums.attemptMediaKind[kind as (typeof ATTEMPT_MEDIA_KINDS)[number]] ?? dict.ui.photo
           }
           onDelete={(mediaId) => deleteAttemptMediaAction(mediaId, attemptId)}
-          emptyLabel="Todavía no hay fotos de este intento."
+          emptyLabel={dict.ui.noAttemptPhotosYet}
         />
       </div>
     </>

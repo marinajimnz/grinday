@@ -7,14 +7,8 @@ import { Star } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { MAX_COMPARE_ATTEMPTS, MIN_COMPARE_ATTEMPTS } from "@/features/attempts/constants";
 import type { BrewAttemptRow } from "@/features/attempts/queries";
-
-function formatDateTime(value: string) {
-  return new Date(value).toLocaleDateString("es-ES", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-  });
-}
+import { useDictionary, useLocale } from "@/components/i18n/LocaleProvider";
+import { formatDate } from "@/lib/i18n/format-date";
 
 export function AttemptsTimeline({
   attempts,
@@ -24,6 +18,8 @@ export function AttemptsTimeline({
   preferredAttemptId: string | null;
 }) {
   const router = useRouter();
+  const dict = useDictionary();
+  const locale = useLocale();
   const [selected, setSelected] = useState<string[]>([]);
 
   const attemptNoById = useMemo(
@@ -40,11 +36,7 @@ export function AttemptsTimeline({
   }
 
   if (!attempts.length) {
-    return (
-      <p className="text-sm text-ink-muted">
-        Todavía no hay ningún intento registrado para este café.
-      </p>
-    );
+    return <p className="text-sm text-ink-muted">{dict.attempts.noAttemptsYet}</p>;
   }
 
   return (
@@ -66,7 +58,10 @@ export function AttemptsTimeline({
               )}
             >
               <label className="flex items-center">
-                <span className="sr-only">Seleccionar intento #{attempt.attempt_no} para comparar</span>
+                <span className="sr-only">
+                  {dict.attempts.selectAttemptToCompare} #{attempt.attempt_no}{" "}
+                  {dict.attempts.selectAttemptToCompareSuffix}
+                </span>
                 <input
                   type="checkbox"
                   className="size-5"
@@ -78,10 +73,10 @@ export function AttemptsTimeline({
               <Link href={`/attempts/${attempt.id}`} className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
                   <span className="font-display text-base text-ink">
-                    Intento #{attempt.attempt_no}
+                    {dict.attempts.attemptNo} #{attempt.attempt_no}
                   </span>
                   {isPreferred && (
-                    <Star aria-label="Preferido" className="size-4 fill-coffee text-coffee" />
+                    <Star aria-label={dict.attempts.preferred} className="size-4 fill-coffee text-coffee" />
                   )}
                   {attempt.overall_rating && (
                     <span className="rounded-full bg-canvas px-2 py-0.5 text-xs text-ink-muted">
@@ -90,8 +85,8 @@ export function AttemptsTimeline({
                   )}
                 </div>
                 <p className="mt-0.5 truncate text-xs text-ink-muted">
-                  {formatDateTime(attempt.created_at)}
-                  {parentNo ? ` · deriva de #${parentNo}` : ""}
+                  {formatDate(attempt.created_at, locale)}
+                  {parentNo ? ` ${dict.attempts.derivesFrom} #${parentNo}` : ""}
                 </p>
               </Link>
             </li>
@@ -106,7 +101,7 @@ export function AttemptsTimeline({
             onClick={() => router.push(`/compare?ids=${selected.join(",")}`)}
             className="min-h-11 rounded-full bg-ink px-6 text-sm font-medium text-surface shadow-soft"
           >
-            Comparar ({selected.length})
+            {dict.attempts.compare} ({selected.length})
           </button>
         </div>
       )}

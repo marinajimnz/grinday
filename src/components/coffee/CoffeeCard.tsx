@@ -1,10 +1,11 @@
 import Link from "next/link";
 import { Coffee as CoffeeIcon } from "lucide-react";
 import { BagStatusBadge } from "./BagStatusBadge";
-import { ROAST_LEVEL_LABELS, type ROAST_LEVELS } from "@/features/coffees/constants";
+import { type ROAST_LEVELS } from "@/features/coffees/constants";
 import type { CoffeeListItem } from "@/features/coffees/queries";
+import type { Dictionary } from "@/lib/i18n/dictionaries/es";
 
-export function CoffeeCard({ coffee }: { coffee: CoffeeListItem }) {
+export function CoffeeCard({ coffee, dict }: { coffee: CoffeeListItem; dict: Dictionary }) {
   const activeBag =
     coffee.bags.find((b) => b.status === "open") ?? coffee.bags[0] ?? null;
 
@@ -32,14 +33,14 @@ export function CoffeeCard({ coffee }: { coffee: CoffeeListItem }) {
           )}
           {coffee.roast_level && (
             <span className="rounded-full bg-canvas px-2.5 py-1 text-xs text-ink-muted">
-              {ROAST_LEVEL_LABELS[coffee.roast_level as (typeof ROAST_LEVELS)[number]] ??
+              {dict.enums.roastLevel[coffee.roast_level as (typeof ROAST_LEVELS)[number]] ??
                 coffee.roast_level}
             </span>
           )}
-          {activeBag && <BagStatusBadge status={activeBag.status} />}
+          {activeBag && <BagStatusBadge status={activeBag.status} dict={dict} />}
         </div>
         <p className="mt-2 text-xs text-ink-muted">
-          {coffee.bags.length} {coffee.bags.length === 1 ? "bolsa" : "bolsas"}
+          {coffee.bags.length} {coffee.bags.length === 1 ? dict.coffees.bag : dict.coffees.bags}
         </p>
       </div>
     </Link>

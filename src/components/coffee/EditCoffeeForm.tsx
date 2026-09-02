@@ -8,6 +8,7 @@ import { CoffeeFieldsFieldset } from "./CoffeeFieldsFieldset";
 import { coffeeFieldsSchema } from "@/lib/validation/coffees";
 import { updateCoffeeAction } from "@/features/coffees/actions";
 import type { CoffeeRow } from "@/features/coffees/queries";
+import { useDictionary } from "@/components/i18n/LocaleProvider";
 
 const formSchema = z.object({ coffee: coffeeFieldsSchema });
 type FormValues = z.infer<typeof formSchema>;
@@ -21,6 +22,7 @@ export function EditCoffeeForm({
   onSaved: () => void;
   onCancel: () => void;
 }) {
+  const dict = useDictionary();
   const [isPending, startTransition] = useTransition();
   const [formError, setFormError] = useState<string | null>(null);
 
@@ -74,14 +76,14 @@ export function EditCoffeeForm({
           disabled={isPending}
           className="min-h-11 rounded-input bg-ink px-4 text-sm font-medium text-surface disabled:opacity-60"
         >
-          {isPending ? "Guardando..." : "Guardar cambios"}
+          {isPending ? dict.common.saving : dict.coffees.saveChanges}
         </button>
         <button
           type="button"
           onClick={onCancel}
           className="min-h-11 rounded-input border border-border px-4 text-sm font-medium text-ink"
         >
-          Cancelar
+          {dict.common.cancel}
         </button>
       </div>
     </form>

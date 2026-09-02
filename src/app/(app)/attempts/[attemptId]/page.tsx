@@ -5,6 +5,8 @@ import { createClient } from "@/lib/supabase/server";
 import { getAttempt, getAttemptMedia } from "@/features/attempts/queries";
 import { AttemptDetailPanel } from "@/components/attempt/AttemptDetailPanel";
 import { AttemptMediaSection } from "@/components/attempt/AttemptMediaSection";
+import { getLocale } from "@/lib/i18n/locale";
+import { getDictionary } from "@/lib/i18n/get-dictionary";
 
 export default async function AttemptDetailPage({
   params,
@@ -18,6 +20,7 @@ export default async function AttemptDetailPage({
   if (!attempt) notFound();
 
   const media = await getAttemptMedia(supabase, attemptId);
+  const dict = getDictionary(await getLocale());
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-8 md:px-8">
@@ -38,7 +41,7 @@ export default async function AttemptDetailPage({
       </div>
 
       <div className="mt-8">
-        <h2 className="font-display text-xl text-ink">Fotos del espresso</h2>
+        <h2 className="font-display text-xl text-ink">{dict.attempts.photosTitle}</h2>
         <div className="mt-3">
           <AttemptMediaSection attemptId={attemptId} media={media} />
         </div>

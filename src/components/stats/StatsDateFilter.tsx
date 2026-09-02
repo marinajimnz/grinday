@@ -2,11 +2,13 @@
 
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { inputClassName } from "@/components/ui/Field";
+import { useDictionary } from "@/components/i18n/LocaleProvider";
 
 export function StatsDateFilter() {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const dict = useDictionary();
 
   function updateParam(key: string, value: string) {
     const params = new URLSearchParams(searchParams.toString());
@@ -21,7 +23,7 @@ export function StatsDateFilter() {
     <div className="flex flex-wrap items-end gap-3">
       <div>
         <label htmlFor="stats-from" className="mb-1.5 block text-xs font-medium text-ink-muted">
-          Desde
+          {dict.stats.from}
         </label>
         <input
           id="stats-from"
@@ -33,7 +35,7 @@ export function StatsDateFilter() {
       </div>
       <div>
         <label htmlFor="stats-to" className="mb-1.5 block text-xs font-medium text-ink-muted">
-          Hasta
+          {dict.stats.to}
         </label>
         <input
           id="stats-to"
@@ -49,7 +51,7 @@ export function StatsDateFilter() {
           onClick={() => router.replace(pathname)}
           className="min-h-11 text-sm text-ink-muted underline"
         >
-          Quitar filtro
+          {dict.stats.removeFilter}
         </button>
       )}
     </div>

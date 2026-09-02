@@ -1,9 +1,14 @@
 import Link from "next/link";
 import { Star } from "lucide-react";
 import type { BrewAttemptRow } from "@/features/attempts/queries";
+import type { Dictionary } from "@/lib/i18n/dictionaries/es";
+import type { Locale } from "@/lib/i18n/types";
 
-function formatDate(value: string) {
-  return new Date(value).toLocaleDateString("es-ES", { day: "2-digit", month: "short" });
+function formatDate(value: string, locale: Locale) {
+  const date = new Date(value);
+  return locale === "en"
+    ? date.toLocaleDateString("en-US", { day: "2-digit", month: "short" })
+    : date.toLocaleDateString("es-ES", { day: "2-digit", month: "short" });
 }
 
 function Node({
@@ -11,11 +16,15 @@ function Node({
   childrenByParent,
   preferredAttemptId,
   depth,
+  dict,
+  locale,
 }: {
   attempt: BrewAttemptRow;
   childrenByParent: Map<string, BrewAttemptRow[]>;
   preferredAttemptId: string | null;
   depth: number;
+  dict: Dictionary;
+  locale: Locale;
 }) {
   const children = childrenByParent.get(attempt.id) ?? [];
 
@@ -31,14 +40,14 @@ function Node({
           className="flex items-center gap-2 py-2 text-sm text-ink"
         >
           <span className="font-medium">#{attempt.attempt_no}</span>
-          <span className="text-ink-muted">{formatDate(attempt.created_at)}</span>
+          <span className="text-ink-muted">{formatDate(attempt.created_at, locale)}</span>
           {attempt.overall_rating && (
             <span className="rounded-full bg-canvas px-2 py-0.5 text-xs text-ink-muted">
               {attempt.overall_rating}/5
             </span>
           )}
           {attempt.id === preferredAttemptId && (
-            <Star aria-label="Preferido" className="size-3.5 fill-coffee text-coffee" />
+            <Star aria-label={dict.attempts.preferred} className="size-3.5 fill-coffee text-coffee" />
           )}
         </Link>
         {children.map((child) => (
@@ -48,6 +57,8 @@ function Node({
             childrenByParent={childrenByParent}
             preferredAttemptId={preferredAttemptId}
             depth={depth + 1}
+            dict={dict}
+            locale={locale}
           />
         ))}
       </div>
@@ -58,12 +69,16 @@ function Node({
 export function EvolutionTree({
   attempts,
   preferredAttemptId,
+  dict,
+  locale,
 }: {
   attempts: BrewAttemptRow[];
   preferredAttemptId: string | null;
+  dict: Dictionary;
+  locale: Locale;
 }) {
   if (!attempts.length) {
-    return <p className="text-sm text-ink-muted">Todavía no hay intentos que evolucionar.</p>;
+    return <p className="text-sm text-ink-muted">{dict.attempts.noAttemptsToEvolve}</p>;
   }
 
   const childrenByParent = new Map<string, BrewAttemptRow[]>();
@@ -92,6 +107,8 @@ export function EvolutionTree({
           childrenByParent={childrenByParent}
           preferredAttemptId={preferredAttemptId}
           depth={0}
+          dict={dict}
+          locale={locale}
         />
       ))}
     </div>

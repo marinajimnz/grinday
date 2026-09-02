@@ -65,7 +65,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="es">
+    // suppressHydrationWarning: LANG_INIT_SCRIPT intentionally overwrites
+    // `lang` before hydration to match the locale cookie — unlike
+    // data-theme (an attribute React never renders itself), `lang` is a
+    // JSX prop React actively diffs, so without this it flags every
+    // English session as a hydration mismatch.
+    <html lang="es" suppressHydrationWarning>
       <body className={`${bagelFatOne.variable} ${inter.variable} antialiased`}>
         <Script id="theme-init" strategy="beforeInteractive">
           {THEME_INIT_SCRIPT}

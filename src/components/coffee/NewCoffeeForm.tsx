@@ -12,6 +12,7 @@ import {
   createCoffeeAndBagAction,
   findSimilarCoffeeAction,
 } from "@/features/coffees/actions";
+import { useDictionary } from "@/components/i18n/LocaleProvider";
 
 const formSchema = z.object({
   coffee: coffeeFieldsSchema,
@@ -22,6 +23,7 @@ type FormValues = z.infer<typeof formSchema>;
 
 export function NewCoffeeForm() {
   const router = useRouter();
+  const dict = useDictionary();
   const [isPending, startTransition] = useTransition();
   const [conflict, setConflict] = useState<{
     id: string;
@@ -76,12 +78,9 @@ export function NewCoffeeForm() {
     return (
       <div className="rounded-card border border-border bg-surface p-6">
         <p className="font-display text-lg text-ink">
-          Ya tienes “{conflict.name}” de {conflict.roaster}
+          {dict.coffees.alreadyHaveCoffee} “{conflict.name}” {dict.coffees.of} {conflict.roaster}
         </p>
-        <p className="mt-1 text-sm text-ink-muted">
-          ¿Es una bolsa nueva del mismo café, o quieres crear un café distinto
-          con este nombre de todas formas?
-        </p>
+        <p className="mt-1 text-sm text-ink-muted">{dict.coffees.sameCoffeeQuestion}</p>
         {formError && (
           <p role="alert" className="mt-3 text-sm text-red-700">
             {formError}
@@ -96,7 +95,7 @@ export function NewCoffeeForm() {
             }
             className="min-h-11 flex-1 rounded-input bg-ink px-4 text-sm font-medium text-surface"
           >
-            Añadir esta bolsa a “{conflict.name}”
+            {dict.coffees.addThisBagTo} “{conflict.name}”
           </button>
           <button
             type="button"
@@ -104,7 +103,7 @@ export function NewCoffeeForm() {
             onClick={() => startTransition(() => submitCoffee(conflict.values))}
             className="min-h-11 flex-1 rounded-input border border-border px-4 text-sm font-medium text-ink"
           >
-            Crear café nuevo de todas formas
+            {dict.coffees.createNewAnyway}
           </button>
         </div>
         <button
@@ -112,7 +111,7 @@ export function NewCoffeeForm() {
           onClick={() => setConflict(null)}
           className="mt-3 text-sm text-ink-muted underline"
         >
-          Volver a editar
+          {dict.coffees.backToEdit}
         </button>
       </div>
     );
@@ -134,7 +133,7 @@ export function NewCoffeeForm() {
         disabled={isPending}
         className="min-h-11 w-full rounded-input bg-ink px-4 text-sm font-medium text-surface disabled:opacity-60 sm:w-auto"
       >
-        {isPending ? "Guardando..." : "Guardar café"}
+        {isPending ? dict.common.saving : dict.coffees.saveCoffee}
       </button>
     </form>
   );

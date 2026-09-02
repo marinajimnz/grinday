@@ -11,6 +11,8 @@ import { AttemptsTimeline } from "@/components/attempt/AttemptsTimeline";
 import { EvolutionTree } from "@/components/attempt/EvolutionTree";
 import { RecipeCard } from "@/components/attempt/RecipeCard";
 import { PrepareWithRecipeButton } from "@/components/brew/PrepareWithRecipeButton";
+import { getLocale } from "@/lib/i18n/locale";
+import { getDictionary } from "@/lib/i18n/get-dictionary";
 
 export default async function CoffeeDetailPage({
   params,
@@ -23,6 +25,8 @@ export default async function CoffeeDetailPage({
 
   if (!result) notFound();
   const { coffee, bags } = result;
+  const locale = await getLocale();
+  const dict = getDictionary(locale);
 
   const attempts = await listAttemptsForCoffee(supabase, coffeeId);
   const preferredAttempt = coffee.preferred_attempt_id
@@ -59,7 +63,7 @@ export default async function CoffeeDetailPage({
                       href={`/attempts/new?coffeeBagId=${targetBag.id}`}
                       className="inline-flex min-h-11 items-center rounded-input border border-border px-4 text-sm font-medium text-ink"
                     >
-                      Registrar manual
+                      {dict.coffees.logManual}
                     </Link>
                     <PrepareWithRecipeButton
                       coffeeId={coffee.id}
@@ -69,7 +73,7 @@ export default async function CoffeeDetailPage({
                       sourceAttempt={null}
                       className="inline-flex min-h-11 items-center rounded-input bg-ink px-4 text-sm font-medium text-surface"
                     >
-                      Preparar
+                      {dict.dashboard.prepare}
                     </PrepareWithRecipeButton>
                   </>
                 )}
@@ -81,7 +85,12 @@ export default async function CoffeeDetailPage({
             </div>
           }
           evolutionContent={
-            <EvolutionTree attempts={attempts} preferredAttemptId={coffee.preferred_attempt_id} />
+            <EvolutionTree
+              attempts={attempts}
+              preferredAttemptId={coffee.preferred_attempt_id}
+              dict={dict}
+              locale={locale}
+            />
           }
           bagsContent={
             <div>
@@ -90,11 +99,11 @@ export default async function CoffeeDetailPage({
               </div>
               <div className="space-y-3">
                 {bags.length ? (
-                  bags.map((bag) => <BagListItem key={bag.id} bag={bag} />)
+                  bags.map((bag) => (
+                    <BagListItem key={bag.id} bag={bag} dict={dict} locale={locale} />
+                  ))
                 ) : (
-                  <p className="text-sm text-ink-muted">
-                    Todavía no hay ninguna bolsa registrada para este café.
-                  </p>
+                  <p className="text-sm text-ink-muted">{dict.coffees.noBagsYet}</p>
                 )}
               </div>
             </div>

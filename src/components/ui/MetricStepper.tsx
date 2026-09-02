@@ -1,6 +1,7 @@
 "use client";
 
 import { Minus, Plus } from "lucide-react";
+import { useDictionary } from "@/components/i18n/LocaleProvider";
 
 export function MetricStepper({
   label,
@@ -19,6 +20,7 @@ export function MetricStepper({
   max?: number;
   suffix?: string;
 }) {
+  const dict = useDictionary();
   const current = value ?? 0;
 
   function clamp(n: number) {
@@ -34,7 +36,7 @@ export function MetricStepper({
       <div className="mt-1.5 flex items-center justify-center gap-3">
         <button
           type="button"
-          aria-label={`Reducir ${label}`}
+          aria-label={`${dict.ui.decrease} ${label}`}
           onClick={() => onChange(clamp(current - step))}
           className="flex size-11 items-center justify-center rounded-full border border-border bg-surface text-ink"
         >
@@ -46,7 +48,7 @@ export function MetricStepper({
         </span>
         <button
           type="button"
-          aria-label={`Aumentar ${label}`}
+          aria-label={`${dict.ui.increase} ${label}`}
           onClick={() => onChange(clamp(current + step))}
           className="flex size-11 items-center justify-center rounded-full border border-border bg-surface text-ink"
         >

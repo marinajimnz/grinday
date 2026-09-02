@@ -5,18 +5,11 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Copy, Pencil, Star } from "lucide-react";
 import { EditAttemptForm } from "./EditAttemptForm";
-import {
-  BASKET_SIZE_LABELS,
-  BASKET_WALL_LABELS,
-  DOSE_FEEDBACK_LABELS,
-  DOSE_MODE_LABELS,
-  PRESSURE_OBSERVATION_LABELS,
-  SHOT_MODE_LABELS,
-  TASTE_DIMENSIONS,
-  TASTE_DIMENSION_LABELS,
-} from "@/features/attempts/constants";
+import { TASTE_DIMENSIONS } from "@/features/attempts/constants";
 import { setPreferredAttemptAction } from "@/features/attempts/actions";
 import type { BrewAttemptRow } from "@/features/attempts/queries";
+import { useDictionary, useLocale } from "@/components/i18n/LocaleProvider";
+import { formatDateTime } from "@/lib/i18n/format-date";
 
 function Stat({ label, value }: { label: string; value: React.ReactNode }) {
   if (value === null || value === undefined || value === "") return null;
@@ -38,6 +31,8 @@ export function AttemptDetailPanel({
   isPreferred: boolean;
 }) {
   const router = useRouter();
+  const dict = useDictionary();
+  const locale = useLocale();
   const [editing, setEditing] = useState(false);
   const [isTogglingPreferred, startTogglePreferred] = useTransition();
 
@@ -58,10 +53,10 @@ export function AttemptDetailPanel({
     <div className="rounded-card border border-border bg-surface p-5">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h1 className="font-display text-2xl text-ink">Intento #{attempt.attempt_no}</h1>
-          <p className="text-xs text-ink-muted">
-            {new Date(attempt.created_at).toLocaleString("es-ES")}
-          </p>
+          <h1 className="font-display text-2xl text-ink">
+            {dict.attempts.attemptNo} #{attempt.attempt_no}
+          </h1>
+          <p className="text-xs text-ink-muted">{formatDateTime(attempt.created_at, locale)}</p>
         </div>
         <button
           type="button"
@@ -69,7 +64,7 @@ export function AttemptDetailPanel({
           className="inline-flex min-h-11 items-center gap-1.5 rounded-input border border-border px-3 text-sm font-medium text-ink"
         >
           <Pencil aria-hidden className="size-4" />
-          Corregir
+          {dict.attempts.correct}
         </button>
       </div>
 
@@ -89,7 +84,7 @@ export function AttemptDetailPanel({
           className="inline-flex min-h-11 items-center gap-1.5 rounded-input border border-coffee px-3 text-sm font-medium text-coffee disabled:opacity-60"
         >
           <Star aria-hidden className={isPreferred ? "size-4 fill-coffee" : "size-4"} />
-          {isPreferred ? "Quitar de preferido" : "Marcar como preferido"}
+          {isPreferred ? dict.attempts.removeFromPreferred : dict.attempts.markAsPreferred}
         </button>
 
         <Link
@@ -97,94 +92,107 @@ export function AttemptDetailPanel({
           className="inline-flex min-h-11 items-center gap-1.5 rounded-input border border-border px-3 text-sm font-medium text-ink"
         >
           <Copy aria-hidden className="size-4" />
-          Duplicar y ajustar
+          {dict.attempts.duplicateAndAdjust}
         </Link>
       </div>
 
       <dl className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-3">
-        <Stat label="Molido" value={attempt.grind_setting} />
-        <Stat label="Segundos de molienda" value={attempt.grind_seconds} />
+        <Stat label={dict.brew.grindSetting} value={attempt.grind_setting} />
+        <Stat label={dict.attempts.grindSeconds} value={attempt.grind_seconds} />
         <Stat
-          label="Dosificación"
+          label={dict.brew.doseMode}
           value={
             attempt.dose_mode
-              ? DOSE_MODE_LABELS[attempt.dose_mode as keyof typeof DOSE_MODE_LABELS]
+              ? dict.enums.doseMode[attempt.dose_mode as keyof typeof dict.enums.doseMode]
               : null
           }
         />
         <Stat
-          label="Feedback de dosis"
+          label={dict.attempts.doseFeedback}
           value={
             attempt.dose_feedback
-              ? DOSE_FEEDBACK_LABELS[attempt.dose_feedback as keyof typeof DOSE_FEEDBACK_LABELS]
+              ? dict.enums.doseFeedback[attempt.dose_feedback as keyof typeof dict.enums.doseFeedback]
               : null
           }
         />
-        <Stat label="A Bit More" value={attempt.used_bit_more ? "Sí" : null} />
+        <Stat label={dict.attempts.aBitMore} value={attempt.used_bit_more ? dict.attempts.yes : null} />
         <Stat
-          label="Cesta"
+          label={dict.attempts.basketSize}
           value={
             attempt.basket_size
-              ? BASKET_SIZE_LABELS[attempt.basket_size as keyof typeof BASKET_SIZE_LABELS]
+              ? dict.enums.basketSize[attempt.basket_size as keyof typeof dict.enums.basketSize]
               : null
           }
         />
         <Stat
-          label="Pared"
+          label={dict.brew.basketWall}
           value={
             attempt.basket_wall
-              ? BASKET_WALL_LABELS[attempt.basket_wall as keyof typeof BASKET_WALL_LABELS]
+              ? dict.enums.basketWall[attempt.basket_wall as keyof typeof dict.enums.basketWall]
               : null
           }
         />
         <Stat
-          label="Offset temperatura"
+          label={dict.attempts.temperatureOffsetShort}
           value={attempt.temperature_offset_c != null ? `${attempt.temperature_offset_c} °C` : null}
         />
-        <Stat label="Muela superior" value={attempt.upper_burr_setting} />
+        <Stat label={dict.brew.upperBurr} value={attempt.upper_burr_setting} />
         <Stat
-          label="Modo de shot"
+          label={dict.brew.shotMode}
           value={
             attempt.shot_mode
-              ? SHOT_MODE_LABELS[attempt.shot_mode as keyof typeof SHOT_MODE_LABELS]
+              ? dict.enums.shotMode[attempt.shot_mode as keyof typeof dict.enums.shotMode]
               : null
           }
         />
         <Stat
-          label="Extracción"
+          label={dict.attempts.extraction}
           value={attempt.extraction_ms ? `${(attempt.extraction_ms / 1000).toFixed(1)} s` : null}
         />
-        <Stat label="Preinfusión" value={attempt.preinfusion_ms ? `${attempt.preinfusion_ms} ms` : null} />
         <Stat
-          label="Presión observada"
+          label={dict.attempts.preinfusionShort}
+          value={attempt.preinfusion_ms ? `${attempt.preinfusion_ms} ms` : null}
+        />
+        <Stat
+          label={dict.attempts.pressureObservation}
           value={
             attempt.pressure_observation
-              ? PRESSURE_OBSERVATION_LABELS[
-                  attempt.pressure_observation as keyof typeof PRESSURE_OBSERVATION_LABELS
+              ? dict.enums.pressureObservation[
+                  attempt.pressure_observation as keyof typeof dict.enums.pressureObservation
                 ]
               : null
           }
         />
-        <Stat label="Entrada" value={attempt.input_weight_g ? `${attempt.input_weight_g} g` : null} />
-        <Stat label="Salida" value={attempt.output_weight_g ? `${attempt.output_weight_g} g` : null} />
-        <Stat label="Volumen" value={attempt.output_volume_ml ? `${attempt.output_volume_ml} ml` : null} />
+        <Stat label={dict.attempts.input} value={attempt.input_weight_g ? `${attempt.input_weight_g} g` : null} />
+        <Stat label={dict.attempts.output} value={attempt.output_weight_g ? `${attempt.output_weight_g} g` : null} />
+        <Stat
+          label={dict.attempts.volume}
+          value={attempt.output_volume_ml ? `${attempt.output_volume_ml} ml` : null}
+        />
       </dl>
 
       {(TASTE_DIMENSIONS.some((d) => attempt[d] != null) || attempt.overall_rating) && (
         <div className="mt-6 border-t border-border pt-4">
-          <p className="text-xs text-ink-muted">Cata</p>
+          <p className="text-xs text-ink-muted">{dict.attempts.tasting}</p>
           <dl className="mt-2 grid grid-cols-2 gap-3 sm:grid-cols-3">
             {TASTE_DIMENSIONS.map((dim) => (
-              <Stat key={dim} label={TASTE_DIMENSION_LABELS[dim]} value={attempt[dim] ? `${attempt[dim]}/5` : null} />
+              <Stat
+                key={dim}
+                label={dict.enums.tasteDimension[dim]}
+                value={attempt[dim] ? `${attempt[dim]}/5` : null}
+              />
             ))}
-            <Stat label="Puntuación general" value={attempt.overall_rating ? `${attempt.overall_rating}/5` : null} />
+            <Stat
+              label={dict.brew.overallRating}
+              value={attempt.overall_rating ? `${attempt.overall_rating}/5` : null}
+            />
           </dl>
         </div>
       )}
 
       {attempt.notes && (
         <div className="mt-6 border-t border-border pt-4">
-          <p className="text-xs text-ink-muted">Notas</p>
+          <p className="text-xs text-ink-muted">{dict.brew.notes}</p>
           <p className="mt-1 whitespace-pre-wrap text-sm text-ink">{attempt.notes}</p>
         </div>
       )}

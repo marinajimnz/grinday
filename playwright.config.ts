@@ -5,6 +5,14 @@ export default defineConfig({
   fullyParallel: true,
   retries: process.env.CI ? 2 : 0,
   reporter: "html",
+  globalSetup: "./tests/e2e/global-setup.ts",
+  // `next dev` compiles each route on its first request — the first test to
+  // hit a heavy, not-yet-compiled route (e.g. the coffee detail page, whose
+  // import graph pulls in most of the coffees/attempts UI) can take longer
+  // than the 5s default to respond. Later tests hit the same route already
+  // compiled and are fast; only the very first request per route pays this
+  // cost, and it doesn't exist at all against a production build.
+  expect: { timeout: 15_000 },
   use: {
     baseURL: "http://localhost:3000",
     trace: "on-first-retry",

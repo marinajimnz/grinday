@@ -9,6 +9,7 @@ import { AttemptFieldsFieldset } from "./AttemptFieldsFieldset";
 import { attemptFieldsSchema } from "@/lib/validation/attempts";
 import { createAttemptAction } from "@/features/attempts/actions";
 import type { BrewAttemptRow } from "@/features/attempts/queries";
+import { useDictionary } from "@/components/i18n/LocaleProvider";
 
 const formSchema = z.object({ attempt: attemptFieldsSchema });
 type FormValues = z.infer<typeof formSchema>;
@@ -37,6 +38,7 @@ export function CreateAttemptForm({
   parentAttempt?: BrewAttemptRow | null;
 }) {
   const router = useRouter();
+  const dict = useDictionary();
   const [isPending, startTransition] = useTransition();
   const [formError, setFormError] = useState<string | null>(null);
 
@@ -69,7 +71,7 @@ export function CreateAttemptForm({
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
       {parentAttempt && (
         <p className="rounded-input bg-canvas px-4 py-3 text-sm text-ink-muted">
-          Partiendo del intento #{parentAttempt.attempt_no}. Ajusta lo que quieras cambiar.
+          {dict.attempts.basedOnAttempt} #{parentAttempt.attempt_no}{dict.attempts.basedOnAttemptSuffix}
         </p>
       )}
       <AttemptFieldsFieldset register={register} control={control} errors={errors.attempt} />
@@ -83,7 +85,7 @@ export function CreateAttemptForm({
         disabled={isPending}
         className="min-h-11 w-full rounded-input bg-ink px-4 text-sm font-medium text-surface disabled:opacity-60 sm:w-auto"
       >
-        {isPending ? "Guardando..." : "Guardar intento"}
+        {isPending ? dict.common.saving : dict.attempts.saveAttempt}
       </button>
     </form>
   );

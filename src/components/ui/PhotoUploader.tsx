@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { ImagePlus } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { compressImage } from "@/lib/media/compressImage";
+import { useDictionary } from "@/components/i18n/LocaleProvider";
 
 export function PhotoUploader<K extends string>({
   kinds,
@@ -20,6 +21,7 @@ export function PhotoUploader<K extends string>({
   onRegister: (kind: K, storagePath: string) => Promise<{ success: boolean; message?: string }>;
 }) {
   const router = useRouter();
+  const dict = useDictionary();
   const inputRef = useRef<HTMLInputElement>(null);
   const [kind, setKind] = useState<K>(defaultKind);
   const [isUploading, setIsUploading] = useState(false);
@@ -33,7 +35,7 @@ export function PhotoUploader<K extends string>({
       const {
         data: { user },
       } = await supabase.auth.getUser();
-      if (!user) throw new Error("No autenticado");
+      if (!user) throw new Error(dict.ui.notAuthenticated);
 
       const blob = await compressImage(file);
       const path = buildPath(user.id);
@@ -48,7 +50,7 @@ export function PhotoUploader<K extends string>({
 
       router.refresh();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "No se pudo subir la foto");
+      setError(err instanceof Error ? err.message : dict.ui.uploadFailed);
     } finally {
       setIsUploading(false);
       if (inputRef.current) inputRef.current.value = "";
@@ -61,7 +63,7 @@ export function PhotoUploader<K extends string>({
         value={kind}
         onChange={(e) => setKind(e.target.value as K)}
         className="min-h-11 rounded-input border border-border bg-surface px-3 text-sm text-ink"
-        aria-label="Tipo de foto"
+        aria-label={dict.ui.photoType}
       >
         {kinds.map((k) => (
           <option key={k} value={k}>
@@ -77,7 +79,7 @@ export function PhotoUploader<K extends string>({
         className="inline-flex min-h-11 items-center gap-1.5 rounded-input border border-border px-4 text-sm font-medium text-ink disabled:opacity-60"
       >
         <ImagePlus aria-hidden className="size-4" />
-        {isUploading ? "Subiendo..." : "Añadir foto"}
+        {isUploading ? dict.ui.uploading : dict.ui.addPhoto}
       </button>
       <input
         ref={inputRef}

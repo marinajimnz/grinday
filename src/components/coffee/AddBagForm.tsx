@@ -8,6 +8,7 @@ import { z } from "zod";
 import { BagFieldsFieldset } from "./BagFieldsFieldset";
 import { bagFieldsSchema } from "@/lib/validation/coffees";
 import { addBagAction } from "@/features/coffees/actions";
+import { useDictionary } from "@/components/i18n/LocaleProvider";
 
 const formSchema = z.object({ bag: bagFieldsSchema });
 type FormValues = z.infer<typeof formSchema>;
@@ -20,6 +21,7 @@ export function AddBagForm({
   onCancel: () => void;
 }) {
   const router = useRouter();
+  const dict = useDictionary();
   const [isPending, startTransition] = useTransition();
   const [formError, setFormError] = useState<string | null>(null);
 
@@ -61,14 +63,14 @@ export function AddBagForm({
           disabled={isPending}
           className="min-h-11 rounded-input bg-ink px-4 text-sm font-medium text-surface disabled:opacity-60"
         >
-          {isPending ? "Guardando..." : "Añadir bolsa"}
+          {isPending ? dict.common.saving : dict.coffees.addBag}
         </button>
         <button
           type="button"
           onClick={onCancel}
           className="min-h-11 rounded-input border border-border px-4 text-sm font-medium text-ink"
         >
-          Cancelar
+          {dict.common.cancel}
         </button>
       </div>
     </form>

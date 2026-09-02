@@ -1,4 +1,5 @@
 import { LoginForm } from "@/components/settings/LoginForm";
+import { LoginLanguageToggle } from "@/components/i18n/LoginLanguageToggle";
 import { getLocale } from "@/lib/i18n/locale";
 import { getDictionary } from "@/lib/i18n/get-dictionary";
 
@@ -12,6 +13,10 @@ export default async function LoginPage() {
 
       <div className="mt-8 rounded-card border border-border bg-surface p-5">
         <LoginForm />
+      </div>
+
+      <div className="mt-4 flex justify-center">
+        <LoginLanguageToggle />
       </div>
     </div>
   );

@@ -4,6 +4,8 @@ import { ChevronLeft } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { getAttempt } from "@/features/attempts/queries";
 import { CreateAttemptForm } from "@/components/attempt/CreateAttemptForm";
+import { getLocale } from "@/lib/i18n/locale";
+import { getDictionary } from "@/lib/i18n/get-dictionary";
 
 export default async function NewAttemptPage({
   searchParams,
@@ -14,6 +16,7 @@ export default async function NewAttemptPage({
   if (!coffeeBagId) notFound();
 
   const supabase = await createClient();
+  const dict = getDictionary(await getLocale());
 
   const { data: bag } = await supabase
     .from("coffee_bags")
@@ -34,11 +37,8 @@ export default async function NewAttemptPage({
         {bag.coffee.roaster} · {bag.coffee.name}
       </Link>
 
-      <h1 className="mt-4 font-display text-3xl text-ink">Nuevo intento</h1>
-      <p className="mt-1 text-sm text-ink-muted">
-        El temporizador integrado llega en una fase posterior; de momento registra el
-        tiempo de extracción a mano si lo conoces.
-      </p>
+      <h1 className="mt-4 font-display text-3xl text-ink">{dict.attempts.newTitle}</h1>
+      <p className="mt-1 text-sm text-ink-muted">{dict.attempts.newSubtitle}</p>
 
       <div className="mt-8">
         <CreateAttemptForm coffeeBagId={coffeeBagId} parentAttempt={parentAttempt} />

@@ -2,19 +2,21 @@ import Link from "next/link";
 import { ChevronRight } from "lucide-react";
 import { BagStatusBadge } from "./BagStatusBadge";
 import type { CoffeeBagRow } from "@/features/coffees/queries";
+import type { Dictionary } from "@/lib/i18n/dictionaries/es";
+import type { Locale } from "@/lib/i18n/types";
+import { formatDate } from "@/lib/i18n/format-date";
 
-function formatDate(value: string | null) {
-  if (!value) return null;
-  return new Date(`${value}T00:00:00`).toLocaleDateString("es-ES", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-  });
-}
-
-export function BagListItem({ bag }: { bag: CoffeeBagRow }) {
-  const roast = formatDate(bag.roast_date);
-  const purchase = formatDate(bag.purchase_date);
+export function BagListItem({
+  bag,
+  dict,
+  locale,
+}: {
+  bag: CoffeeBagRow;
+  dict: Dictionary;
+  locale: Locale;
+}) {
+  const roast = bag.roast_date ? formatDate(bag.roast_date, locale) : null;
+  const purchase = bag.purchase_date ? formatDate(bag.purchase_date, locale) : null;
 
   return (
     <Link
@@ -23,12 +25,12 @@ export function BagListItem({ bag }: { bag: CoffeeBagRow }) {
     >
       <div>
         <div className="flex items-center gap-2">
-          <BagStatusBadge status={bag.status} />
+          <BagStatusBadge status={bag.status} dict={dict} />
           {bag.lot_label && <span className="text-xs text-ink-muted">{bag.lot_label}</span>}
         </div>
         <p className="mt-1.5 text-sm text-ink">
-          {roast ? `Tueste ${roast}` : "Sin fecha de tueste"}
-          {purchase ? ` · Compra ${purchase}` : ""}
+          {roast ? `${dict.coffees.roastedOn} ${roast}` : dict.coffees.noRoastDate}
+          {purchase ? ` · ${dict.coffees.purchaseOn} ${purchase}` : ""}
         </p>
       </div>
       <ChevronRight aria-hidden className="size-4 shrink-0 text-ink-muted" />

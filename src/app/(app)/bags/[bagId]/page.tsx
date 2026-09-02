@@ -5,6 +5,8 @@ import { createClient } from "@/lib/supabase/server";
 import { getBagDetail } from "@/features/coffees/queries";
 import { BagDetailPanel } from "@/components/coffee/BagDetailPanel";
 import { BagMediaSection } from "@/components/coffee/BagMediaSection";
+import { getLocale } from "@/lib/i18n/locale";
+import { getDictionary } from "@/lib/i18n/get-dictionary";
 
 export default async function BagDetailPage({
   params,
@@ -17,6 +19,7 @@ export default async function BagDetailPage({
 
   if (!result) notFound();
   const { bag, media } = result;
+  const dict = getDictionary(await getLocale());
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-8 md:px-8">
@@ -33,7 +36,7 @@ export default async function BagDetailPage({
       </div>
 
       <div className="mt-8">
-        <h2 className="font-display text-xl text-ink">Galería del paquete</h2>
+        <h2 className="font-display text-xl text-ink">{dict.inventoryPage.gallery}</h2>
         <div className="mt-3">
           <BagMediaSection bagId={bag.id} media={media} />
         </div>

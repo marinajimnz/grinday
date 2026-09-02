@@ -5,6 +5,8 @@ import { getAttemptsByIds } from "@/features/attempts/queries";
 import { CompareView } from "@/components/attempt/CompareView";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { MAX_COMPARE_ATTEMPTS, MIN_COMPARE_ATTEMPTS } from "@/features/attempts/constants";
+import { getLocale } from "@/lib/i18n/locale";
+import { getDictionary } from "@/lib/i18n/get-dictionary";
 
 export default async function ComparePage({
   searchParams,
@@ -20,6 +22,8 @@ export default async function ComparePage({
 
   const supabase = await createClient();
   const attempts = ids.length >= MIN_COMPARE_ATTEMPTS ? await getAttemptsByIds(supabase, ids) : [];
+  const locale = await getLocale();
+  const dict = getDictionary(locale);
 
   let preferredAttemptId: string | null = null;
   if (attempts.length) {
@@ -39,20 +43,25 @@ export default async function ComparePage({
           className="inline-flex items-center gap-1 text-sm text-ink-muted"
         >
           <ChevronLeft aria-hidden className="size-4" />
-          Volver al café
+          {dict.comparePage.backToCoffee}
         </Link>
       )}
 
-      <h1 className="mt-2 font-display text-3xl text-ink">Comparar intentos</h1>
+      <h1 className="mt-2 font-display text-3xl text-ink">{dict.comparePage.title}</h1>
 
       <div className="mt-6">
         {attempts.length >= MIN_COMPARE_ATTEMPTS ? (
-          <CompareView attempts={attempts} preferredAttemptId={preferredAttemptId} />
+          <CompareView
+            attempts={attempts}
+            preferredAttemptId={preferredAttemptId}
+            dict={dict}
+            locale={locale}
+          />
         ) : (
           <EmptyState
             icon={Scale}
-            title="Nada que comparar"
-            description="Selecciona entre 2 y 4 intentos desde la pestaña Intentos de un café."
+            title={dict.comparePage.nothingToCompareTitle}
+            description={dict.comparePage.nothingToCompareDescription}
           />
         )}
       </div>

@@ -6,17 +6,16 @@ import { Search } from "lucide-react";
 import { inputClassName } from "@/components/ui/Field";
 import {
   BAG_STATUSES,
-  BAG_STATUS_LABELS,
-  PROCESS_LABELS,
   PROCESS_OPTIONS,
-  ROAST_LEVEL_LABELS,
   ROAST_LEVELS,
 } from "@/features/coffees/constants";
+import { useDictionary } from "@/components/i18n/LocaleProvider";
 
 export function CoffeeFilters() {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const dict = useDictionary();
   const [q, setQ] = useState(searchParams.get("q") ?? "");
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -47,51 +46,51 @@ export function CoffeeFilters() {
           type="search"
           value={q}
           onChange={(e) => setQ(e.target.value)}
-          placeholder="Buscar por nombre, tostador, país…"
-          aria-label="Buscar cafés"
+          placeholder={dict.coffees.searchPlaceholder}
+          aria-label={dict.coffees.searchLabel}
           className={`${inputClassName} pl-9`}
         />
       </div>
 
       <div className="flex flex-wrap gap-2">
         <select
-          aria-label="Filtrar por proceso"
+          aria-label={dict.coffees.filterProcess}
           className="min-h-11 rounded-input border border-border bg-surface px-3 text-sm text-ink"
           value={searchParams.get("process") ?? ""}
           onChange={(e) => updateParam("process", e.target.value)}
         >
-          <option value="">Todos los procesos</option>
+          <option value="">{dict.coffees.allProcesses}</option>
           {PROCESS_OPTIONS.map((p) => (
             <option key={p} value={p}>
-              {PROCESS_LABELS[p]}
+              {dict.enums.process[p]}
             </option>
           ))}
         </select>
 
         <select
-          aria-label="Filtrar por tueste"
+          aria-label={dict.coffees.filterRoast}
           className="min-h-11 rounded-input border border-border bg-surface px-3 text-sm text-ink"
           value={searchParams.get("roastLevel") ?? ""}
           onChange={(e) => updateParam("roastLevel", e.target.value)}
         >
-          <option value="">Todos los tuestes</option>
+          <option value="">{dict.coffees.allRoasts}</option>
           {ROAST_LEVELS.map((level) => (
             <option key={level} value={level}>
-              {ROAST_LEVEL_LABELS[level]}
+              {dict.enums.roastLevel[level]}
             </option>
           ))}
         </select>
 
         <select
-          aria-label="Filtrar por estado de bolsa"
+          aria-label={dict.coffees.filterBagStatus}
           className="min-h-11 rounded-input border border-border bg-surface px-3 text-sm text-ink"
           value={searchParams.get("bagStatus") ?? ""}
           onChange={(e) => updateParam("bagStatus", e.target.value)}
         >
-          <option value="">Cualquier estado de bolsa</option>
+          <option value="">{dict.coffees.anyBagStatus}</option>
           {BAG_STATUSES.map((status) => (
             <option key={status} value={status}>
-              {BAG_STATUS_LABELS[status]}
+              {dict.enums.bagStatus[status]}
             </option>
           ))}
         </select>

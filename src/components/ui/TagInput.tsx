@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { X } from "lucide-react";
+import { useDictionary } from "@/components/i18n/LocaleProvider";
 
 export function TagInput({
   value,
@@ -14,6 +15,7 @@ export function TagInput({
   placeholder?: string;
   id?: string;
 }) {
+  const dict = useDictionary();
   const [draft, setDraft] = useState("");
 
   function commitDraft() {
@@ -35,7 +37,7 @@ export function TagInput({
           <button
             type="button"
             onClick={() => onChange(value.filter((t) => t !== tag))}
-            aria-label={`Quitar ${tag}`}
+            aria-label={`${dict.ui.remove} ${tag}`}
             className="text-ink-muted hover:text-ink"
           >
             <X className="size-3" aria-hidden />
