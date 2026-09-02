@@ -222,7 +222,6 @@ const en: Dictionary = {
     deleteBlocked:
       "This coffee already has bags or attempts logged — it can't be deleted without losing that history. Archive it instead.",
     tabAttempts: "Attempts",
-    tabEvolution: "Evolution",
     tabBags: "Bags",
     tabsAriaLabel: "Coffee sections",
     bagLabel: "Bag",
@@ -367,7 +366,6 @@ const en: Dictionary = {
     preferred: "Preferred",
     derivesFrom: "· from",
     compare: "Compare",
-    noAttemptsToEvolve: "No attempts to evolve yet.",
     technical: "Technical",
     useAsBase: "Use as base",
   },

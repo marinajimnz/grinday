@@ -4,15 +4,13 @@ import { useState } from "react";
 import { cn } from "@/lib/cn";
 import { useDictionary } from "@/components/i18n/LocaleProvider";
 
-type TabKey = "attempts" | "evolution" | "bags";
+type TabKey = "attempts" | "bags";
 
 export function CoffeeTabs({
   attemptsContent,
-  evolutionContent,
   bagsContent,
 }: {
   attemptsContent: React.ReactNode;
-  evolutionContent: React.ReactNode;
   bagsContent: React.ReactNode;
 }) {
   const dict = useDictionary();
@@ -20,13 +18,11 @@ export function CoffeeTabs({
 
   const TABS: { key: TabKey; label: string }[] = [
     { key: "attempts", label: dict.coffees.tabAttempts },
-    { key: "evolution", label: dict.coffees.tabEvolution },
     { key: "bags", label: dict.coffees.tabBags },
   ];
 
   const content: Record<TabKey, React.ReactNode> = {
     attempts: attemptsContent,
-    evolution: evolutionContent,
     bags: bagsContent,
   };
 

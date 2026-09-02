@@ -48,10 +48,6 @@ test("logs an attempt, marks it preferred, duplicates it, and compares both", as
   await coffeeLink.click();
   await expect(page.getByText("Receta preferida")).toBeVisible();
 
-  await page.getByRole("tab", { name: "Evolución" }).click();
-  await expect(page.getByText("deriva de", { exact: false })).toHaveCount(0); // evolution shows tree, not the "deriva de" copy
-
-  await page.getByRole("tab", { name: "Intentos" }).click();
   const checkboxes = page.locator('input[type="checkbox"]');
   await checkboxes.nth(0).check();
   await checkboxes.nth(1).check();

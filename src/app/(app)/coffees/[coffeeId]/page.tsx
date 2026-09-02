@@ -9,7 +9,6 @@ import { BagAccordionItem } from "@/components/coffee/BagAccordionItem";
 import { AddBagPanel } from "@/components/coffee/AddBagPanel";
 import { CoffeeTabs } from "@/components/coffee/CoffeeTabs";
 import { AttemptsTimeline } from "@/components/attempt/AttemptsTimeline";
-import { EvolutionTree } from "@/components/attempt/EvolutionTree";
 import { RecipeCard } from "@/components/attempt/RecipeCard";
 import { PrepareWithRecipeButton } from "@/components/brew/PrepareWithRecipeButton";
 import { getLocale } from "@/lib/i18n/locale";
@@ -97,14 +96,6 @@ export default async function CoffeeDetailPage({
                 preferredAttemptId={coffee.preferred_attempt_id}
               />
             </div>
-          }
-          evolutionContent={
-            <EvolutionTree
-              attempts={attempts}
-              preferredAttemptId={coffee.preferred_attempt_id}
-              dict={dict}
-              locale={locale}
-            />
           }
           bagsContent={
             <div>

@@ -220,7 +220,6 @@ const es = {
     deleteBlocked:
       "Este café ya tiene bolsas o intentos registrados — no se puede eliminar para no perder ese historial. Archívalo en su lugar.",
     tabAttempts: "Intentos",
-    tabEvolution: "Evolución",
     tabBags: "Bolsas",
     tabsAriaLabel: "Secciones del café",
     bagLabel: "Bolsa",
@@ -365,7 +364,6 @@ const es = {
     preferred: "Preferido",
     derivesFrom: "· deriva de",
     compare: "Comparar",
-    noAttemptsToEvolve: "Todavía no hay intentos que evolucionar.",
     technical: "Técnico",
     useAsBase: "Usar como base",
   },
