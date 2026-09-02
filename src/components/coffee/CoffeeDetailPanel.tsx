@@ -166,7 +166,7 @@ export function CoffeeDetailPanel({ coffee }: { coffee: CoffeeRow }) {
       </div>
 
       {isDeletingOpen && (
-        <div className="mt-4 rounded-input border border-red-700/40 bg-canvas p-4">
+        <div className="mt-4 rounded-input border border-[#F47174]/40 bg-canvas p-4">
           <p className="text-xs text-ink">{dict.coffees.deleteConfirmPrompt}</p>
           <div className="mt-2">
             <Field label={coffee.name} htmlFor="delete-confirm-name">
