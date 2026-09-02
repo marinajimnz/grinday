@@ -1,5 +1,6 @@
 import { LoginForm } from "@/components/settings/LoginForm";
 import { LoginLanguageToggle } from "@/components/i18n/LoginLanguageToggle";
+import { IconFavorito } from "@/components/icons/pencil-icons";
 import { getLocale } from "@/lib/i18n/locale";
 import { getDictionary } from "@/lib/i18n/get-dictionary";
 
@@ -18,6 +19,15 @@ export default async function LoginPage() {
       <div className="mt-4 flex justify-center">
         <LoginLanguageToggle />
       </div>
+
+      <a
+        href="https://www.linkedin.com/in/marina-jimenez-mendez/?locale=es"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="mt-8 flex items-center justify-center gap-1.5 text-sm text-ink-muted"
+      >
+        Marina <IconFavorito aria-hidden className="size-4 text-coffee" /> coffee
+      </a>
     </div>
   );
 }
