@@ -61,6 +61,13 @@ body {
   font-family: var(--font-inter);
 }
 
+/* Browsers don't give <button> a pointer cursor by default (unlike <a>),
+   so every button in the app showed the plain arrow on hover. */
+button:not(:disabled),
+[role="button"]:not([aria-disabled="true"]) {
+  cursor: pointer;
+}
+
 .tabular-nums {
   font-variant-numeric: tabular-nums;
 }
