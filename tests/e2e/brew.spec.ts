@@ -1,8 +1,10 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "./fixtures";
 
 test("guided brew: mise en place, timer, post-shot form, and espresso photo section", async ({
   page,
+  testUser,
 }) => {
+  void testUser;
   const name = `Brew Coffee ${Date.now()}`;
 
   // Fresh guest session: pick a default machine first (Fase 0 onboarding step).

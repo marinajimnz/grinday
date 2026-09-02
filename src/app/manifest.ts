@@ -2,8 +2,8 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "Coffee Journal",
-    short_name: "Coffee Journal",
+    name: "Grindaily",
+    short_name: "Grindaily",
     description:
       "Diario de café: registra bolsas, intentos de espresso y recetas reproducibles.",
     start_url: "/",

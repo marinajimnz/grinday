@@ -1,10 +1,8 @@
-// Every Playwright run signs in a fresh anonymous session per test, leaving
-// a throwaway Supabase auth user (and its coffees/attempts/etc, cascade-
-// deleted along with it) behind. This sweeps those up after `test:e2e`.
-//
-// Only ever touches anonymous users — anyone who linked an email (the demo
-// account included) is never a candidate, so this is safe to run
-// unattended after every local test run.
+// Every Playwright test creates its own throwaway `e2e-*@grinday.test`
+// account (see tests/e2e/fixtures.ts) and deletes it again in its own
+// teardown — this is only a safety net for the case where a test crashes
+// before that teardown runs. Only ever touches that email pattern, so it's
+// safe to run unattended after every local test run.
 import { createClient } from "@supabase/supabase-js";
 import { readFileSync } from "node:fs";
 
@@ -36,17 +34,19 @@ const supabase = createClient(url, serviceKey, {
   auth: { autoRefreshToken: false, persistSession: false },
 });
 
-let anonymousUsers = [];
+const TEST_EMAIL_PATTERN = /^e2e-.+@grinday\.test$/;
+
+let testUsers = [];
 let page = 1;
 while (true) {
   const { data, error } = await supabase.auth.admin.listUsers({ page, perPage: 200 });
   if (error) throw error;
-  anonymousUsers = anonymousUsers.concat(data.users.filter((u) => u.is_anonymous));
+  testUsers = testUsers.concat(data.users.filter((u) => u.email && TEST_EMAIL_PATTERN.test(u.email)));
   if (data.users.length < 200) break;
   page++;
 }
 
-if (anonymousUsers.length === 0) {
+if (testUsers.length === 0) {
   console.log("[cleanup-test-users] nothing to clean up.");
   process.exit(0);
 }
@@ -79,7 +79,7 @@ async function deleteUser(id) {
 
 let deleted = 0;
 const retry = [];
-for (const user of anonymousUsers) {
+for (const user of testUsers) {
   const error = await deleteUser(user.id);
   if (error) retry.push(user.id);
   else deleted++;
@@ -99,4 +99,4 @@ for (const id of retry) {
   }
 }
 
-console.log(`[cleanup-test-users] deleted ${deleted} anonymous test user(s)${failed ? `, ${failed} failed` : ""}.`);
+console.log(`[cleanup-test-users] deleted ${deleted} test user(s)${failed ? `, ${failed} failed` : ""}.`);

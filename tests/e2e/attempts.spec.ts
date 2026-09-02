@@ -1,6 +1,10 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "./fixtures";
 
-test("logs an attempt, marks it preferred, duplicates it, and compares both", async ({ page }) => {
+test("logs an attempt, marks it preferred, duplicates it, and compares both", async ({
+  page,
+  testUser,
+}) => {
+  void testUser;
   const name = `Attempt Coffee ${Date.now()}`;
 
   // Fresh guest session: pick a default machine first (Fase 0 onboarding step).

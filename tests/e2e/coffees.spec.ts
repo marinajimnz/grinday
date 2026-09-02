@@ -1,6 +1,7 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "./fixtures";
 
-test("creates a coffee manually and finds it in the library", async ({ page }) => {
+test("creates a coffee manually and finds it in the library", async ({ page, testUser }) => {
+  void testUser;
   const name = `Test Coffee ${Date.now()}`;
 
   await page.goto("/coffees/new");
@@ -20,7 +21,8 @@ test("creates a coffee manually and finds it in the library", async ({ page }) =
   await expect(page.getByText(name)).toBeVisible();
 });
 
-test("offers to reuse an existing coffee when name+roaster match", async ({ page }) => {
+test("offers to reuse an existing coffee when name+roaster match", async ({ page, testUser }) => {
+  void testUser;
   const name = `Dup Coffee ${Date.now()}`;
 
   await page.goto("/coffees/new");

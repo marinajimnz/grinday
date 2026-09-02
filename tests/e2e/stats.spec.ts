@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "./fixtures";
 
 async function logRatedAttempt(
   page: import("@playwright/test").Page,
@@ -22,7 +22,9 @@ async function logRatedAttempt(
 
 test("dashboard shows the active coffee and stats aggregate once there's enough rated history", async ({
   page,
+  testUser,
 }) => {
+  void testUser;
   const name = `Stats Coffee ${Date.now()}`;
 
   await page.goto("/settings/machines");

@@ -1,6 +1,7 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "./fixtures";
 
-test("shows the admin role and saves a new display name", async ({ page }) => {
+test("shows the admin role and saves a new display name", async ({ page, testUser }) => {
+  void testUser;
   await page.goto("/settings/profile");
 
   await expect(page.getByRole("heading", { name: "Perfil" })).toBeVisible();
@@ -14,7 +15,8 @@ test("shows the admin role and saves a new display name", async ({ page }) => {
   await expect(page.getByLabel("Nombre")).toHaveValue("Marina");
 });
 
-test("rejects an empty display name", async ({ page }) => {
+test("rejects an empty display name", async ({ page, testUser }) => {
+  void testUser;
   await page.goto("/settings/profile");
 
   await page.getByLabel("Nombre").fill("   ");

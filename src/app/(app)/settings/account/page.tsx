@@ -1,7 +1,6 @@
-import Link from "next/link";
 import { Download } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
-import { LinkAccountForm } from "@/components/settings/LinkAccountForm";
+import { SignOutButton } from "@/components/settings/SignOutButton";
 
 export default async function AccountSettingsPage() {
   const supabase = await createClient();
@@ -9,39 +8,27 @@ export default async function AccountSettingsPage() {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const isAnonymous = user?.is_anonymous !== false;
+  // Show the username when one is set (e.g. "admin") — its email is a
+  // synthetic address that only exists to satisfy Supabase Auth internally
+  // and was never meant to be user-visible.
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("username")
+    .eq("id", user!.id)
+    .single();
+  const loginIdentifier = profile?.username ?? user?.email;
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-8 md:px-8">
       <h1 className="font-display text-3xl text-ink">Cuenta y privacidad</h1>
 
       <div className="mt-8 rounded-card border border-border bg-surface p-5">
-        {isAnonymous ? (
-          <>
-            <p className="text-sm font-medium text-ink">
-              Estás usando Coffee Journal como invitado.
-            </p>
-            <p className="mt-2 text-sm text-ink-muted">
-              Protege tu diario para conservar el acceso si cambias de dispositivo o borras los
-              datos del navegador. Vincularlo no borra ni mueve nada — sigue siendo el mismo
-              diario.
-            </p>
-            <div className="mt-5">
-              <LinkAccountForm />
-            </div>
-            <p className="mt-4 text-xs text-ink-muted">
-              ¿Ya vinculaste tu diario en otro dispositivo?{" "}
-              <Link href="/login" className="underline">
-                Inicia sesión
-              </Link>
-              .
-            </p>
-          </>
-        ) : (
-          <p className="text-sm text-ink">
-            Cuenta vinculada como <strong>{user?.email}</strong>.
-          </p>
-        )}
+        <p className="text-sm text-ink">
+          Cuenta vinculada como <strong>{loginIdentifier}</strong>.
+        </p>
+        <div className="mt-4">
+          <SignOutButton />
+        </div>
       </div>
 
       <div className="mt-6 rounded-card border border-border bg-surface p-5">

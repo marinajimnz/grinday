@@ -490,6 +490,7 @@ export type Database = {
           is_anonymous: boolean
           role: string
           updated_at: string
+          username: string | null
         }
         Insert: {
           created_at?: string
@@ -499,6 +500,7 @@ export type Database = {
           is_anonymous?: boolean
           role?: string
           updated_at?: string
+          username?: string | null
         }
         Update: {
           created_at?: string
@@ -508,6 +510,7 @@ export type Database = {
           is_anonymous?: boolean
           role?: string
           updated_at?: string
+          username?: string | null
         }
         Relationships: [
           {

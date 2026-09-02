@@ -1,8 +1,10 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "./fixtures";
 
 test("tracks inventory automatically for approximate_shots and never shows negative", async ({
   page,
+  testUser,
 }) => {
+  void testUser;
   const name = `Inventory Coffee ${Date.now()}`;
 
   // Fresh guest session: pick a default machine first (Fase 0 onboarding step).

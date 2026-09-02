@@ -4,10 +4,11 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Field, inputClassName } from "@/components/ui/Field";
+import { resolveLoginEmailAction } from "@/features/auth/actions";
 
 export function LoginForm() {
   const router = useRouter();
-  const [email, setEmail] = useState("");
+  const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -19,26 +20,37 @@ export function LoginForm() {
         e.preventDefault();
         setIsSubmitting(true);
         setError(null);
+
+        const resolved = await resolveLoginEmailAction(identifier);
+        if (!resolved.success) {
+          setIsSubmitting(false);
+          setError(resolved.message);
+          return;
+        }
+
         const supabase = createClient();
-        const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
+        const { error: signInError } = await supabase.auth.signInWithPassword({
+          email: resolved.email,
+          password,
+        });
         setIsSubmitting(false);
         if (signInError) {
-          setError(signInError.message);
+          setError("Usuario o contraseña incorrectos");
           return;
         }
         router.push("/");
         router.refresh();
       }}
     >
-      <Field label="Email" htmlFor="login-email">
+      <Field label="Usuario o email" htmlFor="login-identifier">
         <input
-          id="login-email"
-          type="email"
+          id="login-identifier"
+          type="text"
           required
-          autoComplete="email"
+          autoComplete="username"
           className={inputClassName}
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
+          value={identifier}
+          onChange={(e) => setIdentifier(e.target.value)}
         />
       </Field>
       <Field label="Contraseña" htmlFor="login-password">
@@ -62,7 +74,7 @@ export function LoginForm() {
       <button
         type="submit"
         disabled={isSubmitting}
-        className="min-h-11 w-full rounded-input bg-ink px-4 text-sm font-medium text-surface disabled:opacity-60 sm:w-auto"
+        className="min-h-11 w-full rounded-input bg-ink px-4 text-sm font-medium text-surface disabled:opacity-60"
       >
         {isSubmitting ? "Entrando..." : "Iniciar sesión"}
       </button>

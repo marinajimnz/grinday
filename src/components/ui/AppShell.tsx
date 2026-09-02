@@ -28,7 +28,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         className="hidden md:flex md:w-64 md:shrink-0 md:flex-col md:gap-1 md:border-r md:border-border md:bg-surface md:p-4"
       >
         <div className="mb-6 px-2">
-          <span className="font-display text-xl text-ink">Coffee Journal</span>
+          <span className="font-display text-xl text-ink">Grindaily</span>
         </div>
         {NAV_ITEMS.map(({ href, label, icon: Icon }) => {
           const active = isActive(pathname, href);

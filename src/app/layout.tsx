@@ -15,7 +15,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Coffee Journal",
+  title: "Grindaily",
   description:
     "Vuelve a preparar un café como te gustó la última vez, sin depender de la memoria.",
 };

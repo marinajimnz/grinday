@@ -1,8 +1,10 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "./fixtures";
 
 test("loads the dashboard and shows main navigation without horizontal scroll", async ({
   page,
+  testUser,
 }) => {
+  void testUser;
   await page.goto("/");
 
   await expect(page.getByRole("heading", { name: "Inicio" })).toBeVisible();
@@ -17,7 +19,8 @@ test("loads the dashboard and shows main navigation without horizontal scroll", 
   expect(hasHorizontalScroll).toBe(false);
 });
 
-test("navigates to settings and machines", async ({ page }) => {
+test("navigates to settings and machines", async ({ page, testUser }) => {
+  void testUser;
   await page.goto("/settings");
   await page.getByRole("link", { name: "Máquinas" }).click();
   await expect(page).toHaveURL(/\/settings\/machines/);

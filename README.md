@@ -1,4 +1,4 @@
-# Coffee Journal (Grinday)
+# Grindaily (Coffee Journal)
 
 Diario personal de café: bolsas, intentos de espresso y recetas reproducibles.
 PWA con Next.js (App Router) + Supabase. Ver la especificación completa en
@@ -10,7 +10,7 @@ roadmap de la Fase 0 a la Fase 7.
 - Next.js 16 (App Router, TypeScript estricto) — build/dev fuerzan `--webpack`
   porque Serwist (PWA) todavía no soporta Turbopack de forma estable.
 - Tailwind CSS v4 (tokens en `src/app/globals.css`).
-- Supabase (Postgres, Auth con sesión anónima, Storage, RLS).
+- Supabase (Postgres, Auth con email/contraseña, Storage, RLS).
 - Zod + React Hook Form.
 - Serwist (service worker / PWA).
 - Vitest + Testing Library (unit/component), Playwright (E2E).
@@ -19,8 +19,11 @@ roadmap de la Fase 0 a la Fase 7.
 
 1. Node 22+, npm.
 2. Un proyecto Supabase (Postgres + Auth + Storage).
-3. En el dashboard de Supabase → **Authentication → Sign In / Providers**:
-   activar **Anonymous Sign-ins**. Sin esto la sesión de invitado falla.
+
+La app requiere iniciar sesión — no hay modo invitado. Cada cuenta inicia
+sesión con email y contraseña; algunas cuentas (como `admin`) tienen además
+un `username` que se resuelve a su email real al iniciar sesión (ver
+`src/features/auth/actions.ts`).
 
 ## Configuración
 
@@ -94,11 +97,11 @@ DevTools → Application → Service Workers.
 
 ## Cuenta y datos
 
-Cada visitante empieza con una sesión anónima de Supabase (mismo `user_id`
-mientras no borre datos del navegador). Desde **Ajustes → Cuenta** puede
-vincular esa sesión a un email + contraseña sin perder ni mover nada
-(`supabase.auth.updateUser`), y volver a entrar desde otro dispositivo en
-`/login`.
+El acceso requiere iniciar sesión (`/login`) — no hay modo invitado. El
+campo de login acepta un `username` (resuelto a su email real en
+`resolveLoginEmailAction`, server-side vía el cliente de service-role) o un
+email directamente. Desde **Ajustes → Cuenta** se ve el email vinculado y
+hay un botón para cerrar sesión.
 
 Desde la misma pantalla, **Exportar tus datos** descarga un backup manual:
 JSON completo (cafés, bolsas, intentos) o CSV solo de intentos

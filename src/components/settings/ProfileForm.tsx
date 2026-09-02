@@ -10,9 +10,11 @@ const ROLE_LABELS: Record<string, string> = { admin: "Admin" };
 export function ProfileForm({
   initialDisplayName,
   role,
+  loginIdentifier,
 }: {
   initialDisplayName: string;
   role: string;
+  loginIdentifier: string;
 }) {
   const [displayName, setDisplayName] = useState(initialDisplayName);
   const [isPending, startTransition] = useTransition();
@@ -36,10 +38,13 @@ export function ProfileForm({
         });
       }}
     >
-      <span className="inline-flex items-center gap-1.5 rounded-full bg-canvas px-3 py-1 text-xs font-medium text-ink">
-        <ShieldCheck aria-hidden className="size-3.5" />
-        {ROLE_LABELS[role] ?? role}
-      </span>
+      <div className="flex flex-wrap items-center gap-2">
+        <span className="inline-flex items-center gap-1.5 rounded-full bg-canvas px-3 py-1 text-xs font-medium text-ink">
+          <ShieldCheck aria-hidden className="size-3.5" />
+          {ROLE_LABELS[role] ?? role}
+        </span>
+        <span className="text-xs text-ink-muted">Entras como {loginIdentifier}</span>
+      </div>
 
       <Field label="Nombre" htmlFor="profile-display-name">
         <input
