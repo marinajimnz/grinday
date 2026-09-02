@@ -20,14 +20,17 @@ export default async function LoginPage() {
         <LoginLanguageToggle />
       </div>
 
-      <a
-        href="https://www.linkedin.com/in/marina-jimenez-mendez/?locale=es"
-        target="_blank"
-        rel="noopener noreferrer"
-        className="mt-8 flex items-center justify-center gap-1.5 text-sm text-ink-muted"
-      >
-        Marina <IconFavorito aria-hidden className="size-4 text-coffee" /> coffee
-      </a>
+      <div className="fixed inset-x-0 bottom-6 flex flex-col items-center gap-1 px-4">
+        <a
+          href="https://www.linkedin.com/in/marina-jimenez-mendez/?locale=es"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center gap-1.5 font-display text-lg text-ink-muted"
+        >
+          Marina <IconFavorito aria-hidden className="size-4 text-coffee" /> coffee
+        </a>
+        <p className="text-xs text-ink-muted">All rights reserved</p>
+      </div>
     </div>
   );
 }
