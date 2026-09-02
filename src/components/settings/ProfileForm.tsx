@@ -5,8 +5,13 @@ import { ShieldCheck } from "lucide-react";
 import { Field, inputClassName } from "@/components/ui/Field";
 import { updateProfileAction } from "@/features/profile/actions";
 import { useDictionary } from "@/components/i18n/LocaleProvider";
+import { IconGrano } from "@/components/icons/pencil-icons";
 
-const ROLE_LABELS: Record<string, string> = { admin: "Admin" };
+const ROLE_LABELS: Record<string, string> = { admin: "Admin", coffee_lover: "Coffee lover" };
+const ROLE_ICONS: Record<string, React.ComponentType<React.SVGProps<SVGSVGElement>>> = {
+  admin: ShieldCheck,
+  coffee_lover: IconGrano,
+};
 
 export function ProfileForm({
   initialDisplayName,
@@ -22,6 +27,7 @@ export function ProfileForm({
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
+  const RoleIcon = ROLE_ICONS[role] ?? ShieldCheck;
 
   return (
     <form
@@ -42,7 +48,7 @@ export function ProfileForm({
     >
       <div className="flex flex-wrap items-center gap-2">
         <span className="inline-flex items-center gap-1.5 rounded-full bg-canvas px-3 py-1 text-xs font-medium text-ink">
-          <ShieldCheck aria-hidden className="size-3.5" />
+          <RoleIcon aria-hidden className="size-3.5" />
           {ROLE_LABELS[role] ?? role}
         </span>
         <span className="text-xs text-ink-muted">
