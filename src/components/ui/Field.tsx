@@ -1,5 +1,8 @@
+// text-base (16px) below the sm breakpoint: iOS Safari zooms the whole
+// page in on focus when an input's font-size is under 16px, which felt
+// like the page "growing" when tapping into a field on mobile.
 export const inputClassName =
-  "min-h-11 w-full rounded-input border border-border bg-surface px-3 text-sm text-ink outline-none focus:border-ink";
+  "min-h-11 w-full rounded-input border border-border bg-surface px-3 text-base text-ink outline-none focus:border-ink sm:text-sm";
 
 export function Field({
   label,
