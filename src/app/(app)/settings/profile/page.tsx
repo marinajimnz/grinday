@@ -1,11 +1,15 @@
 import { createClient } from "@/lib/supabase/server";
 import { ProfileForm } from "@/components/settings/ProfileForm";
+import { ProfileLanguageToggle } from "@/components/settings/ProfileLanguageToggle";
+import { getLocale } from "@/lib/i18n/locale";
+import { getDictionary } from "@/lib/i18n/get-dictionary";
 
 export default async function ProfilePage() {
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
+  const dict = getDictionary(await getLocale());
 
   const { data: profile } = await supabase
     .from("profiles")
@@ -15,8 +19,8 @@ export default async function ProfilePage() {
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-8 md:px-8">
-      <h1 className="font-display text-3xl text-ink">Perfil</h1>
-      <p className="mt-1 text-sm text-ink-muted">Tu identidad dentro de Grindaily.</p>
+      <h1 className="font-display text-3xl text-ink">{dict.settings.profileTitle}</h1>
+      <p className="mt-1 text-sm text-ink-muted">{dict.settings.profileSubtitle}</p>
 
       <div className="mt-8 rounded-card border border-border bg-surface p-5">
         <ProfileForm
@@ -24,6 +28,13 @@ export default async function ProfilePage() {
           role={profile?.role ?? "admin"}
           loginIdentifier={profile?.username ?? user?.email ?? ""}
         />
+      </div>
+
+      <div className="mt-6 rounded-card border border-border bg-surface p-5">
+        <p className="text-sm font-medium text-ink">{dict.language.label}</p>
+        <div className="mt-4">
+          <ProfileLanguageToggle />
+        </div>
       </div>
     </div>
   );

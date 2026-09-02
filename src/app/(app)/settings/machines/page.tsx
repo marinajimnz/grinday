@@ -1,8 +1,11 @@
 import { createClient } from "@/lib/supabase/server";
 import { SelectMachineButton } from "./SelectMachineButton";
+import { getLocale } from "@/lib/i18n/locale";
+import { getDictionary } from "@/lib/i18n/get-dictionary";
 
 export default async function MachinesSettingsPage() {
   const supabase = await createClient();
+  const dict = getDictionary(await getLocale());
 
   const [{ data: models }, { data: userMachines }] = await Promise.all([
     supabase.from("machine_models").select("id, brand, model_name"),
@@ -14,10 +17,8 @@ export default async function MachinesSettingsPage() {
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-8 md:px-8">
-      <h1 className="font-display text-3xl text-ink">Máquinas</h1>
-      <p className="mt-1 text-sm text-ink-muted">
-        Elige tu máquina para adaptar los controles a sus capacidades.
-      </p>
+      <h1 className="font-display text-3xl text-ink">{dict.settings.machinesTitle}</h1>
+      <p className="mt-1 text-sm text-ink-muted">{dict.settings.machinesSubtitle}</p>
 
       <ul className="mt-8 space-y-3">
         {models?.map((model) => (
@@ -40,9 +41,7 @@ export default async function MachinesSettingsPage() {
       </ul>
 
       {!models?.length && (
-        <p className="mt-8 text-sm text-ink-muted">
-          No hay máquinas disponibles todavía. Ejecuta el seed de Supabase.
-        </p>
+        <p className="mt-8 text-sm text-ink-muted">{dict.settings.noMachines}</p>
       )}
     </div>
   );

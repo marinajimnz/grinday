@@ -1,26 +1,26 @@
 import Link from "next/link";
 import { ChevronRight, IdCard, UserRound, Wrench } from "lucide-react";
 import { ThemeToggle } from "@/components/settings/ThemeToggle";
+import { getLocale } from "@/lib/i18n/locale";
+import { getDictionary } from "@/lib/i18n/get-dictionary";
 
-const LINKS = [
-  { href: "/settings/profile", label: "Perfil", icon: IdCard },
-  { href: "/settings/machines", label: "Máquinas", icon: Wrench },
-  { href: "/settings/account", label: "Cuenta y privacidad", icon: UserRound },
-] as const;
+export default async function SettingsPage() {
+  const dict = getDictionary(await getLocale());
 
-export default function SettingsPage() {
+  const LINKS = [
+    { href: "/settings/profile", label: dict.settings.profile, icon: IdCard },
+    { href: "/settings/machines", label: dict.settings.machines, icon: Wrench },
+    { href: "/settings/account", label: dict.settings.account, icon: UserRound },
+  ] as const;
+
   return (
     <div className="mx-auto max-w-2xl px-4 py-8 md:px-8">
-      <h1 className="font-display text-3xl text-ink">Ajustes</h1>
-      <p className="mt-1 text-sm text-ink-muted">
-        Máquinas, cuenta, exportación y preferencias de la app.
-      </p>
+      <h1 className="font-display text-3xl text-ink">{dict.settings.title}</h1>
+      <p className="mt-1 text-sm text-ink-muted">{dict.settings.subtitle}</p>
 
       <div className="mt-8 rounded-card border border-border bg-surface p-5">
-        <p className="text-sm font-medium text-ink">Apariencia</p>
-        <p className="mt-1 text-sm text-ink-muted">
-          Elige si la app sigue el modo del sistema o se queda fija en claro u oscuro.
-        </p>
+        <p className="text-sm font-medium text-ink">{dict.settings.appearance}</p>
+        <p className="mt-1 text-sm text-ink-muted">{dict.settings.appearanceDescription}</p>
         <div className="mt-4">
           <ThemeToggle />
         </div>

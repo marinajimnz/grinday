@@ -47,11 +47,17 @@ export const test = base.extend<{ testUser: { email: string; password: string } 
     });
     if (error) throw error;
 
-    await page.goto("/login");
-    await page.getByLabel("Usuario o email").fill(email);
-    await page.getByLabel("Contraseña").fill(password);
-    await page.getByRole("button", { name: "Iniciar sesión" }).click();
-    await expect(page).toHaveURL("/");
+    // A long sequential run (many tests, each creating + signing in its own
+    // account) occasionally outpaces Supabase Auth under load — same known
+    // class of flakiness as the old anonymous-sign-in rate limiting, just
+    // hitting a different endpoint now. Retrying the whole attempt clears it.
+    await expect(async () => {
+      await page.goto("/login");
+      await page.getByLabel("Usuario o email").fill(email);
+      await page.getByLabel("Contraseña").fill(password);
+      await page.getByRole("button", { name: "Iniciar sesión" }).click();
+      await expect(page).toHaveURL("/", { timeout: 8000 });
+    }).toPass({ intervals: [1000, 2000, 4000], timeout: 30000 });
 
     // Playwright's fixture callback, not a React hook — the rule matches on
     // the `use` name alone and can't tell the two apart.

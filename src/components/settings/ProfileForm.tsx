@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 import { ShieldCheck } from "lucide-react";
 import { Field, inputClassName } from "@/components/ui/Field";
 import { updateProfileAction } from "@/features/profile/actions";
+import { useDictionary } from "@/components/i18n/LocaleProvider";
 
 const ROLE_LABELS: Record<string, string> = { admin: "Admin" };
 
@@ -16,6 +17,7 @@ export function ProfileForm({
   role: string;
   loginIdentifier: string;
 }) {
+  const dict = useDictionary();
   const [displayName, setDisplayName] = useState(initialDisplayName);
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
@@ -43,10 +45,12 @@ export function ProfileForm({
           <ShieldCheck aria-hidden className="size-3.5" />
           {ROLE_LABELS[role] ?? role}
         </span>
-        <span className="text-xs text-ink-muted">Entras como {loginIdentifier}</span>
+        <span className="text-xs text-ink-muted">
+          {dict.settings.signedInAs} {loginIdentifier}
+        </span>
       </div>
 
-      <Field label="Nombre" htmlFor="profile-display-name">
+      <Field label={dict.settings.name} htmlFor="profile-display-name">
         <input
           id="profile-display-name"
           className={inputClassName}
@@ -64,14 +68,14 @@ export function ProfileForm({
           {error}
         </p>
       )}
-      {saved && !error && <p className="text-sm text-ink-muted">Guardado.</p>}
+      {saved && !error && <p className="text-sm text-ink-muted">{dict.common.saved}</p>}
 
       <button
         type="submit"
         disabled={isPending}
         className="min-h-11 rounded-input bg-ink px-4 text-sm font-medium text-surface disabled:opacity-60"
       >
-        {isPending ? "Guardando..." : "Guardar"}
+        {isPending ? dict.common.saving : dict.common.save}
       </button>
     </form>
   );

@@ -488,6 +488,7 @@ export type Database = {
           display_name: string | null
           id: string
           is_anonymous: boolean
+          locale: string
           role: string
           updated_at: string
           username: string | null
@@ -498,6 +499,7 @@ export type Database = {
           display_name?: string | null
           id: string
           is_anonymous?: boolean
+          locale?: string
           role?: string
           updated_at?: string
           username?: string | null
@@ -508,6 +510,7 @@ export type Database = {
           display_name?: string | null
           id?: string
           is_anonymous?: boolean
+          locale?: string
           role?: string
           updated_at?: string
           username?: string | null

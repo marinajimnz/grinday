@@ -1,5 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import { isLocale, LOCALE_COOKIE } from "@/lib/i18n/types";
 
 // /offline has to work without a session: it's the Service Worker's
 // no-network fallback, reached with no server round-trip at all when it
@@ -49,6 +50,23 @@ export async function updateSession(request: NextRequest) {
 
   if (user && pathname === "/login") {
     return redirectCarryingCookies(request, response, "/");
+  }
+
+  // profiles.locale is the source of truth once logged in, but querying it
+  // on every navigation added a DB round-trip to every single page load —
+  // only worth doing the one time the cookie doesn't exist yet (first
+  // request after login), not on every request after that. Changing the
+  // language later writes the cookie directly (updateLocaleAction), so it
+  // never goes stale in between.
+  if (user && !request.cookies.get(LOCALE_COOKIE)) {
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("locale")
+      .eq("id", user.id)
+      .single();
+    if (isLocale(profile?.locale)) {
+      response.cookies.set(LOCALE_COOKIE, profile.locale, { path: "/", maxAge: 60 * 60 * 24 * 365 });
+    }
   }
 
   return response;

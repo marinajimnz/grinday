@@ -1,9 +1,19 @@
 import { AppShell } from "@/components/ui/AppShell";
+import { LocaleProvider } from "@/components/i18n/LocaleProvider";
+import { getLocale } from "@/lib/i18n/locale";
+import { getDictionary } from "@/lib/i18n/get-dictionary";
 
-export default function AppLayout({
+export default async function AppLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  return <AppShell>{children}</AppShell>;
+  const locale = await getLocale();
+  const dict = getDictionary(locale);
+
+  return (
+    <LocaleProvider locale={locale} dict={dict}>
+      <AppShell>{children}</AppShell>
+    </LocaleProvider>
+  );
 }

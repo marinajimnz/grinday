@@ -1,0 +1,88 @@
+const es = {
+  nav: {
+    home: "Inicio",
+    coffees: "Cafés",
+    brew: "Preparar",
+    stats: "Estadísticas",
+    settings: "Ajustes",
+    mainNav: "Navegación principal",
+  },
+  common: {
+    save: "Guardar",
+    saving: "Guardando...",
+    saved: "Guardado.",
+    cancel: "Cancelar",
+    clear: "Limpiar",
+    edit: "Editar",
+    delete: "Eliminar",
+    retry: "Reintentar",
+    loading: "Cargando...",
+  },
+  login: {
+    tagline: "Tu diario de café, siempre a mano.",
+    identifier: "Usuario o email",
+    password: "Contraseña",
+    submit: "Iniciar sesión",
+    submitting: "Entrando...",
+    error: "Usuario o contraseña incorrectos",
+  },
+  language: {
+    label: "Idioma",
+  },
+  dashboard: {
+    title: "Inicio",
+    subtitle: "Tu café activo, último intento y accesos rápidos.",
+    emptyTitle: "Todavía no hay ningún café en tu diario",
+    emptyDescription: "Añade tu primer café para empezar a registrar intentos.",
+    addCoffee: "Añadir café",
+    activeCoffee: "Café activo",
+    lastAttempt: "Último intento",
+    prepareWithRecipe: "Preparar con esta receta",
+    prepare: "Preparar",
+    viewCoffees: "Ver cafés",
+    preferredRecipe: "Receta preferida",
+    grindSetting: "Molido",
+    grindTime: "Molienda",
+    extraction: "Extracción",
+    viewAttempt: "Ver intento",
+  },
+  settings: {
+    title: "Ajustes",
+    subtitle: "Máquinas, cuenta, exportación y preferencias de la app.",
+    appearance: "Apariencia",
+    appearanceDescription: "Elige si la app sigue el modo del sistema o se queda fija en claro u oscuro.",
+    themeLabel: "Tema",
+    themeSystem: "Sistema",
+    themeLight: "Claro",
+    themeDark: "Oscuro",
+    profile: "Perfil",
+    machines: "Máquinas",
+    account: "Cuenta y privacidad",
+    profileTitle: "Perfil",
+    profileSubtitle: "Tu identidad dentro de Grindaily.",
+    signedInAs: "Entras como",
+    name: "Nombre",
+    machinesTitle: "Máquinas",
+    machinesSubtitle: "Elige tu máquina para adaptar los controles a sus capacidades.",
+    useAsDefault: "Usar como predeterminada",
+    default: "Predeterminada",
+    noMachines: "No hay máquinas disponibles todavía. Ejecuta el seed de Supabase.",
+    accountTitle: "Cuenta y privacidad",
+    accountLinkedAs: "Cuenta vinculada como",
+    signOut: "Cerrar sesión",
+    signingOut: "Saliendo...",
+    exportData: "Exportar tus datos",
+    exportDescription: "Una copia de tus cafés, bolsas e intentos. Útil como respaldo manual.",
+    downloadJson: "Descargar JSON",
+    downloadCsv: "Descargar intentos (CSV)",
+  },
+} as const;
+
+export default es;
+
+// `es` is `as const` so this file's own keys/values are checked precisely,
+// but other locales just need the same shape with their own strings — this
+// widens every leaf back to `string` so en.ts isn't forced to literally
+// contain Spanish text.
+type Widen<T> = T extends string ? string : { [K in keyof T]: Widen<T[K]> };
+export type Dictionary = Widen<typeof es>;

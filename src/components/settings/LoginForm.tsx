@@ -5,9 +5,12 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Field, inputClassName } from "@/components/ui/Field";
 import { resolveLoginEmailAction } from "@/features/auth/actions";
+import { useDictionary } from "@/components/i18n/LocaleProvider";
+import { LoginLanguageToggle } from "@/components/i18n/LoginLanguageToggle";
 
 export function LoginForm() {
   const router = useRouter();
+  const dict = useDictionary();
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -35,14 +38,14 @@ export function LoginForm() {
         });
         setIsSubmitting(false);
         if (signInError) {
-          setError("Usuario o contraseña incorrectos");
+          setError(dict.login.error);
           return;
         }
         router.push("/");
         router.refresh();
       }}
     >
-      <Field label="Usuario o email" htmlFor="login-identifier">
+      <Field label={dict.login.identifier} htmlFor="login-identifier">
         <input
           id="login-identifier"
           type="text"
@@ -53,7 +56,7 @@ export function LoginForm() {
           onChange={(e) => setIdentifier(e.target.value)}
         />
       </Field>
-      <Field label="Contraseña" htmlFor="login-password">
+      <Field label={dict.login.password} htmlFor="login-password">
         <input
           id="login-password"
           type="password"
@@ -64,6 +67,8 @@ export function LoginForm() {
           onChange={(e) => setPassword(e.target.value)}
         />
       </Field>
+
+      <LoginLanguageToggle />
 
       {error && (
         <p role="alert" className="text-sm text-red-700">
@@ -76,7 +81,7 @@ export function LoginForm() {
         disabled={isSubmitting}
         className="min-h-11 w-full rounded-input bg-ink px-4 text-sm font-medium text-surface disabled:opacity-60"
       >
-        {isSubmitting ? "Entrando..." : "Iniciar sesión"}
+        {isSubmitting ? dict.login.submitting : dict.login.submit}
       </button>
     </form>
   );

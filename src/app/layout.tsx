@@ -43,6 +43,22 @@ const THEME_INIT_SCRIPT = `
 })();
 `;
 
+// The <html lang> the server renders is a static "es" (see the comment on
+// RootLayout below) — this corrects it from the locale cookie before paint,
+// same trick as the theme script above.
+const LANG_INIT_SCRIPT = `
+(function () {
+  var m = document.cookie.match(/(?:^|; )grindaily-locale=(es|en)/);
+  if (m) document.documentElement.lang = m[1];
+})();
+`;
+
+// Deliberately locale-agnostic: this layout wraps EVERY route, including
+// /offline, which has to stay statically prerenderable for the Service
+// Worker's precache (see next/sw.ts). Reading cookies() here — even just to
+// resolve the language — would force the whole app dynamic and silently
+// break that. Locale resolution instead happens per route group, in
+// (app)/layout.tsx and (auth)/layout.tsx, which don't have that constraint.
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -53,6 +69,9 @@ export default function RootLayout({
       <body className={`${bagelFatOne.variable} ${inter.variable} antialiased`}>
         <Script id="theme-init" strategy="beforeInteractive">
           {THEME_INIT_SCRIPT}
+        </Script>
+        <Script id="lang-init" strategy="beforeInteractive">
+          {LANG_INIT_SCRIPT}
         </Script>
         {children}
       </body>

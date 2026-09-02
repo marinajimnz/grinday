@@ -10,7 +10,7 @@ export function PrepareWithRecipeButton({
   roaster,
   sourceAttempt,
   className,
-  children = "Preparar con esta receta",
+  children,
 }: {
   coffeeId: string;
   coffeeBagId: string;
@@ -18,7 +18,7 @@ export function PrepareWithRecipeButton({
   roaster: string;
   sourceAttempt?: RecipeSourceAttempt | null;
   className?: string;
-  children?: React.ReactNode;
+  children: React.ReactNode;
 }) {
   const router = useRouter();
 

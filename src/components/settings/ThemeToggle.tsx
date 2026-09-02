@@ -3,15 +3,17 @@
 import { useEffect, useState } from "react";
 import { cn } from "@/lib/cn";
 import { applyTheme, getStoredTheme, type ThemePreference } from "@/features/theme/theme";
-
-const OPTIONS: { value: ThemePreference; label: string }[] = [
-  { value: "system", label: "Sistema" },
-  { value: "light", label: "Claro" },
-  { value: "dark", label: "Oscuro" },
-];
+import { useDictionary } from "@/components/i18n/LocaleProvider";
 
 export function ThemeToggle() {
+  const dict = useDictionary();
   const [theme, setTheme] = useState<ThemePreference>("system");
+
+  const OPTIONS: { value: ThemePreference; label: string }[] = [
+    { value: "system", label: dict.settings.themeSystem },
+    { value: "light", label: dict.settings.themeLight },
+    { value: "dark", label: dict.settings.themeDark },
+  ];
 
   useEffect(() => {
     // localStorage doesn't exist during SSR/prerender — this can only be
@@ -21,7 +23,7 @@ export function ThemeToggle() {
   }, []);
 
   return (
-    <div role="radiogroup" aria-label="Tema" className="flex gap-2">
+    <div role="radiogroup" aria-label={dict.settings.themeLabel} className="flex gap-2">
       {OPTIONS.map((opt) => (
         <button
           key={opt.value}

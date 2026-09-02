@@ -4,14 +4,18 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Coffee, House, Settings, SquareChartGantt, Timer } from "lucide-react";
 import { cn } from "@/lib/cn";
+import { useDictionary } from "@/components/i18n/LocaleProvider";
+import type { Dictionary } from "@/lib/i18n/dictionaries/es";
 
-const NAV_ITEMS = [
-  { href: "/", label: "Inicio", icon: House },
-  { href: "/coffees", label: "Cafés", icon: Coffee },
-  { href: "/brew/new", label: "Preparar", icon: Timer },
-  { href: "/stats", label: "Estadísticas", icon: SquareChartGantt },
-  { href: "/settings", label: "Ajustes", icon: Settings },
-] as const;
+function navItems(dict: Dictionary) {
+  return [
+    { href: "/", label: dict.nav.home, icon: House },
+    { href: "/coffees", label: dict.nav.coffees, icon: Coffee },
+    { href: "/brew/new", label: dict.nav.brew, icon: Timer },
+    { href: "/stats", label: dict.nav.stats, icon: SquareChartGantt },
+    { href: "/settings", label: dict.nav.settings, icon: Settings },
+  ] as const;
+}
 
 function isActive(pathname: string, href: string) {
   if (href === "/") return pathname === "/";
@@ -20,17 +24,19 @@ function isActive(pathname: string, href: string) {
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const dict = useDictionary();
+  const items = navItems(dict);
 
   return (
     <div className="flex min-h-dvh flex-col md:flex-row">
       <nav
-        aria-label="Navegación principal"
+        aria-label={dict.nav.mainNav}
         className="hidden md:flex md:w-64 md:shrink-0 md:flex-col md:gap-1 md:border-r md:border-border md:bg-surface md:p-4"
       >
         <div className="mb-6 px-2">
           <span className="font-display text-xl text-ink">Grindaily</span>
         </div>
-        {NAV_ITEMS.map(({ href, label, icon: Icon }) => {
+        {items.map(({ href, label, icon: Icon }) => {
           const active = isActive(pathname, href);
           return (
             <Link
@@ -54,11 +60,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       <main className="flex-1 pb-20 md:pb-0">{children}</main>
 
       <nav
-        aria-label="Navegación principal"
+        aria-label={dict.nav.mainNav}
         className="fixed inset-x-0 bottom-0 z-10 flex border-t border-border bg-surface/95 backdrop-blur md:hidden"
         style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
       >
-        {NAV_ITEMS.map(({ href, label, icon: Icon }) => {
+        {items.map(({ href, label, icon: Icon }) => {
           const active = isActive(pathname, href);
           return (
             <Link
