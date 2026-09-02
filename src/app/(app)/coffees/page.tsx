@@ -1,6 +1,6 @@
 import Link from "next/link";
-import { Archive, Library } from "lucide-react";
-import { IconAnadir } from "@/components/icons/pencil-icons";
+import { Library } from "lucide-react";
+import { IconAnadir, IconArchivar } from "@/components/icons/pencil-icons";
 import { createClient } from "@/lib/supabase/server";
 import { listCoffees } from "@/features/coffees/queries";
 import { CoffeeCard } from "@/components/coffee/CoffeeCard";
@@ -40,14 +40,14 @@ export default async function CoffeesPage({
             aria-label={dict.coffees.inventory}
             className="inline-flex min-h-11 items-center gap-1.5 rounded-input border border-border px-3 text-sm font-medium text-ink"
           >
-            <Archive aria-hidden className="size-4" />
+            <IconArchivar aria-hidden className="size-4" />
           </Link>
           <Link
             href="/coffees/new"
-            className="inline-flex min-h-11 items-center gap-1.5 rounded-input bg-ink px-4 font-display text-base tracking-wide text-surface"
+            aria-label={dict.coffees.addCoffee}
+            className="inline-flex min-h-11 items-center justify-center rounded-input bg-ink px-4 text-surface"
           >
             <IconAnadir aria-hidden className="size-4" />
-            {dict.coffees.addCoffee}
           </Link>
         </div>
       </div>
