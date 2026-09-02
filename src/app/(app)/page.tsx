@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
-import { IconCafe, IconFavorita } from "@/components/icons/pencil-icons";
+import { IconCafe, IconFavorita, IconFavorito } from "@/components/icons/pencil-icons";
 import { getDashboardData } from "@/features/dashboard/queries";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { RecipeCard } from "@/components/attempt/RecipeCard";
@@ -14,9 +14,26 @@ export default async function DashboardPage() {
   const data = await getDashboardData(supabase);
   const dict = getDictionary(await getLocale());
 
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  const { data: profile } = user
+    ? await supabase.from("profiles").select("display_name").eq("id", user.id).single()
+    : { data: null };
+
   return (
     <div className="mx-auto max-w-2xl px-4 py-8 md:px-8">
-      <h1 className="font-display text-3xl text-ink">{dict.dashboard.title}</h1>
+      <h1 className="flex items-center gap-2 font-display text-3xl text-ink">
+        {profile?.display_name ? (
+          <>
+            {profile.display_name}
+            <IconFavorito aria-hidden className="size-6 text-coffee" />
+            grindaily
+          </>
+        ) : (
+          dict.dashboard.title
+        )}
+      </h1>
       <p className="mt-1 text-sm text-ink-muted">{dict.dashboard.subtitle}</p>
 
       <div className="mt-8">

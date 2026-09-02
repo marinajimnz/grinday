@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { Field, inputClassName } from "@/components/ui/Field";
 import { resolveLoginEmailAction } from "@/features/auth/actions";
@@ -80,6 +81,13 @@ export function LoginForm() {
       >
         {isSubmitting ? dict.login.submitting : dict.login.submit}
       </button>
+
+      <p className="text-center text-sm text-ink-muted">
+        {dict.login.newHerePrompt}{" "}
+        <Link href="/register" className="font-medium text-ink underline">
+          {dict.login.newHereCta}
+        </Link>
+      </p>
     </form>
   );
 }

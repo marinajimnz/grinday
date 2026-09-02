@@ -1,6 +1,9 @@
 "use server";
 
 import { createAdminClient } from "@/lib/supabase/admin";
+import { registerSchema } from "@/lib/validation/auth";
+import { getLocale } from "@/lib/i18n/locale";
+import { getDictionary } from "@/lib/i18n/get-dictionary";
 
 type ResolveResult = { success: true; email: string } | { success: false; message: string };
 
@@ -40,4 +43,67 @@ export async function resolveLoginEmailAction(identifier: string): Promise<Resol
   }
 
   return { success: true, email: userData.user.email };
+}
+
+type RegisterResult =
+  | { success: true }
+  | { success: false; field?: "name" | "username" | "email" | "password"; message: string };
+
+/**
+ * Public sign-up. Uses the service-role client to create the auth user
+ * directly, pre-confirmed — there's no email step, so a friend can register
+ * and land straight in the app, matching the login form's own username-or-
+ * email flow (a fresh account always gets a username here).
+ */
+export async function registerAction(input: unknown): Promise<RegisterResult> {
+  const dict = getDictionary(await getLocale());
+  const parsed = registerSchema.safeParse(input);
+  if (!parsed.success) {
+    const issue = parsed.error.issues[0];
+    const field = issue?.path[0];
+    if (field === "username") return { success: false, field: "username", message: dict.register.usernameInvalid };
+    if (field === "email") return { success: false, field: "email", message: dict.register.emailInvalid };
+    if (field === "password") return { success: false, field: "password", message: dict.register.passwordTooShort };
+    return { success: false, field: "name", message: dict.register.nameRequired };
+  }
+  const { name, username, email, password } = parsed.data;
+
+  const admin = createAdminClient();
+
+  const { data: existingUsername } = await admin
+    .from("profiles")
+    .select("id")
+    .eq("username", username)
+    .maybeSingle();
+  if (existingUsername) {
+    return { success: false, field: "username", message: dict.register.usernameTaken };
+  }
+
+  const { data: created, error: createError } = await admin.auth.admin.createUser({
+    email,
+    password,
+    email_confirm: true,
+  });
+  if (createError || !created.user) {
+    if (createError?.code === "email_exists") {
+      return { success: false, field: "email", message: dict.register.emailTaken };
+    }
+    return { success: false, message: dict.register.genericError };
+  }
+
+  const locale = await getLocale();
+  const { error: profileError } = await admin
+    .from("profiles")
+    .update({ display_name: name, username, locale })
+    .eq("id", created.user.id);
+
+  if (profileError) {
+    await admin.auth.admin.deleteUser(created.user.id);
+    if (profileError.code === "23505") {
+      return { success: false, field: "username", message: dict.register.usernameTaken };
+    }
+    return { success: false, message: dict.register.genericError };
+  }
+
+  return { success: true };
 }
