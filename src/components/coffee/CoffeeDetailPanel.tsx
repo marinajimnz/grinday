@@ -2,7 +2,8 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Archive, Coffee as CoffeeIcon, Pencil, Trash2 } from "lucide-react";
+import { Coffee as CoffeeIcon } from "lucide-react";
+import { IconArchivar, IconEditar, IconEliminar } from "@/components/icons/pencil-icons";
 import { EditCoffeeForm } from "./EditCoffeeForm";
 import { Field, inputClassName } from "@/components/ui/Field";
 import { type ROAST_LEVELS } from "@/features/coffees/constants";
@@ -50,7 +51,7 @@ export function CoffeeDetailPanel({ coffee }: { coffee: CoffeeRow }) {
           onClick={() => setEditing(true)}
           className="inline-flex min-h-11 items-center gap-1.5 rounded-input border border-border px-3 text-sm font-medium text-ink"
         >
-          <Pencil aria-hidden className="size-4" />
+          <IconEditar aria-hidden className="size-4" />
           {dict.common.edit}
         </button>
       </div>
@@ -145,7 +146,7 @@ export function CoffeeDetailPanel({ coffee }: { coffee: CoffeeRow }) {
           }}
           className="inline-flex min-h-11 items-center gap-1.5 rounded-input border border-border px-3 text-sm font-medium text-ink disabled:opacity-60"
         >
-          <Archive aria-hidden className="size-4" />
+          <IconArchivar aria-hidden className="size-4" />
           {isArchiving ? dict.coffees.archiving : dict.coffees.archiveCoffee}
         </button>
 
@@ -159,7 +160,7 @@ export function CoffeeDetailPanel({ coffee }: { coffee: CoffeeRow }) {
             }}
             className="inline-flex min-h-11 items-center gap-1.5 rounded-input bg-[#F47174] px-3 text-sm font-medium text-[#1b2a6e]"
           >
-            <Trash2 aria-hidden className="size-4" />
+            <IconEliminar aria-hidden className="size-4" />
             {dict.coffees.deleteCoffee}
           </button>
         )}

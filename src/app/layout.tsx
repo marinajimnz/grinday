@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Bagel_Fat_One, Inter } from "next/font/google";
 import Script from "next/script";
+import { PencilIconDefs } from "@/components/icons/pencil-icons";
 import "./globals.css";
 
 const bagelFatOne = Bagel_Fat_One({
@@ -78,6 +79,7 @@ export default function RootLayout({
         <Script id="lang-init" strategy="beforeInteractive">
           {LANG_INIT_SCRIPT}
         </Script>
+        <PencilIconDefs />
         {children}
       </body>
     </html>

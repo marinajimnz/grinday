@@ -2,18 +2,24 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Coffee, House, Settings, SquareChartGantt, Timer } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { useDictionary } from "@/components/i18n/LocaleProvider";
 import type { Dictionary } from "@/lib/i18n/dictionaries/es";
+import {
+  IconAjustes,
+  IconCafe,
+  IconEstadisticas,
+  IconInicio,
+  IconPreparar,
+} from "@/components/icons/pencil-icons";
 
 function navItems(dict: Dictionary) {
   return [
-    { href: "/", label: dict.nav.home, icon: House },
-    { href: "/coffees", label: dict.nav.coffees, icon: Coffee },
-    { href: "/brew/new", label: dict.nav.brew, icon: Timer },
-    { href: "/stats", label: dict.nav.stats, icon: SquareChartGantt },
-    { href: "/settings", label: dict.nav.settings, icon: Settings },
+    { href: "/", label: dict.nav.home, icon: IconInicio },
+    { href: "/coffees", label: dict.nav.coffees, icon: IconCafe },
+    { href: "/brew/new", label: dict.nav.brew, icon: IconPreparar },
+    { href: "/stats", label: dict.nav.stats, icon: IconEstadisticas },
+    { href: "/settings", label: dict.nav.settings, icon: IconAjustes },
   ] as const;
 }
 
