@@ -20,30 +20,32 @@ export function StatsDateFilter() {
   const hasFilter = Boolean(searchParams.get("from") || searchParams.get("to"));
 
   return (
-    <div className="flex flex-wrap items-end gap-3">
-      <div>
-        <label htmlFor="stats-from" className="mb-1.5 block text-xs font-medium text-ink-muted">
-          {dict.stats.from}
-        </label>
-        <input
-          id="stats-from"
-          type="date"
-          className={inputClassName}
-          value={searchParams.get("from") ?? ""}
-          onChange={(e) => updateParam("from", e.target.value)}
-        />
-      </div>
-      <div>
-        <label htmlFor="stats-to" className="mb-1.5 block text-xs font-medium text-ink-muted">
-          {dict.stats.to}
-        </label>
-        <input
-          id="stats-to"
-          type="date"
-          className={inputClassName}
-          value={searchParams.get("to") ?? ""}
-          onChange={(e) => updateParam("to", e.target.value)}
-        />
+    <div className="space-y-3">
+      <div className="grid grid-cols-1 gap-3 sm:max-w-sm sm:grid-cols-2">
+        <div>
+          <label htmlFor="stats-from" className="mb-1.5 block text-xs font-medium text-ink-muted">
+            {dict.stats.from}
+          </label>
+          <input
+            id="stats-from"
+            type="date"
+            className={inputClassName}
+            value={searchParams.get("from") ?? ""}
+            onChange={(e) => updateParam("from", e.target.value)}
+          />
+        </div>
+        <div>
+          <label htmlFor="stats-to" className="mb-1.5 block text-xs font-medium text-ink-muted">
+            {dict.stats.to}
+          </label>
+          <input
+            id="stats-to"
+            type="date"
+            className={inputClassName}
+            value={searchParams.get("to") ?? ""}
+            onChange={(e) => updateParam("to", e.target.value)}
+          />
+        </div>
       </div>
       {hasFilter && (
         <button

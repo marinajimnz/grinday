@@ -67,7 +67,14 @@ export default async function StatsPage({
             <StatBarList
               items={topCoffees.map((c) => ({
                 key: c.coffee_id,
-                label: c.has_preferred ? `★ ${c.name}` : c.name,
+                label: c.has_preferred ? (
+                  <span className="inline-flex items-center gap-1">
+                    <IconFavorita aria-hidden className="size-3 shrink-0 text-coffee" />
+                    {c.name}
+                  </span>
+                ) : (
+                  c.name
+                ),
                 value: c.avg_rating,
                 displayValue: `${c.avg_rating.toFixed(1)}/5 (${c.rated_count})`,
               }))}

@@ -5,7 +5,7 @@
 export function StatBarList({
   items,
 }: {
-  items: { key: string; label: string; value: number; displayValue: string }[];
+  items: { key: string; label: React.ReactNode; value: number; displayValue: string }[];
 }) {
   const max = Math.max(...items.map((i) => i.value), 1);
 
