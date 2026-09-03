@@ -183,7 +183,10 @@ export function NewCoffeeForm() {
         inventoryMode: getValues("bag.inventoryMode") ?? "none",
       },
     });
-    setMode(null);
+    // The dialog already told the user exactly which mode they're switching
+    // to (there are only two), so land straight in it instead of bouncing
+    // back through the picker they'd have to click through again.
+    setMode((current) => (current === "basic" ? "complete" : "basic"));
     setCurrentIndex(0);
     setExistingCoffeeId(undefined);
     setConflict(null);
