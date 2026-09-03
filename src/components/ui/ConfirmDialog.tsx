@@ -10,11 +10,13 @@ import { useDictionary } from "@/components/i18n/LocaleProvider";
 // this instead.
 export function ConfirmDialog({
   open,
+  header,
   message,
   onConfirm,
   onCancel,
 }: {
   open: boolean;
+  header?: React.ReactNode;
   message: string;
   onConfirm: () => void;
   onCancel: () => void;
@@ -46,6 +48,7 @@ export function ConfirmDialog({
         className="w-full max-w-sm rounded-card border border-border bg-surface p-6 shadow-lg"
         onClick={(e) => e.stopPropagation()}
       >
+        {header}
         <p className="text-sm text-ink">{message}</p>
         <div className="mt-5 flex gap-2">
           <button

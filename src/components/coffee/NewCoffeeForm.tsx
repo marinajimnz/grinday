@@ -28,6 +28,7 @@ import {
 import { useDictionary } from "@/components/i18n/LocaleProvider";
 import { useHideBottomNav } from "@/components/ui/BottomNavVisibility";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
+import { IconBolsa, IconFlecha, IconGrano } from "@/components/icons/pencil-icons";
 import type { Dictionary } from "@/lib/i18n/dictionaries/es";
 
 const formSchema = z.object({
@@ -292,6 +293,24 @@ export function NewCoffeeForm() {
       ? dict.coffees.saveCoffee
       : dict.common.next;
 
+  const otherMode: CoffeeWizardMode = mode === "basic" ? "complete" : "basic";
+  const modeTitle: Record<CoffeeWizardMode, string> = {
+    basic: dict.coffees.modeBasicTitle,
+    complete: dict.coffees.modeCompleteTitle,
+  };
+  const modeIcon: Record<CoffeeWizardMode, typeof IconGrano> = {
+    basic: IconGrano,
+    complete: IconBolsa,
+  };
+  const FromIcon = modeIcon[mode];
+  const ToIcon = modeIcon[otherMode];
+  const dialogMessage =
+    pendingAction === "exit"
+      ? dict.coffees.exitConfirm
+      : `${dict.coffees.changeModeSentence
+          .replace("{from}", modeTitle[mode])
+          .replace("{to}", modeTitle[otherMode])} ${dict.coffees.changeModeDataKept}`;
+
   return (
     <>
       <form onSubmit={handleFormSubmit} className="space-y-6">
@@ -359,7 +378,20 @@ export function NewCoffeeForm() {
       </form>
       <ConfirmDialog
         open={pendingAction !== null}
-        message={pendingAction === "exit" ? dict.coffees.exitConfirm : dict.coffees.changeModeConfirm}
+        header={
+          pendingAction === "changeMode" ? (
+            <div className="mb-4 flex items-center justify-center gap-4">
+              <span className="flex size-12 items-center justify-center rounded-full bg-ink/5 text-ink">
+                <FromIcon className="size-6" />
+              </span>
+              <IconFlecha aria-hidden className="size-5 text-ink-muted" />
+              <span className="flex size-12 items-center justify-center rounded-full bg-ink text-surface">
+                <ToIcon className="size-6" />
+              </span>
+            </div>
+          ) : undefined
+        }
+        message={dialogMessage}
         onConfirm={handleDialogConfirm}
         onCancel={handleDialogCancel}
       />

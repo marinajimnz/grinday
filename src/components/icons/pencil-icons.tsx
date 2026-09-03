@@ -170,6 +170,24 @@ export const IconGrano = pencilIcon(
   </>,
 );
 
+export const IconBolsa = pencilIcon(
+  "pencil-c",
+  <>
+    <path d="M8 6.7 C6.6 11 6.2 16 6.4 20.4 H17.6 C17.8 16 17.4 11 16 6.7" />
+    <path d="M8 6.7 c1.5 -1.3 6.5 -1.3 8 0" />
+    <path d="M7.7 4.3 H16.3" strokeWidth={3} />
+    <path d="M9.4 12 H14.6 V15.6 H9.4 Z" />
+  </>,
+);
+
+export const IconFlecha = pencilIcon(
+  "pencil-a",
+  <>
+    <path d="M3.6 12 H19.4" />
+    <path d="M13.4 5.9 L20.4 12 L13.4 18.1" />
+  </>,
+);
+
 export const IconBalanza = pencilIcon(
   "pencil-c",
   <>
