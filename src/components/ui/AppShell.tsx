@@ -6,6 +6,10 @@ import { cn } from "@/lib/cn";
 import { useDictionary } from "@/components/i18n/LocaleProvider";
 import type { Dictionary } from "@/lib/i18n/dictionaries/es";
 import {
+  BottomNavVisibilityProvider,
+  useAppShellBottomNavHidden,
+} from "@/components/ui/BottomNavVisibility";
+import {
   IconAjustes,
   IconCafe,
   IconEstadisticas,
@@ -29,9 +33,18 @@ function isActive(pathname: string, href: string) {
 }
 
 export function AppShell({ children }: { children: React.ReactNode }) {
+  return (
+    <BottomNavVisibilityProvider>
+      <AppShellLayout>{children}</AppShellLayout>
+    </BottomNavVisibilityProvider>
+  );
+}
+
+function AppShellLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const dict = useDictionary();
   const items = navItems(dict);
+  const bottomNavHidden = useAppShellBottomNavHidden();
 
   return (
     <div className="flex min-h-dvh flex-col md:flex-row">
@@ -63,31 +76,33 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         })}
       </nav>
 
-      <main className="flex-1 pb-20 md:pb-0">{children}</main>
+      <main className={cn("flex-1 md:pb-0", bottomNavHidden ? "pb-0" : "pb-20")}>{children}</main>
 
-      <nav
-        aria-label={dict.nav.mainNav}
-        className="fixed inset-x-0 bottom-0 z-10 flex border-t border-border bg-surface/95 backdrop-blur md:hidden"
-        style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
-      >
-        {items.map(({ href, label, icon: Icon }) => {
-          const active = isActive(pathname, href);
-          return (
-            <Link
-              key={href}
-              href={href}
-              className={cn(
-                "flex min-h-11 flex-1 flex-col items-center justify-center gap-1 py-2 text-[11px] font-medium",
-                active ? "text-ink" : "text-ink-muted",
-              )}
-              aria-current={active ? "page" : undefined}
-            >
-              <Icon aria-hidden className="size-5" />
-              {label}
-            </Link>
-          );
-        })}
-      </nav>
+      {!bottomNavHidden && (
+        <nav
+          aria-label={dict.nav.mainNav}
+          className="fixed inset-x-0 bottom-0 z-10 flex border-t border-border bg-surface/95 backdrop-blur md:hidden"
+          style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
+        >
+          {items.map(({ href, label, icon: Icon }) => {
+            const active = isActive(pathname, href);
+            return (
+              <Link
+                key={href}
+                href={href}
+                className={cn(
+                  "flex min-h-11 flex-1 flex-col items-center justify-center gap-1 py-2 text-[11px] font-medium",
+                  active ? "text-ink" : "text-ink-muted",
+                )}
+                aria-current={active ? "page" : undefined}
+              >
+                <Icon aria-hidden className="size-5" />
+                {label}
+              </Link>
+            );
+          })}
+        </nav>
+      )}
     </div>
   );
 }

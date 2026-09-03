@@ -26,6 +26,7 @@ import {
   findSimilarCoffeeAction,
 } from "@/features/coffees/actions";
 import { useDictionary } from "@/components/i18n/LocaleProvider";
+import { useHideBottomNav } from "@/components/ui/BottomNavVisibility";
 import type { Dictionary } from "@/lib/i18n/dictionaries/es";
 
 const formSchema = z.object({
@@ -89,6 +90,10 @@ export function NewCoffeeForm() {
       bag: { inventoryMode: "none", status: "sealed" },
     },
   });
+
+  // Once a mode is picked, the wizard is a focused full-screen flow — hide
+  // the mobile bottom nav so it doesn't compete for space or attention.
+  useHideBottomNav(mode !== null);
 
   const flatSteps = useMemo(() => {
     if (!mode) return [];
@@ -166,6 +171,11 @@ export function NewCoffeeForm() {
     setFormError(null);
   }
 
+  function requestExit() {
+    if (!window.confirm(dict.coffees.exitConfirm)) return;
+    router.push("/coffees");
+  }
+
   function handleUseExistingCoffee() {
     if (!conflict) return;
     setExistingCoffeeId(conflict.id);
@@ -241,20 +251,28 @@ export function NewCoffeeForm() {
 
   return (
     <form onSubmit={handleFormSubmit} className="space-y-6">
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <p className="text-xs font-medium uppercase tracking-wide text-ink-muted">
-            {dict.coffees.stepLabel} {currentIndex + 1} {dict.coffees.stepOfLabel} {flatSteps.length}
-          </p>
-          <h2 className="font-display text-lg text-ink">{step.title(dict)}</h2>
-        </div>
+      <div className="flex items-center justify-between gap-4">
+        <button
+          type="button"
+          onClick={requestExit}
+          className="min-h-11 rounded-input border border-border px-4 text-sm font-medium text-ink"
+        >
+          {dict.coffees.exit}
+        </button>
         <button
           type="button"
           onClick={requestChangeMode}
-          className="shrink-0 text-sm text-ink-muted underline"
+          className="min-h-11 rounded-input border border-border px-4 text-sm font-medium text-ink"
         >
           {dict.coffees.changeMode}
         </button>
+      </div>
+
+      <div>
+        <p className="text-xs font-medium uppercase tracking-wide text-ink-muted">
+          {dict.coffees.stepLabel} {currentIndex + 1} {dict.coffees.stepOfLabel} {flatSteps.length}
+        </p>
+        <h2 className="font-display text-lg text-ink">{step.title(dict)}</h2>
       </div>
 
       <div className="h-1.5 w-full overflow-hidden rounded-full bg-canvas">

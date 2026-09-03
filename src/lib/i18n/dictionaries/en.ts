@@ -177,6 +177,8 @@ const en: Dictionary = {
     modeCompleteDescription: "Every detail of the coffee and the bag, step by step.",
     changeMode: "Change type",
     changeModeConfirm: "Are you sure? The data you've entered will be lost.",
+    exit: "Exit",
+    exitConfirm: "Are you sure you want to exit? The data you've entered will be lost.",
     stepLabel: "Step",
     stepOfLabel: "of",
     stepCoffeeBasics: "Basic info",

@@ -175,6 +175,8 @@ const es = {
     modeCompleteDescription: "Todo el detalle del café y la bolsa, paso a paso.",
     changeMode: "Cambiar tipo",
     changeModeConfirm: "¿Seguro? Se perderán los datos que has introducido.",
+    exit: "Salir",
+    exitConfirm: "¿Seguro que quieres salir? Se perderán los datos que has introducido.",
     stepLabel: "Paso",
     stepOfLabel: "de",
     stepCoffeeBasics: "Datos básicos",
