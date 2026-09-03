@@ -27,6 +27,7 @@ import {
 } from "@/features/coffees/actions";
 import { useDictionary } from "@/components/i18n/LocaleProvider";
 import { useHideBottomNav } from "@/components/ui/BottomNavVisibility";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import type { Dictionary } from "@/lib/i18n/dictionaries/es";
 
 const formSchema = z.object({
@@ -74,6 +75,7 @@ export function NewCoffeeForm() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [existingCoffeeId, setExistingCoffeeId] = useState<string | undefined>(undefined);
   const [conflict, setConflict] = useState<{ id: string; name: string; roaster: string } | null>(null);
+  const [pendingAction, setPendingAction] = useState<"exit" | "changeMode" | null>(null);
 
   const {
     register,
@@ -158,11 +160,27 @@ export function NewCoffeeForm() {
     requestChangeMode();
   }
 
-  function requestChangeMode() {
-    if (isDirty && !window.confirm(dict.coffees.changeModeConfirm)) return;
+  // Básico's fields are a strict subset of Completo's (name/roaster/roastLevel
+  // for the coffee, purchaseDate/openedAt/status/packageWeightG/inventoryMode
+  // for the bag) — switching modes keeps exactly those, so nothing has to be
+  // typed twice, and drops anything Completo-only that Básico wouldn't show
+  // (and would otherwise still get submitted invisibly).
+  function performChangeMode() {
     reset({
-      coffee: { name: "", roaster: "", varieties: [], tastingNotes: [] },
-      bag: { inventoryMode: "none", status: "sealed" },
+      coffee: {
+        name: getValues("coffee.name"),
+        roaster: getValues("coffee.roaster"),
+        roastLevel: getValues("coffee.roastLevel"),
+        varieties: [],
+        tastingNotes: [],
+      },
+      bag: {
+        purchaseDate: getValues("bag.purchaseDate"),
+        openedAt: getValues("bag.openedAt"),
+        status: getValues("bag.status") ?? "sealed",
+        packageWeightG: getValues("bag.packageWeightG"),
+        inventoryMode: getValues("bag.inventoryMode") ?? "none",
+      },
     });
     setMode(null);
     setCurrentIndex(0);
@@ -171,9 +189,29 @@ export function NewCoffeeForm() {
     setFormError(null);
   }
 
+  function requestChangeMode() {
+    if (!isDirty) {
+      performChangeMode();
+      return;
+    }
+    setPendingAction("changeMode");
+  }
+
   function requestExit() {
-    if (!window.confirm(dict.coffees.exitConfirm)) return;
-    router.push("/coffees");
+    setPendingAction("exit");
+  }
+
+  function handleDialogConfirm() {
+    if (pendingAction === "exit") {
+      router.push("/coffees");
+    } else if (pendingAction === "changeMode") {
+      performChangeMode();
+    }
+    setPendingAction(null);
+  }
+
+  function handleDialogCancel() {
+    setPendingAction(null);
   }
 
   function handleUseExistingCoffee() {
@@ -241,6 +279,11 @@ export function NewCoffeeForm() {
   const StepFields = step.Fields;
   const stepErrors = step.section === "coffee" ? errors.coffee : errors.bag;
   const isLastStep = currentIndex === flatSteps.length - 1;
+  // On the very first step, Back would just do what Exit already does
+  // (leave this attempt) — showing both is redundant, so Back only shows
+  // once there's real step history, or after "add to existing" skipped
+  // ahead and Back needs to undo that.
+  const showBack = currentIndex > 0 || existingCoffeeId !== undefined;
   const nextLabel = isPending
     ? isLastStep
       ? dict.common.saving
@@ -250,7 +293,8 @@ export function NewCoffeeForm() {
       : dict.common.next;
 
   return (
-    <form onSubmit={handleFormSubmit} className="space-y-6">
+    <>
+      <form onSubmit={handleFormSubmit} className="space-y-6">
       <div className="flex items-center justify-between gap-4">
         <button
           type="button"
@@ -295,21 +339,30 @@ export function NewCoffeeForm() {
       )}
 
       <div className="flex gap-2">
-        <button
-          type="button"
-          onClick={handleBack}
-          className="min-h-11 rounded-input border border-border px-4 text-sm font-medium text-ink"
-        >
-          {dict.common.back}
-        </button>
+        {showBack && (
+          <button
+            type="button"
+            onClick={handleBack}
+            className="min-h-11 rounded-input border border-border px-4 text-sm font-medium text-ink"
+          >
+            {dict.common.back}
+          </button>
+        )}
         <button
           type="submit"
           disabled={isPending}
-          className="min-h-11 flex-1 rounded-input bg-ink px-4 text-sm font-medium text-surface disabled:opacity-60 sm:flex-none"
+          className={`min-h-11 flex-1 rounded-input bg-ink px-4 text-sm font-medium text-surface disabled:opacity-60${showBack ? " sm:flex-none" : ""}`}
         >
           {nextLabel}
         </button>
       </div>
-    </form>
+      </form>
+      <ConfirmDialog
+        open={pendingAction !== null}
+        message={pendingAction === "exit" ? dict.coffees.exitConfirm : dict.coffees.changeModeConfirm}
+        onConfirm={handleDialogConfirm}
+        onCancel={handleDialogCancel}
+      />
+    </>
   );
 }
