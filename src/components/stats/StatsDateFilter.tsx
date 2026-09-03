@@ -22,26 +22,26 @@ export function StatsDateFilter() {
   return (
     <div className="space-y-3">
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-        <div>
+        <div className="min-w-0">
           <label htmlFor="stats-from" className="mb-1.5 block text-xs font-medium text-ink-muted">
             {dict.stats.from}
           </label>
           <input
             id="stats-from"
             type="date"
-            className={inputClassName}
+            className={`${inputClassName} min-w-0`}
             value={searchParams.get("from") ?? ""}
             onChange={(e) => updateParam("from", e.target.value)}
           />
         </div>
-        <div>
+        <div className="min-w-0">
           <label htmlFor="stats-to" className="mb-1.5 block text-xs font-medium text-ink-muted">
             {dict.stats.to}
           </label>
           <input
             id="stats-to"
             type="date"
-            className={inputClassName}
+            className={`${inputClassName} min-w-0`}
             value={searchParams.get("to") ?? ""}
             onChange={(e) => updateParam("to", e.target.value)}
           />
