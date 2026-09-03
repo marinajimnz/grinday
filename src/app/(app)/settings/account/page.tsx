@@ -1,6 +1,10 @@
 import { Download } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { SignOutButton } from "@/components/settings/SignOutButton";
+import { ChangeUsernameForm } from "@/components/settings/ChangeUsernameForm";
+import { ChangeEmailForm } from "@/components/settings/ChangeEmailForm";
+import { ChangePasswordForm } from "@/components/settings/ChangePasswordForm";
+import { SettingsAccordionCard } from "@/components/settings/SettingsAccordionCard";
 import { getLocale } from "@/lib/i18n/locale";
 import { getDictionary } from "@/lib/i18n/get-dictionary";
 
@@ -32,6 +36,18 @@ export default async function AccountSettingsPage() {
         <div className="mt-4">
           <SignOutButton />
         </div>
+      </div>
+
+      <div className="mt-6 space-y-3">
+        <SettingsAccordionCard title={dict.settings.changeUsernameTitle}>
+          <ChangeUsernameForm currentUsername={profile?.username ?? null} />
+        </SettingsAccordionCard>
+        <SettingsAccordionCard title={dict.settings.changeEmailTitle}>
+          <ChangeEmailForm />
+        </SettingsAccordionCard>
+        <SettingsAccordionCard title={dict.settings.changePasswordTitle}>
+          <ChangePasswordForm />
+        </SettingsAccordionCard>
       </div>
 
       <div className="mt-6 rounded-card border border-border bg-surface p-5">
