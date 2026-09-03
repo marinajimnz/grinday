@@ -335,6 +335,7 @@ const es = {
     savedLocallyRetry: "El borrador sigue guardado en este dispositivo — puedes reintentar.",
     retryNow: "Reintentar ahora",
     saveAttempt: "Guardar intento",
+    saveWithoutTimer: "Guardar sin cronometrar",
     stop: "Parar",
     startTimer: "Iniciar temporizador",
     timerNote: "El tiempo se guardará en este intento automáticamente.",

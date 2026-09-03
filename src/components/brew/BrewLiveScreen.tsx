@@ -135,6 +135,19 @@ export function BrewLiveScreen({ draftId }: { draftId: string }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pendingSync, draft]);
 
+  const saveStatus = pendingSync ? (
+    <p role="status" className="text-sm text-ink-muted">
+      {dict.brew.offlinePending} — <strong className="text-ink">{dict.brew.offlinePendingStrong}</strong>
+      {dict.brew.offlinePendingRest}
+    </p>
+  ) : (
+    saveError && (
+      <p role="alert" className="text-sm text-red-700">
+        {saveError} {dict.brew.savedLocallyRetry}
+      </p>
+    )
+  );
+
   if (draft === undefined) return null; // avoid a flash before localStorage read
 
   if (draft === null) {
@@ -176,6 +189,19 @@ export function BrewLiveScreen({ draftId }: { draftId: string }) {
             onStart={handleStart}
             onStop={handleStop}
           />
+
+          {saveStatus}
+
+          <button
+            type="button"
+            disabled={isSaving}
+            onClick={handleSave}
+            className="min-h-11 w-full rounded-input border border-border px-4 text-sm font-medium text-ink disabled:opacity-60"
+          >
+            <LoadingLabel loading={isSaving}>
+              {pendingSync ? dict.brew.retryNow : saveError ? dict.common.retry : dict.brew.saveWithoutTimer}
+            </LoadingLabel>
+          </button>
         </div>
       )}
 
@@ -190,18 +216,7 @@ export function BrewLiveScreen({ draftId }: { draftId: string }) {
 
           <PostShotFields value={draft.postShot} onChange={updatePostShot} />
 
-          {pendingSync ? (
-            <p role="status" className="text-sm text-ink-muted">
-              {dict.brew.offlinePending} — <strong className="text-ink">{dict.brew.offlinePendingStrong}</strong>
-              {dict.brew.offlinePendingRest}
-            </p>
-          ) : (
-            saveError && (
-              <p role="alert" className="text-sm text-red-700">
-                {saveError} {dict.brew.savedLocallyRetry}
-              </p>
-            )
-          )}
+          {saveStatus}
 
           <button
             type="button"

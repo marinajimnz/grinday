@@ -337,6 +337,7 @@ const en: Dictionary = {
     savedLocallyRetry: "The draft is still saved on this device — you can retry.",
     retryNow: "Retry now",
     saveAttempt: "Save attempt",
+    saveWithoutTimer: "Save without timing",
     stop: "Stop",
     startTimer: "Start timer",
     timerNote: "The time will be saved to this attempt automatically.",
