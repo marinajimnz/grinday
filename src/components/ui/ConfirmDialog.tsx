@@ -49,7 +49,7 @@ export function ConfirmDialog({
         onClick={(e) => e.stopPropagation()}
       >
         {header}
-        <p className="text-sm text-ink">{message}</p>
+        <p className="text-center text-sm text-ink">{message}</p>
         <div className="mt-5 flex gap-2">
           <button
             type="button"
