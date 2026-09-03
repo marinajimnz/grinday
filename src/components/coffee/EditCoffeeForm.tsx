@@ -9,6 +9,7 @@ import { coffeeFieldsSchema } from "@/lib/validation/coffees";
 import { updateCoffeeAction } from "@/features/coffees/actions";
 import type { CoffeeRow } from "@/features/coffees/queries";
 import { useDictionary } from "@/components/i18n/LocaleProvider";
+import { LoadingLabel } from "@/components/ui/LoadingLabel";
 
 const formSchema = z.object({ coffee: coffeeFieldsSchema });
 type FormValues = z.infer<typeof formSchema>;
@@ -76,7 +77,7 @@ export function EditCoffeeForm({
           disabled={isPending}
           className="min-h-11 rounded-input bg-ink px-4 text-sm font-medium text-surface disabled:opacity-60"
         >
-          {isPending ? dict.common.saving : dict.coffees.saveChanges}
+          <LoadingLabel loading={isPending}>{dict.coffees.saveChanges}</LoadingLabel>
         </button>
         <button
           type="button"

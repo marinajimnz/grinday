@@ -6,6 +6,7 @@ import { Scale } from "lucide-react";
 import { inputClassName } from "@/components/ui/Field";
 import { adjustInventoryAction } from "@/features/inventory/actions";
 import { useDictionary } from "@/components/i18n/LocaleProvider";
+import { LoadingLabel } from "@/components/ui/LoadingLabel";
 
 export function InventoryAdjustPanel({
   coffeeBagId,
@@ -86,7 +87,7 @@ export function InventoryAdjustPanel({
           }
           className="min-h-11 rounded-input bg-ink px-4 text-sm font-medium text-surface disabled:opacity-60"
         >
-          {isPending ? dict.common.saving : dict.common.save}
+          <LoadingLabel loading={isPending}>{dict.common.save}</LoadingLabel>
         </button>
         <button
           type="button"

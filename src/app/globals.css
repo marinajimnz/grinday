@@ -68,6 +68,26 @@ button:not(:disabled),
   cursor: pointer;
 }
 
+/* Loading spinner: the grano icon spins with a little overshoot each half
+   turn and breathes in scale, instead of a robotic linear rotation — meant
+   to feel like the hand-drawn pencil-sketch icon set it belongs to. */
+@keyframes bean-spin {
+  from {
+    transform: rotate(0deg) scale(1);
+  }
+  50% {
+    transform: rotate(180deg) scale(1.12);
+  }
+  to {
+    transform: rotate(360deg) scale(1);
+  }
+}
+
+.animate-bean-spin {
+  animation: bean-spin 1.3s cubic-bezier(0.65, 0, 0.35, 1) infinite;
+  transform-origin: 50% 50%;
+}
+
 .tabular-nums {
   font-variant-numeric: tabular-nums;
 }

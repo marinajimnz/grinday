@@ -5,6 +5,7 @@ import { Check } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { setDefaultMachineAction } from "./actions";
 import { useDictionary } from "@/components/i18n/LocaleProvider";
+import { LoadingLabel } from "@/components/ui/LoadingLabel";
 
 export function SelectMachineButton({
   machineModelId,
@@ -39,7 +40,7 @@ export function SelectMachineButton({
         isPending && "opacity-60",
       )}
     >
-      {isPending ? dict.common.saving : dict.settings.useAsDefault}
+      <LoadingLabel loading={isPending}>{dict.settings.useAsDefault}</LoadingLabel>
     </button>
   );
 }

@@ -19,6 +19,7 @@ import {
 import { createAttemptAction } from "@/features/attempts/actions";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { useDictionary } from "@/components/i18n/LocaleProvider";
+import { LoadingLabel } from "@/components/ui/LoadingLabel";
 
 export function BrewLiveScreen({ draftId }: { draftId: string }) {
   const router = useRouter();
@@ -208,13 +209,9 @@ export function BrewLiveScreen({ draftId }: { draftId: string }) {
             onClick={handleSave}
             className="min-h-11 w-full rounded-input bg-ink px-4 text-sm font-medium text-surface disabled:opacity-60 sm:w-auto"
           >
-            {isSaving
-              ? dict.common.saving
-              : pendingSync
-                ? dict.brew.retryNow
-                : saveError
-                  ? dict.common.retry
-                  : dict.brew.saveAttempt}
+            <LoadingLabel loading={isSaving}>
+              {pendingSync ? dict.brew.retryNow : saveError ? dict.common.retry : dict.brew.saveAttempt}
+            </LoadingLabel>
           </button>
         </div>
       )}

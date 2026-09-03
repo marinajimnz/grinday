@@ -9,6 +9,7 @@ import { attemptFieldsSchema } from "@/lib/validation/attempts";
 import { updateAttemptAction } from "@/features/attempts/actions";
 import type { BrewAttemptRow } from "@/features/attempts/queries";
 import { useDictionary } from "@/components/i18n/LocaleProvider";
+import { LoadingLabel } from "@/components/ui/LoadingLabel";
 
 const formSchema = z.object({ attempt: attemptFieldsSchema });
 type FormValues = z.infer<typeof formSchema>;
@@ -91,7 +92,7 @@ export function EditAttemptForm({
           disabled={isPending}
           className="min-h-11 rounded-input bg-ink px-4 text-sm font-medium text-surface disabled:opacity-60"
         >
-          {isPending ? dict.common.saving : dict.coffees.saveChanges}
+          <LoadingLabel loading={isPending}>{dict.coffees.saveChanges}</LoadingLabel>
         </button>
         <button
           type="button"

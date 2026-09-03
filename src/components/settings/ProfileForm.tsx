@@ -6,6 +6,7 @@ import { Field, inputClassName } from "@/components/ui/Field";
 import { updateProfileAction } from "@/features/profile/actions";
 import { useDictionary } from "@/components/i18n/LocaleProvider";
 import { IconGrano } from "@/components/icons/pencil-icons";
+import { LoadingLabel } from "@/components/ui/LoadingLabel";
 
 const ROLE_LABELS: Record<string, string> = { admin: "Admin", coffee_lover: "Coffee lover" };
 const ROLE_ICONS: Record<string, React.ComponentType<React.SVGProps<SVGSVGElement>>> = {
@@ -81,7 +82,7 @@ export function ProfileForm({
         disabled={isPending}
         className="min-h-11 rounded-input bg-ink px-4 text-sm font-medium text-surface disabled:opacity-60"
       >
-        {isPending ? dict.common.saving : dict.common.save}
+        <LoadingLabel loading={isPending}>{dict.common.save}</LoadingLabel>
       </button>
     </form>
   );

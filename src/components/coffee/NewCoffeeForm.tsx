@@ -28,6 +28,7 @@ import {
 import { useDictionary } from "@/components/i18n/LocaleProvider";
 import { useHideBottomNav } from "@/components/ui/BottomNavVisibility";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
+import { LoadingLabel } from "@/components/ui/LoadingLabel";
 import { IconBolsa, IconFlecha, IconGrano } from "@/components/icons/pencil-icons";
 import type { Dictionary } from "@/lib/i18n/dictionaries/es";
 
@@ -288,13 +289,11 @@ export function NewCoffeeForm() {
   // once there's real step history, or after "add to existing" skipped
   // ahead and Back needs to undo that.
   const showBack = currentIndex > 0 || existingCoffeeId !== undefined;
-  const nextLabel = isPending
-    ? isLastStep
-      ? dict.common.saving
-      : dict.common.loading
-    : isLastStep
-      ? dict.coffees.saveCoffee
-      : dict.common.next;
+  const nextLabel = (
+    <LoadingLabel loading={isPending} loadingText={isLastStep ? dict.common.saving : dict.common.loading}>
+      {isLastStep ? dict.coffees.saveCoffee : dict.common.next}
+    </LoadingLabel>
+  );
 
   const otherMode: CoffeeWizardMode = mode === "basic" ? "complete" : "basic";
   const modeTitle: Record<CoffeeWizardMode, string> = {
