@@ -6,7 +6,7 @@ import { isLocale, LOCALE_COOKIE } from "@/lib/i18n/types";
 // no-network fallback, reached with no server round-trip at all when it
 // really matters, but it must also render on a direct, unauthenticated
 // visit (e.g. testing it, or a stale tab reloading offline before login).
-const PUBLIC_PATHS = new Set(["/login", "/register", "/offline"]);
+const PUBLIC_PATHS = new Set(["/login", "/register", "/forgot-password", "/reset-password", "/offline"]);
 
 /**
  * Refreshes the Supabase session cookie on every request and gates every

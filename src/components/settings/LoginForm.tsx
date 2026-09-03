@@ -68,6 +68,12 @@ export function LoginForm() {
         />
       </Field>
 
+      <p className="text-right text-sm">
+        <Link href="/forgot-password" className="text-ink-muted underline">
+          {dict.login.forgotPasswordLink}
+        </Link>
+      </p>
+
       {error && (
         <p role="alert" className="text-sm text-red-700">
           {error}

@@ -1,6 +1,8 @@
 "use server";
 
+import { headers } from "next/headers";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { createClient } from "@/lib/supabase/server";
 import { registerSchema } from "@/lib/validation/auth";
 import { getLocale } from "@/lib/i18n/locale";
 import { getDictionary } from "@/lib/i18n/get-dictionary";
@@ -103,6 +105,38 @@ export async function registerAction(input: unknown): Promise<RegisterResult> {
       return { success: false, field: "username", message: dict.register.usernameTaken };
     }
     return { success: false, message: dict.register.genericError };
+  }
+
+  return { success: true };
+}
+
+type RequestPasswordResetResult = { success: true } | { success: false; message: string };
+
+/**
+ * "Forgot your password?" — always resolves to the same generic outcome
+ * regardless of whether the identifier actually matched an account, so this
+ * can't be used to probe which usernames/emails are registered. The one
+ * exception is a genuinely empty input, which is just a form-validation
+ * problem, not an enumeration risk.
+ */
+export async function requestPasswordResetAction(identifier: string): Promise<RequestPasswordResetResult> {
+  const dict = getDictionary(await getLocale());
+  const trimmed = identifier.trim();
+  if (!trimmed) {
+    return { success: false, message: dict.forgotPassword.identifierRequired };
+  }
+
+  const resolved = await resolveLoginEmailAction(trimmed);
+  if (resolved.success) {
+    const requestHeaders = await headers();
+    const host = requestHeaders.get("x-forwarded-host") ?? requestHeaders.get("host");
+    const protocol = requestHeaders.get("x-forwarded-proto") ?? (host?.startsWith("localhost") ? "http" : "https");
+    const origin = `${protocol}://${host}`;
+
+    const supabase = await createClient();
+    await supabase.auth.resetPasswordForEmail(resolved.email, {
+      redirectTo: `${origin}/reset-password`,
+    });
   }
 
   return { success: true };
