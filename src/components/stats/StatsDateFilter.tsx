@@ -21,7 +21,7 @@ export function StatsDateFilter() {
 
   return (
     <div className="space-y-3">
-      <div className="grid grid-cols-1 gap-3 sm:max-w-sm sm:grid-cols-2">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <div>
           <label htmlFor="stats-from" className="mb-1.5 block text-xs font-medium text-ink-muted">
             {dict.stats.from}
