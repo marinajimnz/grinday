@@ -13,6 +13,11 @@ export async function createCoffeeBasic(
   await page.getByLabel("Nombre").fill(name);
   await page.getByLabel("Tostador").fill(roaster);
   await page.getByRole("button", { name: "Siguiente" }).click();
+
+  // Step 2/3 (bag) — nothing needed here for these tests.
+  await page.getByRole("button", { name: "Siguiente" }).click();
+
+  // Step 3/3 (cover photo) — optional, skip it.
   await page.getByRole("button", { name: "Guardar café" }).click();
 }
 
@@ -63,5 +68,8 @@ export async function createCoffeeComplete(
   // Step 3/3 (bag): inventory, dose, lot.
   if (inventoryMode) await page.getByLabel("Inventario").selectOption(inventoryMode);
   if (estimatedDoseG) await page.getByLabel("Dosis estimada (g)").fill(estimatedDoseG);
+  await page.getByRole("button", { name: "Siguiente" }).click();
+
+  // Cover photo step — optional, skip it.
   await page.getByRole("button", { name: "Guardar café" }).click();
 }

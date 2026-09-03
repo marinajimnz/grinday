@@ -19,11 +19,13 @@ import {
   BagDatesFields,
   BagInventoryFields,
 } from "./wizard/BagStepFields";
+import { CoverPhotoPicker } from "./wizard/CoverPhotoPicker";
 import type { CoffeeWizardMode } from "./wizard/types";
 import { bagFieldsSchema, coffeeFieldsSchema } from "@/lib/validation/coffees";
 import {
   createCoffeeAndBagAction,
   findSimilarCoffeeAction,
+  registerCoffeeMediaAction,
 } from "@/features/coffees/actions";
 import { useDictionary } from "@/components/i18n/LocaleProvider";
 import { useHideBottomNav } from "@/components/ui/BottomNavVisibility";
@@ -68,6 +70,16 @@ const COMPLETE_BAG_STEPS: WizardStep[] = [
   { key: "bag-inventory", section: "bag", title: (d) => d.coffees.stepBagInventory, Fields: BagInventoryFields },
 ];
 
+// Last step in every mode, handled outside the register()-driven fields
+// system below (see the "cover-photo" special case in the render) since it
+// holds a plain File, not a form field.
+const COVER_PHOTO_STEP: WizardStep = {
+  key: "cover-photo",
+  section: "bag",
+  title: (d) => d.coffees.stepCoverPhoto,
+  Fields: CoverPhotoPicker,
+};
+
 export function NewCoffeeForm() {
   const router = useRouter();
   const dict = useDictionary();
@@ -78,6 +90,7 @@ export function NewCoffeeForm() {
   const [existingCoffeeId, setExistingCoffeeId] = useState<string | undefined>(undefined);
   const [conflict, setConflict] = useState<{ id: string; name: string; roaster: string } | null>(null);
   const [pendingAction, setPendingAction] = useState<"exit" | "changeMode" | null>(null);
+  const [coverPhotoFile, setCoverPhotoFile] = useState<File | null>(null);
 
   const {
     register,
@@ -103,7 +116,8 @@ export function NewCoffeeForm() {
     if (!mode) return [];
     const coffeeSteps = mode === "basic" ? BASIC_COFFEE_STEPS : COMPLETE_COFFEE_STEPS;
     const bagSteps = mode === "basic" ? BASIC_BAG_STEPS : COMPLETE_BAG_STEPS;
-    return existingCoffeeId ? bagSteps : [...coffeeSteps, ...bagSteps];
+    const tail = [...bagSteps, COVER_PHOTO_STEP];
+    return existingCoffeeId ? tail : [...coffeeSteps, ...tail];
   }, [mode, existingCoffeeId]);
 
   async function onSubmit(values: FormValues) {
@@ -117,7 +131,42 @@ export function NewCoffeeForm() {
       setFormError(result.message);
       return;
     }
+    if (coverPhotoFile) {
+      await uploadCoverPhoto(result.data.bagId, coverPhotoFile);
+    }
     router.push(`/coffees/${result.data.coffeeId}`);
+  }
+
+  // Best-effort: the coffee and bag are already saved by this point, so a
+  // photo upload failure shouldn't block navigation — the same uploader is
+  // available from the bag's own page afterwards.
+  async function uploadCoverPhoto(bagId: string, file: File) {
+    try {
+      // Dynamically imported so the (fairly heavy) Supabase browser client
+      // and canvas-based compressor only load for the wizard's less common
+      // path — most coffees get created without a cover photo.
+      const [{ createClient }, { compressImage }] = await Promise.all([
+        import("@/lib/supabase/client"),
+        import("@/lib/media/compressImage"),
+      ]);
+
+      const supabase = createClient();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const blob = await compressImage(file);
+      const path = `${user.id}/${bagId}/${Date.now()}.jpg`;
+      const { error: uploadError } = await supabase.storage
+        .from("coffee-photos")
+        .upload(path, blob, { contentType: "image/jpeg" });
+      if (uploadError) throw uploadError;
+
+      await registerCoffeeMediaAction({ coffeeBagId: bagId, kind: "package_front", storagePath: path });
+    } catch (err) {
+      console.error("[coffee-photo] failed to upload cover photo:", err);
+    }
   }
 
   async function goToNextStep() {
@@ -351,7 +400,11 @@ export function NewCoffeeForm() {
         <p className="rounded-input bg-canvas px-3 py-2 text-xs text-ink-muted">{dict.coffees.modeBasicNote}</p>
       )}
 
-      <StepFields register={register} control={control} errors={stepErrors} />
+      {step.key === "cover-photo" ? (
+        <CoverPhotoPicker file={coverPhotoFile} onChange={setCoverPhotoFile} />
+      ) : (
+        <StepFields register={register} control={control} errors={stepErrors} />
+      )}
 
       {formError && (
         <p role="alert" className="text-sm text-red-700">

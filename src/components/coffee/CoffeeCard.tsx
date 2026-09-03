@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { BagStatusBadge } from "./BagStatusBadge";
 import { IconCafe as CoffeeIcon } from "@/components/icons/pencil-icons";
 import { type ROAST_LEVELS } from "@/features/coffees/constants";
@@ -14,8 +15,19 @@ export function CoffeeCard({ coffee, dict }: { coffee: CoffeeListItem; dict: Dic
       href={`/coffees/${coffee.id}`}
       className="block overflow-hidden rounded-card border border-border bg-surface transition-shadow hover:shadow-soft"
     >
-      <div className="flex aspect-[4/3] items-center justify-center bg-canvas">
-        <CoffeeIcon aria-hidden className="size-10 text-coffee" />
+      <div className="relative flex aspect-[4/3] items-center justify-center overflow-hidden bg-canvas">
+        {coffee.coverPhotoUrl ? (
+          <Image
+            src={coffee.coverPhotoUrl}
+            alt=""
+            fill
+            sizes="(max-width: 640px) 50vw, 25vw"
+            className="object-cover"
+            unoptimized
+          />
+        ) : (
+          <CoffeeIcon aria-hidden className="size-10 text-coffee" />
+        )}
       </div>
       <div className="p-4">
         <p className="text-xs font-medium text-ink-muted">{coffee.roaster}</p>

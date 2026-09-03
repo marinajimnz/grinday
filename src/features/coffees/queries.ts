@@ -11,6 +11,7 @@ export type CoffeeMediaRow = Database["public"]["Tables"]["coffee_media"]["Row"]
 
 export type CoffeeListItem = CoffeeRow & {
   bags: Pick<CoffeeBagRow, "id" | "status" | "roast_date">[];
+  coverPhotoUrl: string | null;
 };
 
 export type CoffeeLibraryFilters = {
@@ -63,10 +64,41 @@ export async function listCoffees(
     bagsByCoffee.set(bag.coffee_id, list);
   }
 
-  let items: CoffeeListItem[] = coffees.map((coffee) => ({
-    ...coffee,
-    bags: bagsByCoffee.get(coffee.id) ?? [],
-  }));
+  // The card shows one cover photo per coffee: the "package_front" shot on
+  // whichever bag is active (same bag CoffeeCard itself treats as active).
+  const activeBagIdByCoffee = new Map<string, string>();
+  for (const [coffeeId, coffeeBags] of bagsByCoffee) {
+    const active = coffeeBags.find((b) => b.status === "open") ?? coffeeBags[0];
+    if (active) activeBagIdByCoffee.set(coffeeId, active.id);
+  }
+  const activeBagIds = [...activeBagIdByCoffee.values()];
+
+  const coverUrlByBag = new Map<string, string>();
+  if (activeBagIds.length) {
+    const { data: coverMedia, error: coverError } = await supabase
+      .from("coffee_media")
+      .select("coffee_bag_id, storage_path")
+      .in("coffee_bag_id", activeBagIds)
+      .eq("kind", "package_front")
+      .order("created_at", { ascending: true });
+    if (coverError) throw coverError;
+
+    const withUrls = await attachSignedUrls(supabase, coverMedia ?? []);
+    for (const item of withUrls) {
+      if (item.url && !coverUrlByBag.has(item.coffee_bag_id)) {
+        coverUrlByBag.set(item.coffee_bag_id, item.url);
+      }
+    }
+  }
+
+  let items: CoffeeListItem[] = coffees.map((coffee) => {
+    const activeBagId = activeBagIdByCoffee.get(coffee.id);
+    return {
+      ...coffee,
+      bags: bagsByCoffee.get(coffee.id) ?? [],
+      coverPhotoUrl: (activeBagId && coverUrlByBag.get(activeBagId)) || null,
+    };
+  });
 
   if (filters.bagStatus) {
     items = items.filter((item) =>

@@ -274,6 +274,9 @@ export async function registerCoffeeMediaAction(
   if (error) return { success: false, message: error.message };
 
   revalidatePath(`/bags/${coffeeBagId}`);
+  // A package_front photo becomes the coffee's cover image on the library
+  // grid, which has its own cached listing to drop too.
+  revalidatePath("/coffees");
   return { success: true, data: { mediaId: data.id } };
 }
 
