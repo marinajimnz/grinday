@@ -1,4 +1,5 @@
 import { test, expect } from "./fixtures";
+import { createCoffeeComplete } from "./helpers";
 
 async function logRatedAttempt(
   page: import("@playwright/test").Page,
@@ -31,11 +32,7 @@ test("dashboard shows the active coffee and stats aggregate once there's enough 
   await page.getByRole("button", { name: "Usar como predeterminada" }).click();
   await expect(page.getByText("Predeterminada")).toBeVisible();
 
-  await page.goto("/coffees/new");
-  await page.getByLabel("Nombre").fill(name);
-  await page.getByLabel("Tostador").fill("E2E Stats Roaster");
-  await page.getByLabel("País").fill("Colombia");
-  await page.getByRole("button", { name: "Guardar café" }).click();
+  await createCoffeeComplete(page, { name, roaster: "E2E Stats Roaster", country: "Colombia" });
   await expect(page).toHaveURL(/\/coffees\/[0-9a-f-]+$/);
 
   await page.getByRole("tab", { name: "Bolsas" }).click();

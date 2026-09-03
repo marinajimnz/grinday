@@ -1,4 +1,5 @@
 import { test, expect } from "./fixtures";
+import { createCoffeeComplete } from "./helpers";
 
 test("tracks inventory automatically for approximate_shots and never shows negative", async ({
   page,
@@ -12,13 +13,12 @@ test("tracks inventory automatically for approximate_shots and never shows negat
   await page.getByRole("button", { name: "Usar como predeterminada" }).click();
   await expect(page.getByText("Predeterminada")).toBeVisible();
 
-  await page.goto("/coffees/new");
-  await page.getByLabel("Nombre").fill(name);
-  await page.getByLabel("Tostador").fill("E2E Roaster");
-  await page.getByLabel("Peso del paquete (g)").fill("250");
-  await page.getByLabel("Inventario").selectOption("approximate_shots");
-  await page.getByLabel("Dosis estimada (g)").fill("18");
-  await page.getByRole("button", { name: "Guardar café" }).click();
+  await createCoffeeComplete(page, {
+    name,
+    packageWeightG: "250",
+    inventoryMode: "approximate_shots",
+    estimatedDoseG: "18",
+  });
   await expect(page).toHaveURL(/\/coffees\/[0-9a-f-]+$/);
 
   // The "Bolsas" tab shows a compact card per bag; clicking it expands the

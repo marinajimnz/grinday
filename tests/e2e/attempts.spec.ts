@@ -1,4 +1,5 @@
 import { test, expect } from "./fixtures";
+import { createCoffeeBasic } from "./helpers";
 
 test("logs an attempt, marks it preferred, duplicates it, and compares both", async ({
   page,
@@ -12,10 +13,7 @@ test("logs an attempt, marks it preferred, duplicates it, and compares both", as
   await page.getByRole("button", { name: "Usar como predeterminada" }).click();
   await expect(page.getByText("Predeterminada")).toBeVisible();
 
-  await page.goto("/coffees/new");
-  await page.getByLabel("Nombre").fill(name);
-  await page.getByLabel("Tostador").fill("E2E Roaster");
-  await page.getByRole("button", { name: "Guardar café" }).click();
+  await createCoffeeBasic(page, { name });
   await expect(page).toHaveURL(/\/coffees\/[0-9a-f-]+$/);
 
   await page.getByRole("link", { name: "Registrar manual" }).click();

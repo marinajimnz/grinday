@@ -1,18 +1,32 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useMemo, useState, useTransition, type ComponentType } from "react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { CoffeeFieldsFieldset } from "./CoffeeFieldsFieldset";
-import { BagFieldsFieldset } from "./BagFieldsFieldset";
+import { ModeSelectCards } from "./wizard/ModeSelectCards";
+import {
+  CoffeeAltitudeFields,
+  CoffeeBasicModeFields,
+  CoffeeBasicsFields,
+  CoffeeOriginFields,
+  CoffeeProfileFields,
+} from "./wizard/CoffeeStepFields";
+import {
+  BagBasicModeFields,
+  BagConditionFields,
+  BagDatesFields,
+  BagInventoryFields,
+} from "./wizard/BagStepFields";
+import type { CoffeeWizardMode } from "./wizard/types";
 import { bagFieldsSchema, coffeeFieldsSchema } from "@/lib/validation/coffees";
 import {
   createCoffeeAndBagAction,
   findSimilarCoffeeAction,
 } from "@/features/coffees/actions";
 import { useDictionary } from "@/components/i18n/LocaleProvider";
+import type { Dictionary } from "@/lib/i18n/dictionaries/es";
 
 const formSchema = z.object({
   coffee: coffeeFieldsSchema,
@@ -21,23 +35,53 @@ const formSchema = z.object({
 
 type FormValues = z.infer<typeof formSchema>;
 
+type WizardStep = {
+  key: string;
+  section: "coffee" | "bag";
+  title: (dict: Dictionary) => string;
+  // Step components come from two families with different prop shapes
+  // (coffee steps take `control`, bag steps don't); see CoffeeStepFields /
+  // BagStepFields for why those are loosely typed too.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  Fields: ComponentType<any>;
+};
+
+const BASIC_COFFEE_STEPS: WizardStep[] = [
+  { key: "basic-coffee", section: "coffee", title: (d) => d.coffees.theCoffee, Fields: CoffeeBasicModeFields },
+];
+const BASIC_BAG_STEPS: WizardStep[] = [
+  { key: "basic-bag", section: "bag", title: (d) => d.coffees.theBag, Fields: BagBasicModeFields },
+];
+const COMPLETE_COFFEE_STEPS: WizardStep[] = [
+  { key: "coffee-basics", section: "coffee", title: (d) => d.coffees.stepCoffeeBasics, Fields: CoffeeBasicsFields },
+  { key: "coffee-origin", section: "coffee", title: (d) => d.coffees.stepCoffeeOrigin, Fields: CoffeeOriginFields },
+  { key: "coffee-profile", section: "coffee", title: (d) => d.coffees.stepCoffeeProfile, Fields: CoffeeProfileFields },
+  { key: "coffee-altitude", section: "coffee", title: (d) => d.coffees.stepCoffeeAltitude, Fields: CoffeeAltitudeFields },
+];
+const COMPLETE_BAG_STEPS: WizardStep[] = [
+  { key: "bag-dates", section: "bag", title: (d) => d.coffees.stepBagDates, Fields: BagDatesFields },
+  { key: "bag-condition", section: "bag", title: (d) => d.coffees.stepBagCondition, Fields: BagConditionFields },
+  { key: "bag-inventory", section: "bag", title: (d) => d.coffees.stepBagInventory, Fields: BagInventoryFields },
+];
+
 export function NewCoffeeForm() {
   const router = useRouter();
   const dict = useDictionary();
   const [isPending, startTransition] = useTransition();
-  const [conflict, setConflict] = useState<{
-    id: string;
-    name: string;
-    roaster: string;
-    values: FormValues;
-  } | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
+  const [mode, setMode] = useState<CoffeeWizardMode | null>(null);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [existingCoffeeId, setExistingCoffeeId] = useState<string | undefined>(undefined);
+  const [conflict, setConflict] = useState<{ id: string; name: string; roaster: string } | null>(null);
 
   const {
     register,
     control,
+    trigger,
+    getValues,
+    reset,
     handleSubmit,
-    formState: { errors },
+    formState: { errors, isDirty },
   } = useForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -46,7 +90,14 @@ export function NewCoffeeForm() {
     },
   });
 
-  async function submitCoffee(values: FormValues, existingCoffeeId?: string) {
+  const flatSteps = useMemo(() => {
+    if (!mode) return [];
+    const coffeeSteps = mode === "basic" ? BASIC_COFFEE_STEPS : COMPLETE_COFFEE_STEPS;
+    const bagSteps = mode === "basic" ? BASIC_BAG_STEPS : COMPLETE_BAG_STEPS;
+    return existingCoffeeId ? bagSteps : [...coffeeSteps, ...bagSteps];
+  }, [mode, existingCoffeeId]);
+
+  async function onSubmit(values: FormValues) {
     setFormError(null);
     const result = await createCoffeeAndBagAction({
       coffee: values.coffee,
@@ -60,18 +111,80 @@ export function NewCoffeeForm() {
     router.push(`/coffees/${result.data.coffeeId}`);
   }
 
-  function onSubmit(values: FormValues) {
+  async function goToNextStep() {
+    if (currentIndex < flatSteps.length - 1) {
+      setCurrentIndex((i) => i + 1);
+      return;
+    }
+    await handleSubmit(onSubmit)();
+  }
+
+  function handleNext() {
     startTransition(async () => {
-      const match = await findSimilarCoffeeAction({
-        name: values.coffee.name,
-        roaster: values.coffee.roaster,
-      });
-      if (match) {
-        setConflict({ ...match, values });
-        return;
+      // Name + roaster always live on the very first coffee step in both
+      // modes — check for a duplicate right there, before the user fills in
+      // the rest, unless we already resolved that via "add to existing".
+      if (!existingCoffeeId && currentIndex === 0) {
+        const valid = await trigger(["coffee.name", "coffee.roaster"]);
+        if (!valid) return;
+        const match = await findSimilarCoffeeAction({
+          name: getValues("coffee.name"),
+          roaster: getValues("coffee.roaster"),
+        });
+        if (match) {
+          setConflict(match);
+          return;
+        }
       }
-      await submitCoffee(values);
+      await goToNextStep();
     });
+  }
+
+  function handleBack() {
+    if (currentIndex > 0) {
+      setCurrentIndex((i) => i - 1);
+      return;
+    }
+    if (existingCoffeeId) {
+      setExistingCoffeeId(undefined);
+      setCurrentIndex(0);
+      return;
+    }
+    requestChangeMode();
+  }
+
+  function requestChangeMode() {
+    if (isDirty && !window.confirm(dict.coffees.changeModeConfirm)) return;
+    reset({
+      coffee: { name: "", roaster: "", varieties: [], tastingNotes: [] },
+      bag: { inventoryMode: "none", status: "sealed" },
+    });
+    setMode(null);
+    setCurrentIndex(0);
+    setExistingCoffeeId(undefined);
+    setConflict(null);
+    setFormError(null);
+  }
+
+  function handleUseExistingCoffee() {
+    if (!conflict) return;
+    setExistingCoffeeId(conflict.id);
+    setCurrentIndex(0);
+    setConflict(null);
+  }
+
+  // Pressing Enter in a plain text field natively submits the form (the
+  // browser synthesizes a click on the submit button) — handle that the
+  // same way as clicking Next/Save instead of intercepting keydown. Inputs
+  // with their own Enter behavior (TagInput) call preventDefault() on it,
+  // so this never fires for those.
+  function handleFormSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    handleNext();
+  }
+
+  if (!mode) {
+    return <ModeSelectCards onSelect={(next) => { setMode(next); setCurrentIndex(0); }} />;
   }
 
   if (conflict) {
@@ -90,9 +203,7 @@ export function NewCoffeeForm() {
           <button
             type="button"
             disabled={isPending}
-            onClick={() =>
-              startTransition(() => submitCoffee(conflict.values, conflict.id))
-            }
+            onClick={handleUseExistingCoffee}
             className="min-h-11 flex-1 rounded-input bg-ink px-4 text-sm font-medium text-surface"
           >
             {dict.coffees.addThisBagTo} “{conflict.name}”
@@ -100,27 +211,64 @@ export function NewCoffeeForm() {
           <button
             type="button"
             disabled={isPending}
-            onClick={() => startTransition(() => submitCoffee(conflict.values))}
+            onClick={() => {
+              setConflict(null);
+              startTransition(goToNextStep);
+            }}
             className="min-h-11 flex-1 rounded-input border border-border px-4 text-sm font-medium text-ink"
           >
             {dict.coffees.createNewAnyway}
           </button>
         </div>
-        <button
-          type="button"
-          onClick={() => setConflict(null)}
-          className="mt-3 text-sm text-ink-muted underline"
-        >
+        <button type="button" onClick={() => setConflict(null)} className="mt-3 text-sm text-ink-muted underline">
           {dict.coffees.backToEdit}
         </button>
       </div>
     );
   }
 
+  const step = flatSteps[currentIndex];
+  const StepFields = step.Fields;
+  const stepErrors = step.section === "coffee" ? errors.coffee : errors.bag;
+  const isLastStep = currentIndex === flatSteps.length - 1;
+  const nextLabel = isPending
+    ? isLastStep
+      ? dict.common.saving
+      : dict.common.loading
+    : isLastStep
+      ? dict.coffees.saveCoffee
+      : dict.common.next;
+
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
-      <CoffeeFieldsFieldset register={register} control={control} errors={errors.coffee} />
-      <BagFieldsFieldset register={register} control={control} errors={errors.bag} />
+    <form onSubmit={handleFormSubmit} className="space-y-6">
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <p className="text-xs font-medium uppercase tracking-wide text-ink-muted">
+            {dict.coffees.stepLabel} {currentIndex + 1} {dict.coffees.stepOfLabel} {flatSteps.length}
+          </p>
+          <h2 className="font-display text-lg text-ink">{step.title(dict)}</h2>
+        </div>
+        <button
+          type="button"
+          onClick={requestChangeMode}
+          className="shrink-0 text-sm text-ink-muted underline"
+        >
+          {dict.coffees.changeMode}
+        </button>
+      </div>
+
+      <div className="h-1.5 w-full overflow-hidden rounded-full bg-canvas">
+        <div
+          className="h-full rounded-full bg-ink transition-[width]"
+          style={{ width: `${((currentIndex + 1) / flatSteps.length) * 100}%` }}
+        />
+      </div>
+
+      {mode === "basic" && (
+        <p className="rounded-input bg-canvas px-3 py-2 text-xs text-ink-muted">{dict.coffees.modeBasicNote}</p>
+      )}
+
+      <StepFields register={register} control={control} errors={stepErrors} />
 
       {formError && (
         <p role="alert" className="text-sm text-red-700">
@@ -128,13 +276,22 @@ export function NewCoffeeForm() {
         </p>
       )}
 
-      <button
-        type="submit"
-        disabled={isPending}
-        className="min-h-11 w-full rounded-input bg-ink px-4 text-sm font-medium text-surface disabled:opacity-60 sm:w-auto"
-      >
-        {isPending ? dict.common.saving : dict.coffees.saveCoffee}
-      </button>
+      <div className="flex gap-2">
+        <button
+          type="button"
+          onClick={handleBack}
+          className="min-h-11 rounded-input border border-border px-4 text-sm font-medium text-ink"
+        >
+          {dict.common.back}
+        </button>
+        <button
+          type="submit"
+          disabled={isPending}
+          className="min-h-11 flex-1 rounded-input bg-ink px-4 text-sm font-medium text-surface disabled:opacity-60 sm:flex-none"
+        >
+          {nextLabel}
+        </button>
+      </div>
     </form>
   );
 }
