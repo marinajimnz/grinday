@@ -101,7 +101,7 @@ export type Database = {
           idempotency_key: string | null
           input_weight_g: number | null
           intensity: number | null
-          machine_id: string
+          machine_id: string | null
           machine_snapshot: Json
           notes: string | null
           output_volume_ml: number | null
@@ -138,7 +138,7 @@ export type Database = {
           idempotency_key?: string | null
           input_weight_g?: number | null
           intensity?: number | null
-          machine_id: string
+          machine_id?: string | null
           machine_snapshot?: Json
           notes?: string | null
           output_volume_ml?: number | null
@@ -175,7 +175,7 @@ export type Database = {
           idempotency_key?: string | null
           input_weight_g?: number | null
           intensity?: number | null
-          machine_id?: string
+          machine_id?: string | null
           machine_snapshot?: Json
           notes?: string | null
           output_volume_ml?: number | null

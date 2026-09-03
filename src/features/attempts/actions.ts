@@ -87,20 +87,19 @@ export async function createAttemptAction(
   if (bagError) return { success: false, message: bagError.message };
   if (!bag) return { success: false, message: "Bolsa no encontrada" };
 
+  // A default machine isn't required to log a shot — a user can brew before
+  // ever visiting Ajustes → Máquinas. When there is one, its capabilities and
+  // current settings are snapshotted onto the attempt; without one the
+  // snapshot just stays empty.
   const machine = await getUserDefaultMachine(supabase);
-  if (!machine) {
-    return {
-      success: false,
-      message: "Selecciona una máquina en Ajustes → Máquinas antes de registrar un intento.",
-    };
-  }
-
-  const machineSnapshot: Json = {
-    machine_model_slug: machine.machine_model?.slug ?? null,
-    capabilities_version: machine.machine_model?.capabilities_version ?? null,
-    capabilities: machine.machine_model?.capabilities ?? {},
-    user_settings: machine.settings,
-  };
+  const machineSnapshot: Json = machine
+    ? {
+        machine_model_slug: machine.machine_model?.slug ?? null,
+        capabilities_version: machine.machine_model?.capabilities_version ?? null,
+        capabilities: machine.machine_model?.capabilities ?? {},
+        user_settings: machine.settings,
+      }
+    : {};
 
   const { data: inserted, error } = await supabase
     .from("brew_attempts")
@@ -109,7 +108,7 @@ export async function createAttemptAction(
       user_id: user.id,
       coffee_id: bag.coffee_id,
       coffee_bag_id: bag.id,
-      machine_id: machine.id,
+      machine_id: machine?.id ?? null,
       parent_attempt_id: parentAttemptId ?? null,
       idempotency_key: idempotencyKey ?? null,
       machine_snapshot: machineSnapshot,
