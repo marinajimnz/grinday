@@ -10,7 +10,6 @@ import { AddBagPanel } from "@/components/coffee/AddBagPanel";
 import { CoffeeTabs } from "@/components/coffee/CoffeeTabs";
 import { AttemptsTimeline } from "@/components/attempt/AttemptsTimeline";
 import { RecipeCard } from "@/components/attempt/RecipeCard";
-import { PrepareWithRecipeButton } from "@/components/brew/PrepareWithRecipeButton";
 import { getLocale } from "@/lib/i18n/locale";
 import { getDictionary } from "@/lib/i18n/get-dictionary";
 
@@ -82,17 +81,12 @@ export default async function CoffeeDetailPage({
                     >
                       {dict.coffees.logManual}
                     </Link>
-                    <PrepareWithRecipeButton
-                      coffeeId={coffee.id}
-                      coffeeBagId={targetBag.id}
-                      coffeeName={coffee.name}
-                      roaster={coffee.roaster}
-                      userId={user?.id ?? ""}
-                      sourceAttempt={null}
+                    <Link
+                      href="/brew/new"
                       className="inline-flex min-h-11 items-center rounded-input bg-ink px-4 text-sm font-medium text-surface"
                     >
                       {dict.dashboard.prepare}
-                    </PrepareWithRecipeButton>
+                    </Link>
                   </>
                 )}
               </div>
