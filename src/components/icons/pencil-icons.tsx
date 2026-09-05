@@ -251,6 +251,90 @@ export const IconCuenta = pencilIcon(
   </>,
 );
 
+// Espresso/V60/Chemex/Aeropress/Prensa/Moka/Otros below are pulled verbatim
+// (same viewBox/stroke/pencil-filter spec) from Marina's "SVG pencil-sketch
+// coffee icons" Claude Design project — icons/svg/{espresso,v60,chemex,
+// aeropress,prensa,moka,otro}.svg — synced in for the brew-method picker.
+export const IconEspresso = pencilIcon(
+  "pencil-a",
+  <>
+    <path d="M4 4.4 H14.4 L13 9.2 H5.4 Z" />
+    <path d="M14.2 6.4 H20.8" />
+    <path d="M20.8 5.2 V7.6" />
+    <path d="M9 9.2 V11.6" />
+    <path d="M6 14.8 H13 C12.8 18.6 11.4 20.4 9.5 20.4 C7.6 20.4 6.2 18.6 6 14.8 Z" />
+  </>,
+);
+
+export const IconV60 = pencilIcon(
+  "pencil-b",
+  <>
+    <path d="M5.6 6.4 H18.4 L13 15.4 H11 Z" />
+    <path d="M7.6 8.8 H16.4" />
+    <path d="M9.6 9 L11.5 15.2" />
+    <path d="M14.4 9 L12.5 15.2" />
+    <path d="M12 17 V18.4" />
+    <path d="M8.4 20.4 H15.6" />
+  </>,
+);
+
+export const IconChemex = pencilIcon(
+  "pencil-c",
+  <>
+    <path d="M7.6 3.6 H16.4" />
+    <path d="M7.6 3.6 L10.4 11.6" />
+    <path d="M16.4 3.6 L13.6 11.6" />
+    <path d="M10.4 11.6 C7.4 13 6.4 16 8.1 18.3 C10 20.8 14 20.8 15.9 18.3 C17.6 16 16.6 13 13.6 11.6" />
+    <path d="M8.5 9.4 H15.5 L14.7 11.4 H9.3 Z" />
+  </>,
+);
+
+export const IconAeropress = pencilIcon(
+  "pencil-a",
+  <>
+    <path d="M9.6 3.5 H14.4" />
+    <path d="M12 3.5 V6.3" />
+    <path d="M6.6 6.3 H17.4" />
+    <path d="M7.7 6.3 L8.8 17.2 H15.2 L16.3 6.3" />
+    <path d="M9.6 17.2 H14.4 V19.4 H9.6 Z" />
+    <path d="M12 19.4 V20.8" />
+  </>,
+);
+
+export const IconPrensa = pencilIcon(
+  "pencil-b",
+  <>
+    <path d="M10.9 2.9 H13.1" />
+    <path d="M12 2.9 V5.6" />
+    <path d="M6.6 5.6 H17.4" />
+    <path d="M7.6 5.6 V19.1 C7.6 20.1 8.2 20.5 9.2 20.5 H14.8 C15.8 20.5 16.4 20.1 16.4 19.1 V5.6" />
+    <path d="M16.4 8.8 C19.3 8.8 19.3 14 16.4 14" />
+    <path d="M8.6 11.4 H15.4" />
+  </>,
+);
+
+export const IconMoka = pencilIcon(
+  "pencil-c",
+  <>
+    <path d="M8.2 20.4 H15.8 L14.6 13.4 H9.4 Z" />
+    <path d="M9.4 13.4 H14.6 L13.9 7.6 H10.1 Z" />
+    <path d="M10.2 7.6 V6.1 H13.8 V7.6" />
+    <path d="M13.9 8.8 L17.6 6.6" />
+    <path d="M16.2 15 C19 15.5 19 18.6 16.2 19.1" />
+  </>,
+);
+
+export const IconOtros = pencilIcon(
+  "pencil-a",
+  <>
+    <path d="M6.6 7.6 H17.4 L13 16.2 H11 Z" />
+    <path d="M9.9 11.3 H10" />
+    <path d="M11.95 11.3 H12.05" />
+    <path d="M14 11.3 H14.1" />
+    <path d="M8.4 20.4 H15.6" />
+  </>,
+);
+
 // Filled star — marks a favorite/preferred item. Unlike the other icons,
 // the source SVG bakes fill="currentColor" in (not fill="none"); pass
 // className="fill-none" to render just the outline for an "unstarred" state.
