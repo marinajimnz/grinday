@@ -3,8 +3,25 @@
 // This is what makes "if the network fails after the shot, the draft isn't
 // lost" true — nothing here ever depends on a network round trip.
 
+import type { BrewMethod } from "@/features/equipment/constants";
+
 export type BrewDraftRecipe = {
+  method?: BrewMethod;
+  doseG?: number;
+  waterG?: number;
+  targetWeightG?: number;
+  temperatureC?: number;
+  targetTimeMs?: number;
+  mokaCupSize?: number;
+  heatIntensity?: "low" | "medium" | "high";
+  equipmentId?: string;
+  equipmentModelName?: string;
+  grinderId?: string;
+  grinderModelName?: string;
   grindSetting?: number;
+  // Legacy Sage-only fields — no longer written by the live brew flow, kept
+  // only so a draft already sitting in a browser's localStorage from before
+  // this change still parses without throwing.
   grindSeconds?: number;
   doseMode?: "auto" | "manual";
   basketSize?: "single" | "double";
@@ -15,12 +32,9 @@ export type BrewDraftRecipe = {
 };
 
 export type BrewDraftPostShot = {
-  doseFeedback?: "under" | "ideal" | "over" | "unknown";
-  usedBitMore?: boolean;
-  pressureObservation?: "low" | "espresso_range" | "high" | "unknown";
-  inputWeightG?: number;
   outputWeightG?: number;
-  outputVolumeMl?: number;
+  tdsPercent?: number;
+  wouldBrewAgain?: boolean;
   acidity?: number;
   sweetness?: number;
   bitterness?: number;
@@ -29,6 +43,12 @@ export type BrewDraftPostShot = {
   balance?: number;
   overallRating?: number;
   notes?: string;
+  // Legacy Sage-only fields — same reasoning as BrewDraftRecipe above.
+  doseFeedback?: "under" | "ideal" | "over" | "unknown";
+  usedBitMore?: boolean;
+  pressureObservation?: "low" | "espresso_range" | "high" | "unknown";
+  inputWeightG?: number;
+  outputVolumeMl?: number;
 };
 
 export type BrewDraft = {
@@ -84,24 +104,46 @@ export function clearDraft(draftId: string) {
 export type RecipeSourceAttempt = {
   id: string;
   attempt_no: number;
+  method: string;
+  dose_g: number | null;
+  water_g: number | null;
+  target_weight_g: number | null;
+  temperature_c: number | null;
+  target_time_ms: number | null;
   grind_setting: number | null;
-  grind_seconds: number | null;
-  dose_mode: string | null;
-  basket_size: string | null;
-  temperature_offset_c: number | null;
-  upper_burr_setting: number | null;
-  shot_mode: string | null;
-  preinfusion_ms: number | null;
+  moka_cup_size: number | null;
+  heat_intensity: string | null;
+  equipment_id: string | null;
+  grinder_id: string | null;
+  equipment_snapshot: unknown;
 };
+
+type SnapshotNames = { equipmentModelName?: string; grinderModelName?: string };
+
+function namesFromSnapshot(snapshot: unknown): SnapshotNames {
+  if (!snapshot || typeof snapshot !== "object") return {};
+  const s = snapshot as Record<string, unknown>;
+  return {
+    equipmentModelName: typeof s.equipment_model_name === "string" ? s.equipment_model_name : undefined,
+    grinderModelName: typeof s.grinder_model_name === "string" ? s.grinder_model_name : undefined,
+  };
+}
+
+export type DefaultEquipment = { id: string; model_name: string } | null;
+export type DefaultGrinder = { id: string; model_name: string } | null;
 
 export function buildDraftFromRecipe(params: {
   coffeeId: string;
   coffeeBagId: string;
   coffeeName: string;
   roaster: string;
+  method: BrewMethod;
   sourceAttempt?: RecipeSourceAttempt | null;
+  defaultEquipment?: DefaultEquipment;
+  defaultGrinder?: DefaultGrinder;
 }): BrewDraft {
   const p = params.sourceAttempt;
+  const names = namesFromSnapshot(p?.equipment_snapshot);
   return {
     draftId: createDraftId(),
     coffeeId: params.coffeeId,
@@ -110,18 +152,21 @@ export function buildDraftFromRecipe(params: {
     roaster: params.roaster,
     parentAttemptId: p?.id,
     parentAttemptNo: p?.attempt_no,
-    recipe: p
-      ? {
-          grindSetting: p.grind_setting ?? undefined,
-          grindSeconds: p.grind_seconds ?? undefined,
-          doseMode: (p.dose_mode as BrewDraftRecipe["doseMode"]) ?? undefined,
-          basketSize: (p.basket_size as BrewDraftRecipe["basketSize"]) ?? undefined,
-          temperatureOffsetC: p.temperature_offset_c ?? undefined,
-          upperBurrSetting: p.upper_burr_setting ?? undefined,
-          shotMode: (p.shot_mode as BrewDraftRecipe["shotMode"]) ?? undefined,
-          preinfusionMs: p.preinfusion_ms ?? undefined,
-        }
-      : {},
+    recipe: {
+      method: params.method,
+      doseG: p?.dose_g ?? undefined,
+      waterG: p?.water_g ?? undefined,
+      targetWeightG: p?.target_weight_g ?? undefined,
+      temperatureC: p?.temperature_c ?? undefined,
+      targetTimeMs: p?.target_time_ms ?? undefined,
+      grindSetting: p?.grind_setting ?? undefined,
+      mokaCupSize: p?.moka_cup_size ?? undefined,
+      heatIntensity: (p?.heat_intensity as BrewDraftRecipe["heatIntensity"]) ?? undefined,
+      equipmentId: params.defaultEquipment?.id ?? p?.equipment_id ?? undefined,
+      equipmentModelName: params.defaultEquipment?.model_name ?? names.equipmentModelName,
+      grinderId: params.defaultGrinder?.id ?? p?.grinder_id ?? undefined,
+      grinderModelName: params.defaultGrinder?.model_name ?? names.grinderModelName,
+    },
     startedAtEpochMs: null,
     stoppedAtEpochMs: null,
     extractionMs: null,

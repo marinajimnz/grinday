@@ -9,6 +9,10 @@ export const removeGrinderSchema = z.object({
   grinderId: z.uuid(),
 });
 
+export const setDefaultGrinderSchema = z.object({
+  grinderId: z.uuid(),
+});
+
 export const addBrewEquipmentBatchSchema = z.object({
   entries: z
     .array(

@@ -5,9 +5,10 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { CupSoda } from "lucide-react";
 import { IconFavorita } from "@/components/icons/pencil-icons";
+import { BrewStepHeader } from "./BrewStepHeader";
 import { TimerStage } from "./TimerStage";
-import { MiseEnPlaceFields } from "./MiseEnPlaceFields";
-import { PostShotFields } from "./PostShotFields";
+import { RecipeFields } from "./RecipeFields";
+import { BrewResultFields } from "./BrewResultFields";
 import {
   clearDraft,
   loadDraft,
@@ -16,6 +17,7 @@ import {
   type BrewDraftPostShot,
   type BrewDraftRecipe,
 } from "@/features/brew/draft";
+import type { BrewMethod } from "@/features/equipment/constants";
 import { createAttemptAction } from "@/features/attempts/actions";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { useDictionary } from "@/components/i18n/LocaleProvider";
@@ -25,6 +27,7 @@ export function BrewLiveScreen({ draftId }: { draftId: string }) {
   const router = useRouter();
   const dict = useDictionary();
   const [draft, setDraft] = useState<BrewDraft | null | undefined>(undefined);
+  const [showTimer, setShowTimer] = useState(false);
   const [isSaving, startSaving] = useTransition();
   const [saveError, setSaveError] = useState<string | null>(null);
   const [pendingSync, setPendingSync] = useState(false);
@@ -32,8 +35,12 @@ export function BrewLiveScreen({ draftId }: { draftId: string }) {
   useEffect(() => {
     // localStorage doesn't exist during SSR, so this can only run client-side
     // after mount — there's no way to derive this as render-time state.
+    const loaded = loadDraft(draftId);
     // eslint-disable-next-line react-hooks/set-state-in-effect
-    setDraft(loadDraft(draftId));
+    setDraft(loaded);
+    if (loaded && (loaded.startedAtEpochMs !== null || loaded.stoppedAtEpochMs !== null)) {
+      setShowTimer(true);
+    }
   }, [draftId]);
 
   function persist(next: BrewDraft) {
@@ -82,21 +89,24 @@ export function BrewLiveScreen({ draftId }: { draftId: string }) {
         // duplicate attempt — see createAttemptAction.
         idempotencyKey: draft.draftId,
         attempt: {
+          method: draft.recipe.method,
+          doseG: draft.recipe.doseG,
+          waterG: draft.recipe.waterG,
+          targetWeightG: draft.recipe.targetWeightG,
+          temperatureC: draft.recipe.temperatureC,
+          targetTimeMs: draft.recipe.targetTimeMs,
+          mokaCupSize: draft.recipe.mokaCupSize,
+          heatIntensity: draft.recipe.heatIntensity,
+          equipmentId: draft.recipe.equipmentId,
+          grinderId: draft.recipe.grinderId,
+          equipmentModelName: draft.recipe.equipmentModelName,
+          grinderModelName: draft.recipe.grinderModelName,
           grindSetting: draft.recipe.grindSetting,
-          grindSeconds: draft.recipe.grindSeconds,
-          doseMode: draft.recipe.doseMode,
-          basketSize: draft.recipe.basketSize,
-          temperatureOffsetC: draft.recipe.temperatureOffsetC,
-          upperBurrSetting: draft.recipe.upperBurrSetting,
-          shotMode: draft.recipe.shotMode,
-          preinfusionMs: draft.recipe.preinfusionMs,
           extractionMs: draft.extractionMs ?? undefined,
-          usedBitMore: draft.postShot.usedBitMore ?? false,
-          doseFeedback: draft.postShot.doseFeedback,
-          pressureObservation: draft.postShot.pressureObservation,
-          inputWeightG: draft.postShot.inputWeightG,
           outputWeightG: draft.postShot.outputWeightG,
-          outputVolumeMl: draft.postShot.outputVolumeMl,
+          tdsPercent: draft.postShot.tdsPercent,
+          wouldBrewAgain: draft.postShot.wouldBrewAgain,
+          usedBitMore: false,
           acidity: draft.postShot.acidity,
           sweetness: draft.postShot.sweetness,
           bitterness: draft.postShot.bitterness,
@@ -168,12 +178,20 @@ export function BrewLiveScreen({ draftId }: { draftId: string }) {
     );
   }
 
+  const method: BrewMethod = (draft.recipe.method as BrewMethod) ?? "espresso";
   const isReview = draft.stoppedAtEpochMs !== null;
 
   return (
     <div>
-      <p className="text-xs text-ink-muted">{draft.roaster}</p>
-      <h1 className="font-display text-2xl text-ink">{draft.coffeeName}</h1>
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <p className="text-xs text-ink-muted">{draft.roaster}</p>
+          <h1 className="font-display text-2xl text-ink">{draft.coffeeName}</h1>
+        </div>
+        <span className="mt-0.5 shrink-0 rounded-full bg-canvas px-3 py-1 text-xs font-medium uppercase tracking-wide text-ink-muted">
+          {dict.equipment.methodLabels[method]}
+        </span>
+      </div>
       {draft.parentAttemptNo && (
         <p className="mt-1 flex items-center gap-1 text-sm text-coffee">
           <IconFavorita aria-hidden className="size-3.5 text-coffee" />
@@ -181,10 +199,35 @@ export function BrewLiveScreen({ draftId }: { draftId: string }) {
         </p>
       )}
 
-      {!isReview && (
-        <div className="mt-6 space-y-8">
-          <MiseEnPlaceFields value={draft.recipe} onChange={updateRecipe} />
+      {!isReview && !showTimer && (
+        <div className="mt-6 space-y-6">
+          <BrewStepHeader step={3} title={dict.brew.stepRecipeTitle} />
+          <RecipeFields value={draft.recipe} onChange={updateRecipe} />
+          <button
+            type="button"
+            onClick={() => setShowTimer(true)}
+            className="min-h-11 w-full rounded-input bg-ink px-4 text-sm font-medium text-surface"
+          >
+            {dict.common.next}
+          </button>
+        </div>
+      )}
+
+      {!isReview && showTimer && (
+        <div className="mt-6 space-y-6">
+          <BrewStepHeader step={4} title={dict.brew.stepTimerTitle} />
+          {draft.startedAtEpochMs === null && (
+            <button
+              type="button"
+              onClick={() => setShowTimer(false)}
+              className="min-h-11 rounded-input border border-border px-4 text-sm font-medium text-ink"
+            >
+              {dict.common.back}
+            </button>
+          )}
           <TimerStage
+            method={method}
+            targetTimeMs={draft.recipe.targetTimeMs}
             startedAtEpochMs={draft.startedAtEpochMs}
             onStart={handleStart}
             onStop={handleStop}
@@ -206,15 +249,15 @@ export function BrewLiveScreen({ draftId }: { draftId: string }) {
       )}
 
       {isReview && (
-        <div className="mt-6 space-y-8">
-          <div className="rounded-card border border-border bg-surface p-5 text-center">
-            <p className="text-xs text-ink-muted">{dict.brew.extraction}</p>
-            <p className="font-display text-4xl tabular-nums text-ink">
-              {((draft.extractionMs ?? 0) / 1000).toFixed(1)}s
-            </p>
-          </div>
+        <div className="mt-6 space-y-6">
+          <BrewStepHeader step={5} title={dict.brew.stepResultTitle} />
 
-          <PostShotFields value={draft.postShot} onChange={updatePostShot} />
+          <BrewResultFields
+            recipe={draft.recipe}
+            extractionMs={draft.extractionMs}
+            value={draft.postShot}
+            onChange={updatePostShot}
+          />
 
           {saveStatus}
 
@@ -225,7 +268,7 @@ export function BrewLiveScreen({ draftId }: { draftId: string }) {
             className="min-h-11 w-full rounded-input bg-ink px-4 text-sm font-medium text-surface disabled:opacity-60 sm:w-auto"
           >
             <LoadingLabel loading={isSaving}>
-              {pendingSync ? dict.brew.retryNow : saveError ? dict.common.retry : dict.brew.saveAttempt}
+              {pendingSync ? dict.brew.retryNow : saveError ? dict.common.retry : dict.brew.saveRecipe}
             </LoadingLabel>
           </button>
         </div>

@@ -21,17 +21,32 @@ type AttemptFields = Database["public"]["Tables"]["brew_attempts"]["Insert"];
 
 function toAttemptRow(
   input: z.infer<typeof attemptFieldsSchema>,
-): Omit<AttemptFields, "id" | "user_id" | "coffee_id" | "coffee_bag_id" | "machine_id"> {
+): Omit<
+  AttemptFields,
+  "id" | "user_id" | "coffee_id" | "coffee_bag_id" | "machine_id" | "equipment_snapshot"
+> {
   return {
+    method: input.method ?? "espresso",
+    dose_g: input.doseG ?? null,
+    water_g: input.waterG ?? null,
+    target_weight_g: input.targetWeightG ?? null,
+    temperature_c: input.temperatureC ?? null,
+    target_time_ms: input.targetTimeMs ?? null,
+    tds_percent: input.tdsPercent ?? null,
+    would_brew_again: input.wouldBrewAgain ?? null,
+    moka_cup_size: input.mokaCupSize ?? null,
+    heat_intensity: input.heatIntensity ?? null,
+    equipment_id: input.equipmentId ?? null,
+    grinder_id: input.grinderId ?? null,
     grind_setting: input.grindSetting,
-    grind_seconds: input.grindSeconds,
-    dose_mode: input.doseMode,
+    grind_seconds: input.grindSeconds ?? null,
+    dose_mode: input.doseMode ?? null,
     dose_feedback: input.doseFeedback ?? null,
     used_bit_more: input.usedBitMore,
-    basket_size: input.basketSize,
+    basket_size: input.basketSize ?? null,
     temperature_offset_c: input.temperatureOffsetC ?? null,
     upper_burr_setting: input.upperBurrSetting ?? null,
-    shot_mode: input.shotMode,
+    shot_mode: input.shotMode ?? null,
     extraction_ms: input.extractionMs ?? null,
     preinfusion_ms: input.preinfusionMs ?? null,
     pressure_observation: input.pressureObservation ?? null,
@@ -101,6 +116,12 @@ export async function createAttemptAction(
       }
     : {};
 
+  const equipmentSnapshot: Json = {
+    method: attempt.method ?? "espresso",
+    equipment_model_name: attempt.equipmentModelName ?? null,
+    grinder_model_name: attempt.grinderModelName ?? null,
+  };
+
   const { data: inserted, error } = await supabase
     .from("brew_attempts")
     .insert({
@@ -112,6 +133,7 @@ export async function createAttemptAction(
       parent_attempt_id: parentAttemptId ?? null,
       idempotency_key: idempotencyKey ?? null,
       machine_snapshot: machineSnapshot,
+      equipment_snapshot: equipmentSnapshot,
     })
     .select("id")
     .single();

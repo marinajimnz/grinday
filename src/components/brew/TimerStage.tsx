@@ -1,7 +1,9 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { cn } from "@/lib/cn";
 import { formatElapsed } from "@/features/brew/formatElapsed";
+import type { BrewMethod } from "@/features/equipment/constants";
 import { useDictionary } from "@/components/i18n/LocaleProvider";
 
 /**
@@ -14,10 +16,14 @@ import { useDictionary } from "@/components/i18n/LocaleProvider";
  * accumulated tick counts.
  */
 export function TimerStage({
+  method,
+  targetTimeMs,
   startedAtEpochMs,
   onStart,
   onStop,
 }: {
+  method: BrewMethod;
+  targetTimeMs?: number;
   startedAtEpochMs: number | null;
   onStart: () => void;
   onStop: (elapsedMs: number) => void;
@@ -65,37 +71,55 @@ export function TimerStage({
   const elapsedMs = startedAtEpochMs !== null ? now - startedAtEpochMs : 0;
 
   return (
-    <div className="flex flex-col items-center gap-6 rounded-card border border-border bg-surface py-10">
-      <span
-        className="font-display text-6xl tabular-nums text-ink"
-        role="timer"
-        aria-live="off"
-      >
-        {formatElapsed(elapsedMs)}
-      </span>
+    <div className="rounded-card border border-border bg-surface py-8">
+      <div className="flex items-center justify-between px-6">
+        <span className="font-display text-lg text-ink">{dict.equipment.methodLabels[method]}</span>
+        <span className="rounded-full bg-canvas px-3 py-1 text-xs font-medium uppercase tracking-wide text-ink-muted">
+          {isRunning ? dict.brew.running : dict.brew.paused}
+        </span>
+      </div>
 
-      {isRunning ? (
+      <div className="mt-6 flex flex-col items-center gap-1.5">
+        <span className="font-display text-6xl tabular-nums text-ink" role="timer" aria-live="off">
+          {formatElapsed(elapsedMs)}
+        </span>
+        {targetTimeMs !== undefined && (
+          <p className="text-xs text-ink-muted">
+            {dict.brew.targetCaption} {formatElapsed(targetTimeMs)}
+          </p>
+        )}
+      </div>
+
+      <div className="mt-6 flex items-center justify-center gap-3 px-6">
         <button
           type="button"
-          onClick={() => onStop(Date.now() - startedAtEpochMs!)}
-          className="min-h-14 w-48 rounded-full bg-ink text-base font-medium text-surface"
-        >
-          {dict.brew.stop}
-        </button>
-      ) : (
-        <button
-          type="button"
+          disabled={isRunning}
           onClick={() => {
             setNow(Date.now());
             onStart();
           }}
-          className="min-h-14 w-48 rounded-full bg-coffee text-base font-medium text-surface"
+          aria-label={dict.brew.go}
+          className={cn(
+            "flex size-14 shrink-0 items-center justify-center rounded-full text-sm font-semibold",
+            isRunning ? "border border-border text-ink-muted" : "bg-coffee text-surface",
+          )}
         >
-          {dict.brew.startTimer}
+          {dict.brew.go}
         </button>
-      )}
+        <button
+          type="button"
+          disabled={!isRunning}
+          onClick={() => onStop(Date.now() - startedAtEpochMs!)}
+          className={cn(
+            "min-h-14 max-w-56 flex-1 rounded-full text-base font-medium",
+            isRunning ? "bg-ink text-surface" : "border border-border text-ink-muted",
+          )}
+        >
+          {dict.brew.stop}
+        </button>
+      </div>
 
-      <p className="max-w-[240px] text-center text-xs text-ink-muted">{dict.brew.timerNote}</p>
+      <p className="mx-auto mt-4 max-w-[240px] text-center text-xs text-ink-muted">{dict.brew.timerNote}</p>
     </div>
   );
 }

@@ -17,6 +17,8 @@ export const TASTE_DIMENSIONS = [
   "balance",
 ] as const;
 
+export const HEAT_INTENSITIES = ["low", "medium", "high"] as const;
+
 export const MAX_COMPARE_ATTEMPTS = 4;
 export const MIN_COMPARE_ATTEMPTS = 2;
 

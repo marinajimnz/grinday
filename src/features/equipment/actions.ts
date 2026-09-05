@@ -8,6 +8,7 @@ import {
   removeBrewEquipmentSchema,
   removeGrinderSchema,
   setDefaultBrewEquipmentSchema,
+  setDefaultGrinderSchema,
 } from "@/lib/validation/equipment";
 
 type ActionResult<T = undefined> =
@@ -91,6 +92,22 @@ export async function removeBrewEquipmentAction(rawInput: unknown): Promise<Acti
 
   revalidatePath("/settings/machines");
   revalidatePath("/");
+  return { success: true, data: undefined };
+}
+
+export async function setDefaultGrinderAction(rawInput: unknown): Promise<ActionResult> {
+  const parsed = setDefaultGrinderSchema.safeParse(rawInput);
+  if (!parsed.success) {
+    return { success: false, message: parsed.error.issues[0]?.message ?? "Datos inválidos" };
+  }
+
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("set_default_grinder", {
+    p_grinder_id: parsed.data.grinderId,
+  });
+  if (error) return { success: false, message: error.message };
+
+  revalidatePath("/settings/machines");
   return { success: true, data: undefined };
 }
 

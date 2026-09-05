@@ -6,17 +6,12 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { RecipeCard } from "@/components/attempt/RecipeCard";
 import { PrepareWithRecipeButton } from "@/components/brew/PrepareWithRecipeButton";
 import { DashboardSnapshotWriter } from "@/components/dashboard/DashboardSnapshotWriter";
-import { NoEquipmentPrompt } from "@/components/equipment/NoEquipmentPrompt";
-import { hasAnyBrewEquipment } from "@/features/equipment/queries";
 import { getLocale } from "@/lib/i18n/locale";
 import { getDictionary } from "@/lib/i18n/get-dictionary";
 
 export default async function DashboardPage() {
   const supabase = await createClient();
-  const [data, hasEquipment] = await Promise.all([
-    getDashboardData(supabase),
-    hasAnyBrewEquipment(supabase),
-  ]);
+  const data = await getDashboardData(supabase);
   const dict = getDictionary(await getLocale());
 
   const {
@@ -28,7 +23,6 @@ export default async function DashboardPage() {
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-8 md:px-8">
-      <NoEquipmentPrompt hasEquipment={hasEquipment} />
       <h1 className="flex items-center gap-2 font-display text-3xl text-ink">
         {profile?.display_name ? (
           <>

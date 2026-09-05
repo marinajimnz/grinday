@@ -9,6 +9,7 @@ export type StatsDateRange = { from?: string; to?: string };
 export type CoffeeStatRow = Database["public"]["Functions"]["stats_by_coffee"]["Returns"][number];
 export type DimensionStatRow =
   Database["public"]["Functions"]["stats_by_dimension"]["Returns"][number];
+export type MethodStatRow = Database["public"]["Functions"]["stats_by_method"]["Returns"][number];
 export type NoteStatRow = Database["public"]["Functions"]["stats_frequent_notes"]["Returns"][number];
 export type BucketStatRow = { bucket: number; count: number };
 
@@ -42,6 +43,15 @@ export async function getStatsByDimension(
 ) {
   const { data, error } = await supabase.rpc("stats_by_dimension", {
     p_dimension: dimension,
+    p_from: range.from,
+    p_to: range.to,
+  });
+  if (error) throw error;
+  return data ?? [];
+}
+
+export async function getStatsByMethod(supabase: Client, range: StatsDateRange) {
+  const { data, error } = await supabase.rpc("stats_by_method", {
     p_from: range.from,
     p_to: range.to,
   });

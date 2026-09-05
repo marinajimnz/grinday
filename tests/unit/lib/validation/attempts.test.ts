@@ -10,18 +10,39 @@ const validAttempt = {
 };
 
 describe("attemptFieldsSchema", () => {
-  it("accepts the minimum required Sage fields", () => {
+  it("accepts the legacy Sage fields (kept for the manual/edit attempt form)", () => {
     const result = attemptFieldsSchema.safeParse(validAttempt);
     expect(result.success).toBe(true);
   });
 
-  it("requires grindSetting, grindSeconds, doseMode, basketSize and shotMode", () => {
-    const keys = ["grindSetting", "grindSeconds", "doseMode", "basketSize", "shotMode"] as const;
+  it("requires only grindSetting — grindSeconds/doseMode/basketSize/shotMode are legacy and now optional", () => {
+    expect(attemptFieldsSchema.safeParse({}).success).toBe(false);
+    const keys = ["grindSeconds", "doseMode", "basketSize", "shotMode"] as const;
     for (const key of keys) {
       const rest: Partial<typeof validAttempt> = { ...validAttempt };
       delete rest[key];
-      expect(attemptFieldsSchema.safeParse(rest).success).toBe(false);
+      expect(attemptFieldsSchema.safeParse(rest).success).toBe(true);
     }
+  });
+
+  it("accepts the new generic multi-method recipe fields", () => {
+    const result = attemptFieldsSchema.safeParse({
+      grindSetting: 12,
+      method: "v60",
+      doseG: 15,
+      waterG: 250,
+      targetWeightG: 240,
+      temperatureC: 94,
+      targetTimeMs: 180000,
+      tdsPercent: 1.35,
+      wouldBrewAgain: true,
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it("rejects an unknown method", () => {
+    const result = attemptFieldsSchema.safeParse({ grindSetting: 12, method: "syphon" });
+    expect(result.success).toBe(false);
   });
 
   it("treats an empty enum select value as unset, not invalid", () => {

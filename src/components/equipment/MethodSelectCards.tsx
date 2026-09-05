@@ -14,7 +14,7 @@ import {
 } from "@/components/icons/pencil-icons";
 import { BREW_METHODS, type BrewMethod } from "@/features/equipment/constants";
 
-const METHOD_ICONS: Record<BrewMethod, typeof IconEspresso> = {
+export const METHOD_ICONS: Record<BrewMethod, typeof IconEspresso> = {
   espresso: IconEspresso,
   v60: IconV60,
   chemex: IconChemex,

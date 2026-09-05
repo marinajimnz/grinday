@@ -93,16 +93,23 @@ export type Database = {
           coffee_id: string
           created_at: string
           dose_feedback: string | null
+          dose_g: number | null
           dose_mode: string | null
+          equipment_id: string | null
+          equipment_snapshot: Json
           extraction_ms: number | null
           grind_seconds: number | null
           grind_setting: number | null
+          grinder_id: string | null
+          heat_intensity: string | null
           id: string
           idempotency_key: string | null
           input_weight_g: number | null
           intensity: number | null
           machine_id: string | null
           machine_snapshot: Json
+          method: string
+          moka_cup_size: number | null
           notes: string | null
           output_volume_ml: number | null
           output_weight_g: number | null
@@ -112,11 +119,17 @@ export type Database = {
           pressure_observation: string | null
           shot_mode: string | null
           sweetness: number | null
+          target_time_ms: number | null
+          target_weight_g: number | null
+          tds_percent: number | null
+          temperature_c: number | null
           temperature_offset_c: number | null
           updated_at: string
           upper_burr_setting: number | null
           used_bit_more: boolean
           user_id: string
+          water_g: number | null
+          would_brew_again: boolean | null
         }
         Insert: {
           acidity?: number | null
@@ -130,16 +143,23 @@ export type Database = {
           coffee_id: string
           created_at?: string
           dose_feedback?: string | null
+          dose_g?: number | null
           dose_mode?: string | null
+          equipment_id?: string | null
+          equipment_snapshot?: Json
           extraction_ms?: number | null
           grind_seconds?: number | null
           grind_setting?: number | null
+          grinder_id?: string | null
+          heat_intensity?: string | null
           id?: string
           idempotency_key?: string | null
           input_weight_g?: number | null
           intensity?: number | null
           machine_id?: string | null
           machine_snapshot?: Json
+          method?: string
+          moka_cup_size?: number | null
           notes?: string | null
           output_volume_ml?: number | null
           output_weight_g?: number | null
@@ -149,11 +169,17 @@ export type Database = {
           pressure_observation?: string | null
           shot_mode?: string | null
           sweetness?: number | null
+          target_time_ms?: number | null
+          target_weight_g?: number | null
+          tds_percent?: number | null
+          temperature_c?: number | null
           temperature_offset_c?: number | null
           updated_at?: string
           upper_burr_setting?: number | null
           used_bit_more?: boolean
           user_id: string
+          water_g?: number | null
+          would_brew_again?: boolean | null
         }
         Update: {
           acidity?: number | null
@@ -167,16 +193,23 @@ export type Database = {
           coffee_id?: string
           created_at?: string
           dose_feedback?: string | null
+          dose_g?: number | null
           dose_mode?: string | null
+          equipment_id?: string | null
+          equipment_snapshot?: Json
           extraction_ms?: number | null
           grind_seconds?: number | null
           grind_setting?: number | null
+          grinder_id?: string | null
+          heat_intensity?: string | null
           id?: string
           idempotency_key?: string | null
           input_weight_g?: number | null
           intensity?: number | null
           machine_id?: string | null
           machine_snapshot?: Json
+          method?: string
+          moka_cup_size?: number | null
           notes?: string | null
           output_volume_ml?: number | null
           output_weight_g?: number | null
@@ -186,11 +219,17 @@ export type Database = {
           pressure_observation?: string | null
           shot_mode?: string | null
           sweetness?: number | null
+          target_time_ms?: number | null
+          target_weight_g?: number | null
+          tds_percent?: number | null
+          temperature_c?: number | null
           temperature_offset_c?: number | null
           updated_at?: string
           upper_burr_setting?: number | null
           used_bit_more?: boolean
           user_id?: string
+          water_g?: number | null
+          would_brew_again?: boolean | null
         }
         Relationships: [
           {
@@ -205,6 +244,20 @@ export type Database = {
             columns: ["coffee_id"]
             isOneToOne: false
             referencedRelation: "coffees"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "brew_attempts_equipment_id_fkey"
+            columns: ["equipment_id"]
+            isOneToOne: false
+            referencedRelation: "user_brew_equipment"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "brew_attempts_grinder_id_fkey"
+            columns: ["grinder_id"]
+            isOneToOne: false
+            referencedRelation: "user_grinders"
             referencedColumns: ["id"]
           },
           {
@@ -556,18 +609,21 @@ export type Database = {
         Row: {
           created_at: string
           id: string
+          is_default: boolean
           model_name: string
           user_id: string
         }
         Insert: {
           created_at?: string
           id?: string
+          is_default?: boolean
           model_name: string
           user_id: string
         }
         Update: {
           created_at?: string
           id?: string
+          is_default?: boolean
           model_name?: string
           user_id?: string
         }
@@ -636,6 +692,22 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      set_default_grinder: {
+        Args: { p_grinder_id: string }
+        Returns: {
+          created_at: string
+          id: string
+          is_default: boolean
+          model_name: string
+          user_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "user_grinders"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       set_default_machine: {
         Args: { p_machine_model_id: string; p_nickname?: string }
         Returns: {
@@ -700,6 +772,14 @@ export type Database = {
         Returns: {
           avg_rating: number
           label: string
+          rated_count: number
+        }[]
+      }
+      stats_by_method: {
+        Args: { p_from?: string; p_to?: string }
+        Returns: {
+          avg_rating: number
+          method: string
           rated_count: number
         }[]
       }

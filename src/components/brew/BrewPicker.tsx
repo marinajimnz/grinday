@@ -1,26 +1,19 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { buildDraftFromRecipe, saveDraft } from "@/features/brew/draft";
 import type { BrewableCoffee } from "@/features/attempts/queries";
 import { useDictionary } from "@/components/i18n/LocaleProvider";
 import { IconCafe as CoffeeIcon, IconFavorita } from "@/components/icons/pencil-icons";
 
-export function BrewPicker({ coffees }: { coffees: BrewableCoffee[] }) {
-  const router = useRouter();
+export function BrewPicker({
+  coffees,
+  onSelect,
+  disabled,
+}: {
+  coffees: BrewableCoffee[];
+  onSelect: (coffee: BrewableCoffee) => void;
+  disabled?: boolean;
+}) {
   const dict = useDictionary();
-
-  function startBrew(coffee: BrewableCoffee) {
-    const draft = buildDraftFromRecipe({
-      coffeeId: coffee.coffeeId,
-      coffeeBagId: coffee.bagId,
-      coffeeName: coffee.name,
-      roaster: coffee.roaster,
-      sourceAttempt: coffee.preferredAttempt,
-    });
-    saveDraft(draft);
-    router.push(`/brew/live/${draft.draftId}`);
-  }
 
   return (
     <ul className="space-y-3">
@@ -28,8 +21,9 @@ export function BrewPicker({ coffees }: { coffees: BrewableCoffee[] }) {
         <li key={coffee.coffeeId}>
           <button
             type="button"
-            onClick={() => startBrew(coffee)}
-            className="flex w-full items-center gap-3 rounded-card border border-border bg-surface p-4 text-left"
+            disabled={disabled}
+            onClick={() => onSelect(coffee)}
+            className="flex w-full items-center gap-3 rounded-card border border-border bg-surface p-4 text-left disabled:opacity-60"
           >
             <div className="flex size-12 shrink-0 items-center justify-center rounded-input bg-canvas">
               <CoffeeIcon aria-hidden className="size-5 text-coffee" />

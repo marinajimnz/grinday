@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { buildDraftFromRecipe, saveDraft, type RecipeSourceAttempt } from "@/features/brew/draft";
+import type { BrewMethod } from "@/features/equipment/constants";
 
 export function PrepareWithRecipeButton({
   coffeeId,
@@ -32,6 +33,9 @@ export function PrepareWithRecipeButton({
           coffeeBagId,
           coffeeName,
           roaster,
+          // The source attempt already carries the method it was brewed
+          // with — this shortcut skips the method/coffee picker entirely.
+          method: (sourceAttempt?.method as BrewMethod) ?? "espresso",
           sourceAttempt,
         });
         saveDraft(draft);

@@ -14,52 +14,28 @@ function fallback(value: string | number | null | undefined): string {
 
 export function getCompareFields(dict: Dictionary): CompareField[] {
   return [
+    {
+      key: "method",
+      label: dict.attempts.method,
+      group: "technical",
+      format: (a) => dict.equipment.methodLabels[a.method as keyof typeof dict.equipment.methodLabels] ?? a.method,
+    },
+    { key: "dose_g", label: dict.brew.doseG, group: "technical", format: (a) => (a.dose_g != null ? `${a.dose_g} g` : "—") },
+    { key: "water_g", label: dict.brew.waterG, group: "technical", format: (a) => (a.water_g != null ? `${a.water_g} g` : "—") },
+    {
+      key: "target_weight_g",
+      label: dict.brew.targetWeightG,
+      group: "technical",
+      format: (a) => (a.target_weight_g != null ? `${a.target_weight_g} g` : "—"),
+    },
+    { key: "output_weight_g", label: dict.brew.outputWeight, group: "technical", format: (a) => fallback(a.output_weight_g) },
+    {
+      key: "temperature_c",
+      label: dict.brew.temperatureC,
+      group: "technical",
+      format: (a) => (a.temperature_c != null ? `${a.temperature_c} °C` : "—"),
+    },
     { key: "grind_setting", label: dict.brew.grindSetting, group: "technical", format: (a) => fallback(a.grind_setting) },
-    {
-      key: "grind_seconds",
-      label: dict.attempts.grindSeconds,
-      group: "technical",
-      format: (a) => fallback(a.grind_seconds),
-    },
-    {
-      key: "dose_mode",
-      label: dict.brew.doseMode,
-      group: "technical",
-      format: (a) => fallback(a.dose_mode && dict.enums.doseMode[a.dose_mode as keyof typeof dict.enums.doseMode]),
-    },
-    {
-      key: "dose_feedback",
-      label: dict.brew.doseFeedback,
-      group: "technical",
-      format: (a) =>
-        fallback(
-          a.dose_feedback && dict.enums.doseFeedback[a.dose_feedback as keyof typeof dict.enums.doseFeedback],
-        ),
-    },
-    {
-      key: "used_bit_more",
-      label: dict.attempts.aBitMore,
-      group: "technical",
-      format: (a) => (a.used_bit_more ? dict.common.yes : dict.common.no),
-    },
-    {
-      key: "basket_size",
-      label: dict.attempts.basketSize,
-      group: "technical",
-      format: (a) => fallback(a.basket_size && dict.enums.basketSize[a.basket_size as keyof typeof dict.enums.basketSize]),
-    },
-    {
-      key: "temperature_offset_c",
-      label: dict.attempts.temperatureOffsetShort,
-      group: "technical",
-      format: (a) => (a.temperature_offset_c != null ? `${a.temperature_offset_c} °C` : "—"),
-    },
-    {
-      key: "shot_mode",
-      label: dict.brew.shotMode,
-      group: "technical",
-      format: (a) => fallback(a.shot_mode && dict.enums.shotMode[a.shot_mode as keyof typeof dict.enums.shotMode]),
-    },
     {
       key: "extraction_ms",
       label: dict.attempts.extraction,
@@ -67,30 +43,16 @@ export function getCompareFields(dict: Dictionary): CompareField[] {
       format: (a) => (a.extraction_ms ? `${(a.extraction_ms / 1000).toFixed(1)} s` : "—"),
     },
     {
-      key: "preinfusion_ms",
-      label: dict.attempts.preinfusionShort,
+      key: "target_time_ms",
+      label: dict.brew.target,
       group: "technical",
-      format: (a) => (a.preinfusion_ms ? `${a.preinfusion_ms} ms` : "—"),
+      format: (a) => (a.target_time_ms ? `${(a.target_time_ms / 1000).toFixed(0)} s` : "—"),
     },
     {
-      key: "pressure_observation",
-      label: dict.attempts.pressureObservation,
+      key: "tds_percent",
+      label: dict.brew.tds,
       group: "technical",
-      format: (a) =>
-        fallback(
-          a.pressure_observation &&
-            dict.enums.pressureObservation[
-              a.pressure_observation as keyof typeof dict.enums.pressureObservation
-            ],
-        ),
-    },
-    { key: "input_weight_g", label: dict.brew.inputWeight, group: "technical", format: (a) => fallback(a.input_weight_g) },
-    { key: "output_weight_g", label: dict.brew.outputWeight, group: "technical", format: (a) => fallback(a.output_weight_g) },
-    {
-      key: "output_volume_ml",
-      label: dict.brew.outputVolume,
-      group: "technical",
-      format: (a) => fallback(a.output_volume_ml),
+      format: (a) => (a.tds_percent != null ? `${a.tds_percent}%` : "—"),
     },
 
     { key: "acidity", label: dict.enums.tasteDimension.acidity, group: "sensory", format: (a) => fallback(a.acidity) },

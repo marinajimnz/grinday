@@ -59,28 +59,42 @@ export async function getAttemptMedia(supabase: Client, attemptId: string) {
   return attachSignedUrls(supabase, data ?? []);
 }
 
-const PREFERRED_ATTEMPT_RECIPE_FIELDS =
-  "id, attempt_no, grind_setting, grind_seconds, dose_mode, basket_size, temperature_offset_c, upper_burr_setting, shot_mode, preinfusion_ms";
+// Only what BrewPicker's "receta preferida" badge needs to display — the
+// actual recipe values for a new brew are seeded per (coffee, method) by
+// getLastAttemptForCoffeeAndMethod below, not from this preferred pointer.
+const PREFERRED_ATTEMPT_RECIPE_FIELDS = "id, attempt_no";
 
 export type BrewableCoffee = {
   coffeeId: string;
   name: string;
   roaster: string;
   bagId: string;
-  preferredAttempt: Pick<
-    BrewAttemptRow,
-    | "id"
-    | "attempt_no"
-    | "grind_setting"
-    | "grind_seconds"
-    | "dose_mode"
-    | "basket_size"
-    | "temperature_offset_c"
-    | "upper_burr_setting"
-    | "shot_mode"
-    | "preinfusion_ms"
-  > | null;
+  preferredAttempt: Pick<BrewAttemptRow, "id" | "attempt_no"> | null;
 };
+
+const RECIPE_SOURCE_ATTEMPT_FIELDS =
+  "id, attempt_no, method, dose_g, water_g, target_weight_g, temperature_c, target_time_ms, grind_setting, moka_cup_size, heat_intensity, equipment_id, grinder_id, equipment_snapshot";
+
+// The recipe defaults for a new brew come from the most recent attempt
+// logged for this exact (coffee, method) pair — not the coffee's single
+// starred "preferred" attempt, which may have been brewed with a different
+// method entirely.
+export async function getLastAttemptForCoffeeAndMethod(
+  supabase: Client,
+  coffeeId: string,
+  method: string,
+) {
+  const { data, error } = await supabase
+    .from("brew_attempts")
+    .select(RECIPE_SOURCE_ATTEMPT_FIELDS)
+    .eq("coffee_id", coffeeId)
+    .eq("method", method)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  if (error) throw error;
+  return data;
+}
 
 // Coffees the user can start a brew for: at least one bag that isn't
 // finished/archived, picking the most relevant one (open, else sealed, else

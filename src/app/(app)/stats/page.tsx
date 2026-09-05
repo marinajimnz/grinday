@@ -6,6 +6,7 @@ import {
   getFrequentNotes,
   getGrindDistribution,
   getStatsByDimension,
+  getStatsByMethod,
   getTopCoffees,
   getTotalRatedAttempts,
 } from "@/features/stats/queries";
@@ -29,10 +30,11 @@ export default async function StatsPage({
   const dict = getDictionary(await getLocale());
   const DIMENSION_CONFIG = getDimensionConfig(dict);
 
-  const [totalRated, topCoffees, dimensionResults, frequentNotes, extractionDist, grindDist] =
+  const [totalRated, topCoffees, methodStats, dimensionResults, frequentNotes, extractionDist, grindDist] =
     await Promise.all([
       getTotalRatedAttempts(supabase, range),
       getTopCoffees(supabase, range),
+      getStatsByMethod(supabase, range),
       Promise.all(DIMENSION_CONFIG.map((d) => getStatsByDimension(supabase, d.key, range))),
       getFrequentNotes(supabase, range),
       getExtractionDistribution(supabase, range),
@@ -85,6 +87,18 @@ export default async function StatsPage({
                 {dict.stats.hasPreferredRecipe}
               </p>
             )}
+          </StatCard>
+
+          <StatCard title={dict.stats.byMethod} empty={methodStats.length === 0} dict={dict}>
+            <StatBarList
+              items={methodStats.map((m) => ({
+                key: m.method,
+                label:
+                  dict.equipment.methodLabels[m.method as keyof typeof dict.equipment.methodLabels] ?? m.method,
+                value: m.avg_rating,
+                displayValue: `${m.avg_rating.toFixed(1)}/5 (${m.rated_count})`,
+              }))}
+            />
           </StatCard>
 
           {DIMENSION_CONFIG.map((dim, i) => {

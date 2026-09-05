@@ -4,33 +4,53 @@ import {
   BASKET_SIZES,
   DOSE_FEEDBACKS,
   DOSE_MODES,
+  HEAT_INTENSITIES,
   PRESSURE_OBSERVATIONS,
   SHOT_MODES,
 } from "@/features/attempts/constants";
+import { BREW_METHODS } from "@/features/equipment/constants";
 import { optionalEnum, optionalInt, optionalPositiveNumber, optionalRating } from "./shared";
 
 export const attemptFieldsSchema = z.object({
+  // Método + receta genérica (multi-method brew flow)
+  method: optionalEnum(BREW_METHODS),
+  doseG: optionalPositiveNumber,
+  waterG: optionalPositiveNumber,
+  targetWeightG: optionalPositiveNumber,
+  temperatureC: optionalInt,
+  targetTimeMs: optionalInt,
+  tdsPercent: optionalPositiveNumber,
+  wouldBrewAgain: z.boolean().optional(),
+  mokaCupSize: optionalInt,
+  heatIntensity: optionalEnum(HEAT_INTENSITIES),
+  equipmentId: z.uuid().optional(),
+  grinderId: z.uuid().optional(),
+  // Display-only snapshot of the equipment names at brew time (survives the
+  // equipment row later being renamed or deleted) — not their own columns.
+  equipmentModelName: z.string().trim().max(200).optional(),
+  grinderModelName: z.string().trim().max(200).optional(),
+
   // Molienda
   grindSetting: z.number("El molido es obligatorio").min(0),
-  grindSeconds: z.number("Los segundos de molienda son obligatorios").min(0),
-  doseMode: z.enum(DOSE_MODES, "Elige auto o manual"),
+  grindSeconds: optionalPositiveNumber,
+  doseMode: optionalEnum(DOSE_MODES),
   doseFeedback: optionalEnum(DOSE_FEEDBACKS),
   usedBitMore: z.boolean().default(false),
 
-  // Cesta
-  basketSize: z.enum(BASKET_SIZES, "Elige el tamaño de cesta"),
+  // Cesta (legado, solo espresso Sage)
+  basketSize: optionalEnum(BASKET_SIZES),
 
-  // Temperatura / muela
+  // Temperatura / muela (legado, solo espresso Sage)
   temperatureOffsetC: optionalInt,
   upperBurrSetting: optionalInt,
 
   // Extracción
-  shotMode: z.enum(SHOT_MODES, "Elige el modo de shot"),
+  shotMode: optionalEnum(SHOT_MODES),
   extractionMs: optionalInt,
   preinfusionMs: optionalInt,
   pressureObservation: optionalEnum(PRESSURE_OBSERVATIONS),
 
-  // Peso / volumen (opcional, futuro báscula)
+  // Peso / volumen
   inputWeightG: optionalPositiveNumber,
   outputWeightG: optionalPositiveNumber,
   outputVolumeMl: optionalPositiveNumber,
