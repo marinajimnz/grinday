@@ -27,6 +27,7 @@ describe("buildDraftFromRecipe", () => {
       method: "v60",
       dose_g: 15,
       water_g: 250,
+      dilution_water_g: null,
       target_weight_g: 240,
       temperature_c: 94,
       target_time_ms: 180000,

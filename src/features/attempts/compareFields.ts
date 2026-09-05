@@ -23,6 +23,12 @@ export function getCompareFields(dict: Dictionary): CompareField[] {
     { key: "dose_g", label: dict.brew.doseG, group: "technical", format: (a) => (a.dose_g != null ? `${a.dose_g} g` : "—") },
     { key: "water_g", label: dict.brew.waterG, group: "technical", format: (a) => (a.water_g != null ? `${a.water_g} g` : "—") },
     {
+      key: "dilution_water_g",
+      label: dict.brew.dilutionWaterG,
+      group: "technical",
+      format: (a) => (a.dilution_water_g != null ? `${a.dilution_water_g} g` : "—"),
+    },
+    {
       key: "target_weight_g",
       label: dict.brew.targetWeightG,
       group: "technical",

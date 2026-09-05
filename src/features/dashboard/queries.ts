@@ -4,77 +4,48 @@ import type { Database } from "@/types/database";
 
 type Client = SupabaseClient<Database>;
 
-// "Café activo" = the coffee behind the most recent attempt (what you're
-// actually brewing right now). Falls back to the most recently touched
-// coffee when nothing has been brewed yet.
-export async function getDashboardData(supabase: Client) {
-  const { data: lastAttempt, error: attemptError } = await supabase
+export type RecentAttempt = {
+  id: string;
+  attempt_no: number;
+  method: string;
+  created_at: string;
+  dose_g: number | null;
+  water_g: number | null;
+  target_weight_g: number | null;
+  output_weight_g: number | null;
+  extraction_ms: number | null;
+  overall_rating: number | null;
+  coffee: { id: string; name: string; roaster: string } | null;
+};
+
+const RECENT_ATTEMPT_FIELDS =
+  "id, attempt_no, method, created_at, dose_g, water_g, target_weight_g, output_weight_g, extraction_ms, overall_rating, coffee:coffees!brew_attempts_coffee_id_fkey(id, name, roaster)";
+
+export async function getRecentAttempts(supabase: Client, limit = 4): Promise<RecentAttempt[]> {
+  const { data, error } = await supabase
     .from("brew_attempts")
-    .select(
-      "*, coffee:coffees!brew_attempts_coffee_id_fkey(id, name, roaster, preferred_attempt_id)",
-    )
+    .select(RECENT_ATTEMPT_FIELDS)
     .order("created_at", { ascending: false })
-    .limit(1)
-    .maybeSingle();
-  if (attemptError) throw attemptError;
+    .limit(limit);
+  if (error) throw error;
+  return data ?? [];
+}
 
-  if (lastAttempt) {
-    let preferredAttempt = null;
-    if (
-      lastAttempt.coffee.preferred_attempt_id &&
-      lastAttempt.coffee.preferred_attempt_id !== lastAttempt.id
-    ) {
-      const { data } = await supabase
-        .from("brew_attempts")
-        .select("*")
-        .eq("id", lastAttempt.coffee.preferred_attempt_id)
-        .maybeSingle();
-      preferredAttempt = data;
-    } else if (lastAttempt.coffee.preferred_attempt_id === lastAttempt.id) {
-      preferredAttempt = lastAttempt;
-    }
-
-    const { data: targetBag } = await supabase
-      .from("coffee_bags")
-      .select("id, status")
-      .eq("coffee_id", lastAttempt.coffee.id)
-      .order("status", { ascending: true })
-      .order("created_at", { ascending: false });
-
-    return {
-      hasAnyCoffee: true,
-      lastAttempt,
-      activeCoffee: lastAttempt.coffee,
-      preferredAttempt,
-      targetBagId: targetBag?.find((b) => b.status === "open")?.id ?? targetBag?.[0]?.id ?? null,
-    } as const;
-  }
-
-  const { data: mostRecentCoffee } = await supabase
-    .from("coffees")
-    .select("id, name, roaster")
-    .is("archived_at", null)
-    .order("updated_at", { ascending: false })
-    .limit(1)
-    .maybeSingle();
-
-  if (!mostRecentCoffee) {
-    return { hasAnyCoffee: false } as const;
-  }
-
-  const { data: bag } = await supabase
-    .from("coffee_bags")
-    .select("id")
-    .eq("coffee_id", mostRecentCoffee.id)
-    .order("created_at", { ascending: false })
-    .limit(1)
-    .maybeSingle();
-
+export async function getDashboardOverview(supabase: Client) {
+  const { data, error } = await supabase.rpc("dashboard_overview").maybeSingle();
+  if (error) throw error;
   return {
-    hasAnyCoffee: true,
-    lastAttempt: null,
-    activeCoffee: mostRecentCoffee,
-    preferredAttempt: null,
-    targetBagId: bag?.id ?? null,
-  } as const;
+    totalBrews: data?.total_brews ?? 0,
+    avgRating: data?.avg_rating ?? null,
+    favoriteMethod: data?.favorite_method ?? null,
+  };
+}
+
+export async function hasAnyCoffee(supabase: Client) {
+  const { count, error } = await supabase
+    .from("coffees")
+    .select("id", { count: "exact", head: true })
+    .is("archived_at", null);
+  if (error) throw error;
+  return (count ?? 0) > 0;
 }

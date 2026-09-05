@@ -9,6 +9,10 @@ export type BrewDraftRecipe = {
   method?: BrewMethod;
   doseG?: number;
   waterG?: number;
+  // Aeropress-only: water added after the brew to dilute it — kept apart
+  // from waterG (the brew water) so both the brew ratio and the final
+  // coffee/water ratio can be shown.
+  dilutionWaterG?: number;
   targetWeightG?: number;
   temperatureC?: number;
   targetTimeMs?: number;
@@ -107,6 +111,7 @@ export type RecipeSourceAttempt = {
   method: string;
   dose_g: number | null;
   water_g: number | null;
+  dilution_water_g: number | null;
   target_weight_g: number | null;
   temperature_c: number | null;
   target_time_ms: number | null;
@@ -156,6 +161,7 @@ export function buildDraftFromRecipe(params: {
       method: params.method,
       doseG: p?.dose_g ?? undefined,
       waterG: p?.water_g ?? undefined,
+      dilutionWaterG: p?.dilution_water_g ?? undefined,
       targetWeightG: p?.target_weight_g ?? undefined,
       temperatureC: p?.temperature_c ?? undefined,
       targetTimeMs: p?.target_time_ms ?? undefined,

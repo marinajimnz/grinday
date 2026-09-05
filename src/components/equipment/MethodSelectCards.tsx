@@ -3,26 +3,8 @@
 import { Check } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { useDictionary } from "@/components/i18n/LocaleProvider";
-import {
-  IconAeropress,
-  IconChemex,
-  IconEspresso,
-  IconMoka,
-  IconOtros,
-  IconPrensa,
-  IconV60,
-} from "@/components/icons/pencil-icons";
 import { BREW_METHODS, type BrewMethod } from "@/features/equipment/constants";
-
-export const METHOD_ICONS: Record<BrewMethod, typeof IconEspresso> = {
-  espresso: IconEspresso,
-  v60: IconV60,
-  chemex: IconChemex,
-  aeropress: IconAeropress,
-  prensa: IconPrensa,
-  moka: IconMoka,
-  otros: IconOtros,
-};
+import { METHOD_ICONS } from "@/features/equipment/methodIcons";
 
 export function MethodSelectCards({
   selected,

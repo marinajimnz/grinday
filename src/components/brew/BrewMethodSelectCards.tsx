@@ -1,6 +1,6 @@
 "use client";
 
-import { METHOD_ICONS } from "@/components/equipment/MethodSelectCards";
+import { METHOD_ICONS } from "@/features/equipment/methodIcons";
 import { useDictionary } from "@/components/i18n/LocaleProvider";
 import type { BrewMethod } from "@/features/equipment/constants";
 

@@ -16,6 +16,7 @@ export const attemptFieldsSchema = z.object({
   method: optionalEnum(BREW_METHODS),
   doseG: optionalPositiveNumber,
   waterG: optionalPositiveNumber,
+  dilutionWaterG: optionalPositiveNumber,
   targetWeightG: optionalPositiveNumber,
   temperatureC: optionalInt,
   targetTimeMs: optionalInt,

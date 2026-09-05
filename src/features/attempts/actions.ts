@@ -29,6 +29,7 @@ function toAttemptRow(
     method: input.method ?? "espresso",
     dose_g: input.doseG ?? null,
     water_g: input.waterG ?? null,
+    dilution_water_g: input.dilutionWaterG ?? null,
     target_weight_g: input.targetWeightG ?? null,
     temperature_c: input.temperatureC ?? null,
     target_time_ms: input.targetTimeMs ?? null,

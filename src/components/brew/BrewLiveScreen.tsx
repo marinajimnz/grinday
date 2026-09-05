@@ -92,6 +92,7 @@ export function BrewLiveScreen({ draftId }: { draftId: string }) {
           method: draft.recipe.method,
           doseG: draft.recipe.doseG,
           waterG: draft.recipe.waterG,
+          dilutionWaterG: draft.recipe.dilutionWaterG,
           targetWeightG: draft.recipe.targetWeightG,
           temperatureC: draft.recipe.temperatureC,
           targetTimeMs: draft.recipe.targetTimeMs,
@@ -200,16 +201,19 @@ export function BrewLiveScreen({ draftId }: { draftId: string }) {
       )}
 
       {!isReview && !showTimer && (
-        <div className="mt-6 space-y-6">
+        <div className="mt-6">
           <BrewStepHeader step={3} title={dict.brew.stepRecipeTitle} />
-          <RecipeFields value={draft.recipe} onChange={updateRecipe} />
-          <button
-            type="button"
-            onClick={() => setShowTimer(true)}
-            className="min-h-11 w-full rounded-input bg-ink px-4 text-sm font-medium text-surface"
-          >
-            {dict.common.next}
-          </button>
+          <p className="mt-1 text-sm text-ink-muted">{dict.brew.recipeRememberedNote}</p>
+          <div className="mt-6 space-y-6">
+            <RecipeFields value={draft.recipe} onChange={updateRecipe} />
+            <button
+              type="button"
+              onClick={() => setShowTimer(true)}
+              className="min-h-11 w-full rounded-input bg-ink px-4 text-sm font-medium text-surface"
+            >
+              {dict.common.next}
+            </button>
+          </div>
         </div>
       )}
 
@@ -254,7 +258,9 @@ export function BrewLiveScreen({ draftId }: { draftId: string }) {
 
           <BrewResultFields
             recipe={draft.recipe}
+            onRecipeChange={updateRecipe}
             extractionMs={draft.extractionMs}
+            onExtractionChange={(extractionMs) => persist({ ...draft, extractionMs })}
             value={draft.postShot}
             onChange={updatePostShot}
           />

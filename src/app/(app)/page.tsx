@@ -1,17 +1,17 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
-import { IconCafe, IconFavorita, IconFavorito } from "@/components/icons/pencil-icons";
-import { getDashboardData } from "@/features/dashboard/queries";
+import { IconCafe, IconFavorito } from "@/components/icons/pencil-icons";
+import { getDashboardOverview, getRecentAttempts, hasAnyCoffee } from "@/features/dashboard/queries";
 import { EmptyState } from "@/components/ui/EmptyState";
-import { RecipeCard } from "@/components/attempt/RecipeCard";
-import { PrepareWithRecipeButton } from "@/components/brew/PrepareWithRecipeButton";
+import { NewBrewCta } from "@/components/dashboard/NewBrewCta";
+import { DashboardStats } from "@/components/dashboard/DashboardStats";
+import { RecentAttemptsList } from "@/components/dashboard/RecentAttemptsList";
 import { DashboardSnapshotWriter } from "@/components/dashboard/DashboardSnapshotWriter";
 import { getLocale } from "@/lib/i18n/locale";
 import { getDictionary } from "@/lib/i18n/get-dictionary";
 
 export default async function DashboardPage() {
   const supabase = await createClient();
-  const data = await getDashboardData(supabase);
   const dict = getDictionary(await getLocale());
 
   const {
@@ -21,9 +21,17 @@ export default async function DashboardPage() {
     ? await supabase.from("profiles").select("display_name").eq("id", user.id).single()
     : { data: null };
 
+  const hasCoffee = await hasAnyCoffee(supabase);
+
+  const [overview, recentAttempts] = hasCoffee
+    ? await Promise.all([getDashboardOverview(supabase), getRecentAttempts(supabase)])
+    : [null, []];
+
+  const lastAttempt = recentAttempts[0];
+
   return (
     <div className="mx-auto max-w-2xl px-4 py-8 md:px-8">
-      <h1 className="flex items-center gap-2 font-display text-3xl text-ink">
+      <h1 className="flex items-center gap-2 font-display text-4xl text-ink">
         {profile?.display_name ? (
           <>
             {profile.display_name}
@@ -34,90 +42,63 @@ export default async function DashboardPage() {
           dict.dashboard.title
         )}
       </h1>
-      <p className="mt-1 text-sm text-ink-muted">{dict.dashboard.subtitle}</p>
 
-      <div className="mt-8">
-        {!data.hasAnyCoffee ? (
-          <EmptyState
-            icon={IconCafe}
-            title={dict.dashboard.emptyTitle}
-            description={dict.dashboard.emptyDescription}
-            action={
-              <Link
-                href="/coffees/new"
-                className="mt-2 inline-flex min-h-11 items-center rounded-input bg-ink px-4 font-display text-base tracking-wide text-surface"
-              >
-                {dict.dashboard.addCoffee}
-              </Link>
-            }
-          />
-        ) : (
-          <div className="space-y-6">
-            <DashboardSnapshotWriter
-              coffeeId={data.activeCoffee.id}
-              coffeeName={data.activeCoffee.name}
-              roaster={data.activeCoffee.roaster}
-              lastAttemptNo={data.lastAttempt?.attempt_no}
-              lastAttemptRating={data.lastAttempt?.overall_rating ?? undefined}
-            />
-            <div className="rounded-card border border-border bg-surface p-5">
-              <p className="text-xs font-medium uppercase tracking-wide text-ink-muted">
-                {dict.dashboard.activeCoffee}
-              </p>
-              <p className="mt-1 text-sm text-ink-muted">{data.activeCoffee.roaster}</p>
-              <Link href={`/coffees/${data.activeCoffee.id}`} className="font-display text-2xl text-ink">
-                {data.activeCoffee.name}
-              </Link>
-
-              {data.lastAttempt && (
+      {!hasCoffee ? (
+        <>
+          <p className="mt-1 text-sm text-ink-muted">{dict.dashboard.subtitle}</p>
+          <div className="mt-8">
+            <EmptyState
+              icon={IconCafe}
+              title={dict.dashboard.emptyTitle}
+              description={dict.dashboard.emptyDescription}
+              action={
                 <Link
-                  href={`/attempts/${data.lastAttempt.id}`}
-                  className="mt-3 flex items-center gap-2 text-sm text-ink-muted"
+                  href="/coffees/new"
+                  className="mt-2 inline-flex min-h-11 items-center rounded-input bg-ink px-4 text-sm font-medium text-surface"
                 >
-                  {dict.dashboard.lastAttempt}: #{data.lastAttempt.attempt_no}
-                  {data.lastAttempt.overall_rating && (
-                    <span className="flex items-center gap-0.5 text-ink">
-                      <IconFavorita aria-hidden className="size-3.5 text-coffee" />
-                      {data.lastAttempt.overall_rating}/5
-                    </span>
-                  )}
+                  {dict.dashboard.addCoffee}
                 </Link>
-              )}
+              }
+            />
+          </div>
+        </>
+      ) : (
+        <>
+          <p className="mt-1 text-sm text-ink-muted">{dict.dashboard.whatToday}</p>
 
-              <div className="mt-4 flex flex-wrap gap-2">
-                {data.targetBagId && (
-                  <PrepareWithRecipeButton
-                    coffeeId={data.activeCoffee.id}
-                    coffeeBagId={data.targetBagId}
-                    coffeeName={data.activeCoffee.name}
-                    roaster={data.activeCoffee.roaster}
-                    sourceAttempt={data.preferredAttempt}
-                    className="min-h-11 rounded-input bg-ink px-4 text-sm font-medium text-surface"
-                  >
-                    {data.preferredAttempt ? dict.dashboard.prepareWithRecipe : dict.dashboard.prepare}
-                  </PrepareWithRecipeButton>
-                )}
-                <Link
-                  href="/coffees"
-                  className="inline-flex min-h-11 items-center rounded-input border border-border px-4 text-sm font-medium text-ink"
-                >
-                  {dict.dashboard.viewCoffees}
+          {lastAttempt && (
+            <DashboardSnapshotWriter
+              coffeeId={lastAttempt.coffee?.id ?? ""}
+              coffeeName={lastAttempt.coffee?.name ?? ""}
+              roaster={lastAttempt.coffee?.roaster ?? ""}
+              lastAttemptNo={lastAttempt.attempt_no}
+              lastAttemptRating={lastAttempt.overall_rating ?? undefined}
+            />
+          )}
+
+          <div className="mt-6 space-y-6">
+            <NewBrewCta />
+
+            <DashboardStats
+              totalBrews={overview?.totalBrews ?? 0}
+              avgRating={overview?.avgRating ?? null}
+              favoriteMethod={overview?.favoriteMethod ?? null}
+            />
+
+            <div>
+              <div className="flex items-center justify-between">
+                <h2 className="text-lg font-semibold text-ink">{dict.dashboard.recentBrews}</h2>
+                <Link href="/attempts" className="text-sm font-medium text-ink-muted underline">
+                  {dict.dashboard.viewAll}
                 </Link>
               </div>
+              <div className="mt-3">
+                <RecentAttemptsList attempts={recentAttempts} />
+              </div>
             </div>
-
-            {data.preferredAttempt && (
-              <RecipeCard
-                attempt={data.preferredAttempt}
-                coffeeId={data.activeCoffee.id}
-                coffeeName={data.activeCoffee.name}
-                roaster={data.activeCoffee.roaster}
-                targetBagId={data.targetBagId ?? data.preferredAttempt.coffee_bag_id}
-              />
-            )}
           </div>
-        )}
-      </div>
+        </>
+      )}
     </div>
   );
 }

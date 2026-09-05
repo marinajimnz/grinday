@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import type { BrewableCoffee } from "@/features/attempts/queries";
 import { useDictionary } from "@/components/i18n/LocaleProvider";
 import { IconCafe as CoffeeIcon, IconFavorita } from "@/components/icons/pencil-icons";
@@ -25,8 +26,19 @@ export function BrewPicker({
             onClick={() => onSelect(coffee)}
             className="flex w-full items-center gap-3 rounded-card border border-border bg-surface p-4 text-left disabled:opacity-60"
           >
-            <div className="flex size-12 shrink-0 items-center justify-center rounded-input bg-canvas">
-              <CoffeeIcon aria-hidden className="size-5 text-coffee" />
+            <div className="relative flex size-12 shrink-0 items-center justify-center overflow-hidden rounded-input bg-canvas">
+              {coffee.coverPhotoUrl ? (
+                <Image
+                  src={coffee.coverPhotoUrl}
+                  alt=""
+                  fill
+                  sizes="48px"
+                  className="object-cover"
+                  unoptimized
+                />
+              ) : (
+                <CoffeeIcon aria-hidden className="size-5 text-coffee" />
+              )}
             </div>
             <div className="min-w-0 flex-1">
               <p className="text-xs text-ink-muted">{coffee.roaster}</p>

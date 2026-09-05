@@ -69,11 +69,12 @@ export type BrewableCoffee = {
   name: string;
   roaster: string;
   bagId: string;
+  coverPhotoUrl: string | null;
   preferredAttempt: Pick<BrewAttemptRow, "id" | "attempt_no"> | null;
 };
 
 const RECIPE_SOURCE_ATTEMPT_FIELDS =
-  "id, attempt_no, method, dose_g, water_g, target_weight_g, temperature_c, target_time_ms, grind_setting, moka_cup_size, heat_intensity, equipment_id, grinder_id, equipment_snapshot";
+  "id, attempt_no, method, dose_g, water_g, dilution_water_g, target_weight_g, temperature_c, target_time_ms, grind_setting, moka_cup_size, heat_intensity, equipment_id, grinder_id, equipment_snapshot";
 
 // The recipe defaults for a new brew come from the most recent attempt
 // logged for this exact (coffee, method) pair — not the coffee's single
@@ -124,13 +125,42 @@ export async function listBrewableCoffees(supabase: Client): Promise<BrewableCof
     : { data: [] };
   const preferredById = new Map((preferredAttempts ?? []).map((a) => [a.id, a]));
 
-  const result: BrewableCoffee[] = [];
+  const targetBagByCoffee = new Map<string, { id: string; coffee_id: string }>();
   for (const coffee of coffees) {
     const coffeeBags = (bags ?? []).filter((b) => b.coffee_id === coffee.id);
     const target =
       coffeeBags.find((b) => b.status === "open") ??
       coffeeBags.find((b) => b.status === "sealed") ??
       coffeeBags[0];
+    if (target) targetBagByCoffee.set(coffee.id, target);
+  }
+
+  // Same idea as the coffee library's card cover photo: the "package_front"
+  // shot on whichever bag is the one you'd actually brew from — makes the
+  // picker in /brew/new recognizable at a glance instead of every row
+  // showing the same generic cup icon.
+  const targetBagIds = [...targetBagByCoffee.values()].map((b) => b.id);
+  const coverUrlByBag = new Map<string, string>();
+  if (targetBagIds.length) {
+    const { data: coverMedia, error: coverError } = await supabase
+      .from("coffee_media")
+      .select("coffee_bag_id, storage_path")
+      .in("coffee_bag_id", targetBagIds)
+      .eq("kind", "package_front")
+      .order("created_at", { ascending: true });
+    if (coverError) throw coverError;
+
+    const withUrls = await attachSignedUrls(supabase, coverMedia ?? []);
+    for (const item of withUrls) {
+      if (item.url && !coverUrlByBag.has(item.coffee_bag_id)) {
+        coverUrlByBag.set(item.coffee_bag_id, item.url);
+      }
+    }
+  }
+
+  const result: BrewableCoffee[] = [];
+  for (const coffee of coffees) {
+    const target = targetBagByCoffee.get(coffee.id);
     if (!target) continue;
 
     result.push({
@@ -138,6 +168,7 @@ export async function listBrewableCoffees(supabase: Client): Promise<BrewableCof
       name: coffee.name,
       roaster: coffee.roaster,
       bagId: target.id,
+      coverPhotoUrl: coverUrlByBag.get(target.id) ?? null,
       preferredAttempt: coffee.preferred_attempt_id
         ? (preferredById.get(coffee.preferred_attempt_id) ?? null)
         : null,
