@@ -4,7 +4,7 @@
 // lost" true — nothing here ever depends on a network round trip.
 
 import type { BrewMethod } from "@/features/equipment/constants";
-import { RECIPE_FIELD_CONFIG } from "@/features/brew/recipeFieldConfig";
+import { getRecipeFieldConfig } from "@/features/brew/recipeFieldConfig";
 
 export type BrewDraftRecipe = {
   method?: BrewMethod;
@@ -192,7 +192,7 @@ export function buildDraftFromRecipe(params: {
   // leaving every card blank, but only for the fields this method actually
   // shows.
   const isFirstTime = !p;
-  const config = RECIPE_FIELD_CONFIG[params.method];
+  const config = getRecipeFieldConfig(params.method);
   return {
     draftId: createDraftId(),
     userId: params.userId,

@@ -6,7 +6,7 @@ import { TasteScale } from "@/components/ui/TasteScale";
 import { SettingsAccordionCard } from "@/components/settings/SettingsAccordionCard";
 import { SteppableFieldGrid, type SteppableField } from "./SteppableFieldGrid";
 import { TASTE_DIMENSIONS } from "@/features/attempts/constants";
-import { RECIPE_FIELD_CONFIG, formatRatio } from "@/features/brew/recipeFieldConfig";
+import { getRecipeFieldConfig, formatRatio } from "@/features/brew/recipeFieldConfig";
 import type { BrewDraftRecipe, BrewDraftPostShot } from "@/features/brew/draft";
 import { useDictionary } from "@/components/i18n/LocaleProvider";
 
@@ -27,7 +27,7 @@ export function BrewResultFields({
 }) {
   const dict = useDictionary();
   const method = recipe.method ?? "espresso";
-  const config = RECIPE_FIELD_CONFIG[method];
+  const config = getRecipeFieldConfig(method);
 
   function set<K extends keyof BrewDraftPostShot>(key: K, v: BrewDraftPostShot[K]) {
     onChange({ ...value, [key]: v });

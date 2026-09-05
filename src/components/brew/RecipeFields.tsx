@@ -2,7 +2,7 @@
 
 import { cn } from "@/lib/cn";
 import { SteppableFieldGrid, type SteppableField } from "./SteppableFieldGrid";
-import { RECIPE_FIELD_CONFIG, formatRatio } from "@/features/brew/recipeFieldConfig";
+import { getRecipeFieldConfig, formatRatio } from "@/features/brew/recipeFieldConfig";
 import { HEAT_INTENSITIES } from "@/features/attempts/constants";
 import type { BrewDraftRecipe } from "@/features/brew/draft";
 import { useDictionary } from "@/components/i18n/LocaleProvider";
@@ -16,7 +16,7 @@ export function RecipeFields({
 }) {
   const dict = useDictionary();
   const method = value.method ?? "espresso";
-  const config = RECIPE_FIELD_CONFIG[method];
+  const config = getRecipeFieldConfig(method);
 
   function set<K extends keyof BrewDraftRecipe>(key: K, v: BrewDraftRecipe[K]) {
     onChange({ ...value, [key]: v });

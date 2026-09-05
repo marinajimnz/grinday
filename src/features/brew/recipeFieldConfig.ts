@@ -1,4 +1,4 @@
-import type { BrewMethod } from "@/features/equipment/constants";
+import { BREW_METHOD_CATEGORY, type BrewMethod, type BrewMethodCategory } from "@/features/equipment/constants";
 
 export type BrewWeightMode = "required" | "optional" | "hidden";
 
@@ -18,8 +18,13 @@ export type RecipeFieldConfig = {
   ratioDenominator: "targetWeightG" | "waterG";
 };
 
-export const RECIPE_FIELD_CONFIG: Record<BrewMethod, RecipeFieldConfig> = {
-  espresso: {
+// One recipe shape per category — this is what a brand-new method inherits
+// the moment it's tagged with a category in BREW_METHOD_CATEGORY, with no
+// extra config needed. Each default below matches the method that
+// currently best represents its category (see RECIPE_FIELD_CONFIG_OVERRIDES
+// for the handful of methods that genuinely need something different).
+const RECIPE_FIELD_CONFIG_DEFAULTS: Record<BrewMethodCategory, RecipeFieldConfig> = {
+  espresso_machine: {
     hasWater: false,
     hasDilutionWater: false,
     brewWeightMode: "required",
@@ -27,15 +32,9 @@ export const RECIPE_FIELD_CONFIG: Record<BrewMethod, RecipeFieldConfig> = {
     hasMoka: false,
     ratioDenominator: "targetWeightG",
   },
-  v60: {
-    hasWater: true,
-    hasDilutionWater: false,
-    brewWeightMode: "required",
-    timeLabelKey: "brewTime",
-    hasMoka: false,
-    ratioDenominator: "waterG",
-  },
-  chemex: {
+  // Modeled on Chemex: weighing the finished brew is nice to have but not
+  // essential for most pour-over methods.
+  pour_over: {
     hasWater: true,
     hasDilutionWater: false,
     brewWeightMode: "optional",
@@ -43,15 +42,10 @@ export const RECIPE_FIELD_CONFIG: Record<BrewMethod, RecipeFieldConfig> = {
     hasMoka: false,
     ratioDenominator: "waterG",
   },
-  aeropress: {
-    hasWater: true,
-    hasDilutionWater: true,
-    brewWeightMode: "optional",
-    timeLabelKey: "brewTime",
-    hasMoka: false,
-    ratioDenominator: "waterG",
-  },
-  prensa: {
+  // Modeled on the French press: steep for a set time, then weigh what you
+  // poured. Aeropress overrides this — dilution and a shorter, optional
+  // "brew time" are specific to it, not generic to immersion brewing.
+  immersion: {
     hasWater: true,
     hasDilutionWater: false,
     brewWeightMode: "required",
@@ -59,7 +53,7 @@ export const RECIPE_FIELD_CONFIG: Record<BrewMethod, RecipeFieldConfig> = {
     hasMoka: false,
     ratioDenominator: "waterG",
   },
-  moka: {
+  moka_pot: {
     hasWater: true,
     hasDilutionWater: false,
     brewWeightMode: "optional",
@@ -67,9 +61,7 @@ export const RECIPE_FIELD_CONFIG: Record<BrewMethod, RecipeFieldConfig> = {
     hasMoka: true,
     ratioDenominator: "waterG",
   },
-  // No spec was given for "Otros" — mirrors Chemex's shape (optional brew
-  // weight) as the closest generic template.
-  otros: {
+  other: {
     hasWater: true,
     hasDilutionWater: false,
     brewWeightMode: "optional",
@@ -78,6 +70,18 @@ export const RECIPE_FIELD_CONFIG: Record<BrewMethod, RecipeFieldConfig> = {
     ratioDenominator: "waterG",
   },
 };
+
+// Per-method exceptions to their category's default — only where a method
+// genuinely brews differently from the rest of its category.
+const RECIPE_FIELD_CONFIG_OVERRIDES: Partial<Record<BrewMethod, Partial<RecipeFieldConfig>>> = {
+  v60: { brewWeightMode: "required" },
+  aeropress: { hasDilutionWater: true, brewWeightMode: "optional", timeLabelKey: "brewTime" },
+};
+
+export function getRecipeFieldConfig(method: BrewMethod): RecipeFieldConfig {
+  const category = BREW_METHOD_CATEGORY[method];
+  return { ...RECIPE_FIELD_CONFIG_DEFAULTS[category], ...RECIPE_FIELD_CONFIG_OVERRIDES[method] };
+}
 
 // "1:2" for a whole ratio, "1:16.7" when it isn't — never a forced
 // trailing ".0".
