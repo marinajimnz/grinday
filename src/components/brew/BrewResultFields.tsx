@@ -89,15 +89,19 @@ export function BrewResultFields({
     });
   }
   if (config.brewWeightMode !== "hidden") {
+    const effectiveOutputWeight = value.outputWeightG ?? recipe.targetWeightG;
     fields.push({
       key: "outputWeightG",
       label: dict.brew.targetWeightG,
-      value: value.outputWeightG,
+      value: effectiveOutputWeight,
       onChange: (v) => set("outputWeightG", v),
-      step: 5,
+      step: 1,
       min: 0,
       suffix: "g",
-      sublabel: recipe.targetWeightG !== undefined ? `${dict.brew.target} ${recipe.targetWeightG} g` : undefined,
+      sublabel:
+        recipe.targetWeightG !== undefined && effectiveOutputWeight !== recipe.targetWeightG
+          ? `${dict.brew.target} ${recipe.targetWeightG} g`
+          : undefined,
     });
   }
   fields.push(

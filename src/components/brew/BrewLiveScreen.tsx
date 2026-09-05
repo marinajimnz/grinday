@@ -104,7 +104,7 @@ export function BrewLiveScreen({ draftId }: { draftId: string }) {
           grinderModelName: draft.recipe.grinderModelName,
           grindSetting: draft.recipe.grindSetting,
           extractionMs: draft.extractionMs ?? undefined,
-          outputWeightG: draft.postShot.outputWeightG,
+          outputWeightG: draft.postShot.outputWeightG ?? draft.recipe.targetWeightG,
           tdsPercent: draft.postShot.tdsPercent,
           wouldBrewAgain: draft.postShot.wouldBrewAgain,
           usedBitMore: false,

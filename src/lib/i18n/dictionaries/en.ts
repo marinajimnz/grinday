@@ -102,6 +102,8 @@ const en: Dictionary = {
     noRecipeData: "No recipe data",
     today: "today",
     yesterday: "yesterday",
+    draftInProgress: "Unfinished brew",
+    resumeDraft: "Resume",
   },
   settings: {
     title: "Settings",

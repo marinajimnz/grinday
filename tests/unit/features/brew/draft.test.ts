@@ -10,9 +10,17 @@ const baseParams = {
 };
 
 describe("buildDraftFromRecipe", () => {
-  it("starts blank (but with the chosen method) when there is no source attempt", () => {
+  it("seeds first-time defaults (for fields the method shows) when there is no source attempt", () => {
     const draft = buildDraftFromRecipe(baseParams);
-    expect(draft.recipe).toEqual({ method: "v60" });
+    expect(draft.recipe).toEqual({
+      method: "v60",
+      doseG: 20,
+      waterG: 320,
+      targetWeightG: 40,
+      temperatureC: 94,
+      targetTimeMs: 27000,
+      grindSetting: 0.5,
+    });
     expect(draft.parentAttemptId).toBeUndefined();
     expect(draft.startedAtEpochMs).toBeNull();
     expect(draft.stoppedAtEpochMs).toBeNull();

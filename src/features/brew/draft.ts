@@ -4,6 +4,7 @@
 // lost" true — nothing here ever depends on a network round trip.
 
 import type { BrewMethod } from "@/features/equipment/constants";
+import { RECIPE_FIELD_CONFIG } from "@/features/brew/recipeFieldConfig";
 
 export type BrewDraftRecipe = {
   method?: BrewMethod;
@@ -57,6 +58,10 @@ export type BrewDraftPostShot = {
 
 export type BrewDraft = {
   draftId: string;
+  // Who this draft belongs to — lets the dashboard's resume banner ignore
+  // leftover drafts from a different account on a shared device instead of
+  // offering to "continue" someone else's brew.
+  userId?: string;
   coffeeId: string;
   coffeeBagId: string;
   coffeeName: string;
@@ -71,8 +76,30 @@ export type BrewDraft = {
   createdAt: number;
 };
 
+const KEY_PREFIX = "grinday:brew-draft:";
+
 function key(draftId: string) {
-  return `grinday:brew-draft:${draftId}`;
+  return `${KEY_PREFIX}${draftId}`;
+}
+
+// Any draft left behind mid-flow (recipe, timer, or result step — it's
+// autosaved on every change either way) so the dashboard can offer to
+// resume it instead of it just sitting there unreachable. Scoped to the
+// current user — localStorage is shared by the browser, not the account, so
+// a draft with no matching userId (or a different one) never surfaces here.
+export function getMostRecentDraft(currentUserId: string): BrewDraft | null {
+  try {
+    const drafts = Object.keys(localStorage)
+      .filter((k) => k.startsWith(KEY_PREFIX))
+      .map((k) => k.slice(KEY_PREFIX.length))
+      .map(loadDraft)
+      .filter((d): d is BrewDraft => d !== null && d.userId === currentUserId);
+    if (drafts.length === 0) return null;
+    return drafts.reduce((latest, d) => (d.createdAt > latest.createdAt ? d : latest));
+  } catch (err) {
+    console.error("[brew-draft] failed to list drafts:", err);
+    return null;
+  }
 }
 
 export function createDraftId() {
@@ -137,20 +164,38 @@ function namesFromSnapshot(snapshot: unknown): SnapshotNames {
 export type DefaultEquipment = { id: string; model_name: string } | null;
 export type DefaultGrinder = { id: string; model_name: string } | null;
 
+// First-ever recipe for a given coffee+method (no prior attempt to recall
+// from) starts from these instead of a blank card grid.
+const FIRST_TIME_DEFAULTS = {
+  doseG: 20,
+  waterG: 320,
+  targetWeightG: 40,
+  temperatureC: 94,
+  targetTimeMs: 27000,
+  grindSetting: 0.5,
+};
+
 export function buildDraftFromRecipe(params: {
   coffeeId: string;
   coffeeBagId: string;
   coffeeName: string;
   roaster: string;
   method: BrewMethod;
+  userId?: string;
   sourceAttempt?: RecipeSourceAttempt | null;
   defaultEquipment?: DefaultEquipment;
   defaultGrinder?: DefaultGrinder;
 }): BrewDraft {
   const p = params.sourceAttempt;
   const names = namesFromSnapshot(p?.equipment_snapshot);
+  // Nothing to recall yet — seed the card grid with sane defaults instead of
+  // leaving every card blank, but only for the fields this method actually
+  // shows.
+  const isFirstTime = !p;
+  const config = RECIPE_FIELD_CONFIG[params.method];
   return {
     draftId: createDraftId(),
+    userId: params.userId,
     coffeeId: params.coffeeId,
     coffeeBagId: params.coffeeBagId,
     coffeeName: params.coffeeName,
@@ -159,13 +204,14 @@ export function buildDraftFromRecipe(params: {
     parentAttemptNo: p?.attempt_no,
     recipe: {
       method: params.method,
-      doseG: p?.dose_g ?? undefined,
-      waterG: p?.water_g ?? undefined,
+      doseG: p?.dose_g ?? (isFirstTime ? FIRST_TIME_DEFAULTS.doseG : undefined),
+      waterG: p?.water_g ?? (isFirstTime && config.hasWater ? FIRST_TIME_DEFAULTS.waterG : undefined),
       dilutionWaterG: p?.dilution_water_g ?? undefined,
-      targetWeightG: p?.target_weight_g ?? undefined,
-      temperatureC: p?.temperature_c ?? undefined,
-      targetTimeMs: p?.target_time_ms ?? undefined,
-      grindSetting: p?.grind_setting ?? undefined,
+      targetWeightG:
+        p?.target_weight_g ?? (isFirstTime && config.brewWeightMode !== "hidden" ? FIRST_TIME_DEFAULTS.targetWeightG : undefined),
+      temperatureC: p?.temperature_c ?? (isFirstTime ? FIRST_TIME_DEFAULTS.temperatureC : undefined),
+      targetTimeMs: p?.target_time_ms ?? (isFirstTime ? FIRST_TIME_DEFAULTS.targetTimeMs : undefined),
+      grindSetting: p?.grind_setting ?? (isFirstTime ? FIRST_TIME_DEFAULTS.grindSetting : undefined),
       mokaCupSize: p?.moka_cup_size ?? undefined,
       heatIntensity: (p?.heat_intensity as BrewDraftRecipe["heatIntensity"]) ?? undefined,
       equipmentId: params.defaultEquipment?.id ?? p?.equipment_id ?? undefined,

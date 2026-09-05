@@ -102,7 +102,7 @@ export function RecipeFields({
       label: dict.brew.targetWeightG,
       value: value.targetWeightG,
       onChange: (v) => set("targetWeightG", v),
-      step: 5,
+      step: 1,
       min: 0,
       suffix: "g",
       sublabel: config.brewWeightMode === "optional" ? dict.brew.optional : undefined,

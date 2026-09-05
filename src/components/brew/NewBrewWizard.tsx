@@ -34,6 +34,7 @@ export function NewBrewWizard({
         return;
       }
       const draft = buildDraftFromRecipe({
+        userId: result.data.userId,
         coffeeId: result.data.coffeeId,
         coffeeBagId: result.data.coffeeBagId,
         coffeeName: result.data.coffeeName,

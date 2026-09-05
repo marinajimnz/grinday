@@ -29,7 +29,7 @@ const es = {
     submit: "Iniciar sesión",
     submitting: "Entrando...",
     error: "Usuario o contraseña incorrectos",
-    newHerePrompt: "¿Eres nuevo?",
+    newHerePrompt: "¿Eres nuevx?",
     newHereCta: "Regístrate",
     forgotPasswordLink: "¿Olvidaste tu contraseña?",
     backToLogin: "Volver a iniciar sesión",
@@ -100,6 +100,8 @@ const es = {
     noRecipeData: "Sin datos de receta",
     today: "ahora",
     yesterday: "ayer",
+    draftInProgress: "Preparación sin terminar",
+    resumeDraft: "Continuar",
   },
   settings: {
     title: "Ajustes",

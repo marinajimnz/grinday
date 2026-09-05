@@ -4,6 +4,7 @@ import { IconCafe, IconFavorito } from "@/components/icons/pencil-icons";
 import { getDashboardOverview, getRecentAttempts, hasAnyCoffee } from "@/features/dashboard/queries";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { NewBrewCta } from "@/components/dashboard/NewBrewCta";
+import { DraftResumeBanner } from "@/components/dashboard/DraftResumeBanner";
 import { DashboardStats } from "@/components/dashboard/DashboardStats";
 import { RecentAttemptsList } from "@/components/dashboard/RecentAttemptsList";
 import { DashboardSnapshotWriter } from "@/components/dashboard/DashboardSnapshotWriter";
@@ -77,6 +78,8 @@ export default async function DashboardPage() {
           )}
 
           <div className="mt-6 space-y-6">
+            {user && <DraftResumeBanner currentUserId={user.id} />}
+
             <NewBrewCta />
 
             <DashboardStats

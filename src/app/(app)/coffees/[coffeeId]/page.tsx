@@ -21,6 +21,9 @@ export default async function CoffeeDetailPage({
 }) {
   const { coffeeId } = await params;
   const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
   const result = await getCoffeeWithBags(supabase, coffeeId);
 
   if (!result) notFound();
@@ -61,6 +64,7 @@ export default async function CoffeeDetailPage({
             coffeeName={coffee.name}
             roaster={coffee.roaster}
             targetBagId={targetBag.id}
+            userId={user?.id ?? ""}
           />
         </div>
       )}
@@ -83,6 +87,7 @@ export default async function CoffeeDetailPage({
                       coffeeBagId={targetBag.id}
                       coffeeName={coffee.name}
                       roaster={coffee.roaster}
+                      userId={user?.id ?? ""}
                       sourceAttempt={null}
                       className="inline-flex min-h-11 items-center rounded-input bg-ink px-4 text-sm font-medium text-surface"
                     >

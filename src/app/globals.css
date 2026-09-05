@@ -59,6 +59,18 @@ body {
   background: var(--color-canvas);
   color: var(--color-ink);
   font-family: var(--font-inter);
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+
+/* The app-wide "no selection" rule above would otherwise block editing your
+   own typed text — form controls always need to stay selectable. */
+input,
+textarea,
+[contenteditable="true"] {
+  -webkit-user-select: text;
+  user-select: text;
 }
 
 /* Browsers don't give <button> a pointer cursor by default (unlike <a>),

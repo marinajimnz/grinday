@@ -9,6 +9,7 @@ export function PrepareWithRecipeButton({
   coffeeBagId,
   coffeeName,
   roaster,
+  userId,
   sourceAttempt,
   className,
   children,
@@ -17,6 +18,7 @@ export function PrepareWithRecipeButton({
   coffeeBagId: string;
   coffeeName: string;
   roaster: string;
+  userId: string;
   sourceAttempt?: RecipeSourceAttempt | null;
   className?: string;
   children: React.ReactNode;
@@ -33,6 +35,7 @@ export function PrepareWithRecipeButton({
           coffeeBagId,
           coffeeName,
           roaster,
+          userId,
           // The source attempt already carries the method it was brewed
           // with — this shortcut skips the method/coffee picker entirely.
           method: (sourceAttempt?.method as BrewMethod) ?? "espresso",

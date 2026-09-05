@@ -11,12 +11,14 @@ export async function RecipeCard({
   coffeeName,
   roaster,
   targetBagId,
+  userId,
 }: {
   attempt: BrewAttemptRow;
   coffeeId: string;
   coffeeName: string;
   roaster: string;
   targetBagId: string;
+  userId: string;
 }) {
   const dict = getDictionary(await getLocale());
 
@@ -62,6 +64,7 @@ export async function RecipeCard({
           coffeeBagId={targetBagId}
           coffeeName={coffeeName}
           roaster={roaster}
+          userId={userId}
           sourceAttempt={attempt}
           className="min-h-11 flex-1 rounded-input bg-ink px-4 text-center text-sm font-medium text-surface"
         >

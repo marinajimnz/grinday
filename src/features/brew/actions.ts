@@ -10,6 +10,7 @@ type ActionResult<T = undefined> =
   | { success: false; message: string };
 
 export type StartBrewData = {
+  userId: string;
   coffeeId: string;
   coffeeBagId: string;
   coffeeName: string;
@@ -31,6 +32,10 @@ export async function startBrewAction(rawInput: unknown): Promise<ActionResult<S
   const { coffeeId, method } = parsed.data;
 
   const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { success: false, message: "No autenticado" };
 
   const { data: coffee, error: coffeeError } = await supabase
     .from("coffees")
@@ -62,6 +67,7 @@ export async function startBrewAction(rawInput: unknown): Promise<ActionResult<S
   return {
     success: true,
     data: {
+      userId: user.id,
       coffeeId: coffee.id,
       coffeeBagId: bag.id,
       coffeeName: coffee.name,
