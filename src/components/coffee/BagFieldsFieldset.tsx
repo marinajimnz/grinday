@@ -1,6 +1,6 @@
 "use client";
 
-import type { FieldErrors, UseFormRegister } from "react-hook-form";
+import type { FieldErrors, UseFormRegister, UseFormWatch } from "react-hook-form";
 import { Field, inputClassName } from "@/components/ui/Field";
 import { BAG_STATUSES, INVENTORY_MODES } from "@/features/coffees/constants";
 import type { z } from "zod";
@@ -13,14 +13,24 @@ export type BagFormValues = { bag: z.infer<typeof bagFieldsSchema> };
 export function BagFieldsFieldset({
   register,
   errors,
+  watch,
+  autoStatus = false,
 }: {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   register: UseFormRegister<any>;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   control?: any;
   errors?: FieldErrors<z.infer<typeof bagFieldsSchema>>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  watch?: UseFormWatch<any>;
+  // A brand-new bag (this form creating one) has no history yet, so status
+  // is derived from the opened date instead of chosen — an existing bag
+  // being edited keeps the manual picker (it may already be finished or
+  // archived, states no date field here can express).
+  autoStatus?: boolean;
 }) {
   const dict = useDictionary();
+  const computedStatus = watch?.("bag.openedAt") ? "open" : "sealed";
 
   return (
     <fieldset className="space-y-4">
@@ -48,14 +58,24 @@ export function BagFieldsFieldset({
         <Field label={dict.coffees.finishedDate} htmlFor="bag.finishedAt">
           <input id="bag.finishedAt" type="date" className={inputClassName} {...register("bag.finishedAt")} />
         </Field>
-        <Field label={dict.coffees.bagStatus} htmlFor="bag.status">
-          <select id="bag.status" className={inputClassName} {...register("bag.status")}>
-            {BAG_STATUSES.map((status) => (
-              <option key={status} value={status}>
-                {dict.enums.bagStatus[status]}
-              </option>
-            ))}
-          </select>
+        <Field
+          label={dict.coffees.bagStatus}
+          htmlFor="bag.status"
+          hint={autoStatus ? dict.coffees.bagStatusAutoHint : undefined}
+        >
+          {autoStatus ? (
+            <p id="bag.status" className={`${inputClassName} flex items-center text-ink-muted`}>
+              {dict.enums.bagStatus[computedStatus]}
+            </p>
+          ) : (
+            <select id="bag.status" className={inputClassName} {...register("bag.status")}>
+              {BAG_STATUSES.map((status) => (
+                <option key={status} value={status}>
+                  {dict.enums.bagStatus[status]}
+                </option>
+              ))}
+            </select>
+          )}
         </Field>
       </div>
 

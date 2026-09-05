@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, useTransition, type ComponentType } from "react";
+import { useEffect, useMemo, useState, useTransition, type ComponentType } from "react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -98,6 +98,8 @@ export function NewCoffeeForm() {
     trigger,
     getValues,
     reset,
+    watch,
+    setValue,
     handleSubmit,
     formState: { errors, isDirty },
   } = useForm({
@@ -107,6 +109,13 @@ export function NewCoffeeForm() {
       bag: { inventoryMode: "none", status: "sealed" },
     },
   });
+
+  // Bag status is a computed field, not a choice — a brand-new bag is
+  // "open" the moment it has an opened date, "sealed" otherwise.
+  const openedAt = watch("bag.openedAt");
+  useEffect(() => {
+    setValue("bag.status", openedAt ? "open" : "sealed");
+  }, [openedAt, setValue]);
 
   // Once a mode is picked, the wizard is a focused full-screen flow — hide
   // the mobile bottom nav so it doesn't compete for space or attention.
@@ -228,7 +237,7 @@ export function NewCoffeeForm() {
       bag: {
         purchaseDate: getValues("bag.purchaseDate"),
         openedAt: getValues("bag.openedAt"),
-        status: getValues("bag.status") ?? "sealed",
+        status: getValues("bag.openedAt") ? "open" : "sealed",
         packageWeightG: getValues("bag.packageWeightG"),
         inventoryMode: getValues("bag.inventoryMode") ?? "none",
       },
@@ -403,7 +412,7 @@ export function NewCoffeeForm() {
       {step.key === "cover-photo" ? (
         <CoverPhotoPicker file={coverPhotoFile} onChange={setCoverPhotoFile} />
       ) : (
-        <StepFields register={register} control={control} errors={stepErrors} />
+        <StepFields register={register} control={control} watch={watch} errors={stepErrors} />
       )}
 
       {formError && (

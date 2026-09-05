@@ -296,6 +296,7 @@ const es = {
     firstBrewDate: "Primer intento",
     finishedDate: "Fecha de finalización",
     bagStatus: "Estado de la bolsa",
+    bagStatusAutoHint: "Se calcula solo: si pones fecha de apertura, queda «Abierta»; si no, «Sin abrir».",
     packageWeight: "Peso del paquete (g)",
     packageWeightHint: "Si lo indicas, arranca el seguimiento de inventario con este peso",
     inventoryMode: "Inventario",

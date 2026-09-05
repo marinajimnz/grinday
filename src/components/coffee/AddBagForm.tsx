@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -29,12 +29,20 @@ export function AddBagForm({
   const {
     register,
     control,
+    watch,
+    setValue,
     handleSubmit,
     formState: { errors },
   } = useForm({
     resolver: zodResolver(formSchema),
     defaultValues: { bag: { inventoryMode: "none", status: "sealed" } },
   });
+
+  // Bag status is a computed field, not a choice — see BagFieldsFieldset.
+  const openedAt = watch("bag.openedAt");
+  useEffect(() => {
+    setValue("bag.status", openedAt ? "open" : "sealed");
+  }, [openedAt, setValue]);
 
   function onSubmit(values: FormValues) {
     startTransition(async () => {
@@ -52,7 +60,7 @@ export function AddBagForm({
       onSubmit={handleSubmit(onSubmit)}
       className="space-y-6 rounded-card border border-border bg-surface p-5"
     >
-      <BagFieldsFieldset register={register} control={control} errors={errors.bag} />
+      <BagFieldsFieldset register={register} control={control} watch={watch} autoStatus errors={errors.bag} />
       {formError && (
         <p role="alert" className="text-sm text-red-700">
           {formError}

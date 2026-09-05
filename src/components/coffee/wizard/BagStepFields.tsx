@@ -1,8 +1,8 @@
 "use client";
 
-import type { FieldErrors, UseFormRegister } from "react-hook-form";
+import type { FieldErrors, UseFormRegister, UseFormWatch } from "react-hook-form";
 import { Field, inputClassName } from "@/components/ui/Field";
-import { BAG_STATUSES, INVENTORY_MODES } from "@/features/coffees/constants";
+import { INVENTORY_MODES } from "@/features/coffees/constants";
 import type { z } from "zod";
 import type { bagFieldsSchema } from "@/lib/validation/coffees";
 import { useDictionary } from "@/components/i18n/LocaleProvider";
@@ -11,19 +11,21 @@ import { useDictionary } from "@/components/i18n/LocaleProvider";
 export type BagStepProps = {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   register: UseFormRegister<any>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  watch: UseFormWatch<any>;
   errors?: FieldErrors<z.infer<typeof bagFieldsSchema>>;
 };
 
-function BagStatusSelect({ register }: Pick<BagStepProps, "register">) {
+// A brand-new bag can only be sealed or open — there's no history yet to
+// make it finished/archived — so this is derived from whether an opened
+// date was given instead of asked as a separate choice.
+function BagStatusDisplay({ watch }: Pick<BagStepProps, "watch">) {
   const dict = useDictionary();
+  const status = watch("bag.openedAt") ? "open" : "sealed";
   return (
-    <select id="bag.status" className={inputClassName} {...register("bag.status")}>
-      {BAG_STATUSES.map((status) => (
-        <option key={status} value={status}>
-          {dict.enums.bagStatus[status]}
-        </option>
-      ))}
-    </select>
+    <p id="bag.status" className={`${inputClassName} flex items-center text-ink-muted`}>
+      {dict.enums.bagStatus[status]}
+    </p>
   );
 }
 
@@ -40,7 +42,7 @@ function InventoryModeSelect({ register }: Pick<BagStepProps, "register">) {
   );
 }
 
-function PackageWeightField({ register, errors }: BagStepProps) {
+function PackageWeightField({ register, errors }: Pick<BagStepProps, "register" | "errors">) {
   const dict = useDictionary();
   return (
     <Field
@@ -93,12 +95,12 @@ export function BagDatesFields({ register, errors }: BagStepProps) {
 }
 
 // Complete mode, step 2: bag status + package weight.
-export function BagConditionFields({ register, errors }: BagStepProps) {
+export function BagConditionFields({ register, watch, errors }: BagStepProps) {
   const dict = useDictionary();
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-      <Field label={dict.coffees.bagStatus} htmlFor="bag.status">
-        <BagStatusSelect register={register} />
+      <Field label={dict.coffees.bagStatus} htmlFor="bag.status" hint={dict.coffees.bagStatusAutoHint}>
+        <BagStatusDisplay watch={watch} />
       </Field>
       <PackageWeightField register={register} errors={errors} />
     </div>
@@ -139,7 +141,7 @@ export function BagInventoryFields({ register }: BagStepProps) {
 }
 
 // Basic mode's only bag step: purchase/opened dates, status, weight, inventory mode.
-export function BagBasicModeFields({ register, errors }: BagStepProps) {
+export function BagBasicModeFields({ register, watch, errors }: BagStepProps) {
   const dict = useDictionary();
   return (
     <div className="space-y-4">
@@ -152,8 +154,8 @@ export function BagBasicModeFields({ register, errors }: BagStepProps) {
         </Field>
       </div>
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <Field label={dict.coffees.bagStatus} htmlFor="bag.status">
-          <BagStatusSelect register={register} />
+        <Field label={dict.coffees.bagStatus} htmlFor="bag.status" hint={dict.coffees.bagStatusAutoHint}>
+          <BagStatusDisplay watch={watch} />
         </Field>
         <PackageWeightField register={register} errors={errors} />
       </div>

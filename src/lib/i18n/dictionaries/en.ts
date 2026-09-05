@@ -298,6 +298,7 @@ const en: Dictionary = {
     firstBrewDate: "First attempt",
     finishedDate: "Finished date",
     bagStatus: "Bag status",
+    bagStatusAutoHint: "Calculated automatically: set an opened date and it becomes \"Open\"; leave it blank and it stays \"Sealed\".",
     packageWeight: "Package weight (g)",
     packageWeightHint: "If you enter this, inventory tracking starts from this weight",
     inventoryMode: "Inventory",
