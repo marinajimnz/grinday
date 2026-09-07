@@ -7,6 +7,26 @@ import type { Dictionary } from "@/lib/i18n/dictionaries/es";
 import type { Locale } from "@/lib/i18n/types";
 import { formatDate } from "@/lib/i18n/format-date";
 
+// The field-label column stays put while the attempt columns scroll
+// horizontally — this class (matching each row's own background) is what
+// keeps it readable instead of the scrolling content showing through.
+const stickyLabelCell = "sticky left-0 z-10 whitespace-nowrap px-3 py-2 text-left";
+
+// A group divider row ("Técnico" / "Cata") — a plain render helper, not a
+// component, so it can't get flagged for being defined inside CompareView.
+function renderSectionRow(label: string, attempts: BrewAttemptRow[]) {
+  return (
+    <tr key={label}>
+      <th scope="row" className={cn(stickyLabelCell, "bg-canvas text-[11px] font-medium uppercase tracking-wide text-ink-muted")}>
+        {label}
+      </th>
+      {attempts.map((attempt) => (
+        <td key={attempt.id} className="bg-canvas" />
+      ))}
+    </tr>
+  );
+}
+
 export function CompareView({
   attempts,
   preferredAttemptId,
@@ -30,72 +50,95 @@ export function CompareView({
 
   const technicalFields = compareFields.filter((f) => f.group === "technical");
   const sensoryFields = compareFields.filter((f) => f.group === "sensory");
+  const hasNotes = attempts.some((a) => a.notes);
 
   return (
-    <div className="-mx-4 flex snap-x gap-3 overflow-x-auto px-4 pb-4 md:mx-0 md:px-0">
-      {attempts.map((attempt, index) => (
-        <div
-          key={attempt.id}
-          className="w-[260px] shrink-0 snap-start rounded-card border border-border bg-surface p-4"
-        >
-          <div className="flex items-center gap-1.5">
-            <span className="font-display text-lg text-ink">#{attempt.attempt_no}</span>
-            {attempt.id === preferredAttemptId && (
-              <IconFavorita aria-label={dict.attempts.preferred} className="size-4 text-coffee" />
-            )}
-          </div>
-          <p className="text-xs text-ink-muted">{formatDate(attempt.created_at, locale)}</p>
-
-          <div className="mt-4 space-y-2.5">
-            <p className="text-[11px] font-medium uppercase tracking-wide text-ink-muted">
-              {dict.attempts.technical}
-            </p>
-            {technicalFields.map((field) => (
-              <div key={field.key} className="flex items-baseline justify-between gap-2 text-sm">
-                <span className="text-ink-muted">{field.label}</span>
-                <span
-                  className={cn(
-                    "text-right text-ink",
-                    differs(field.key) && "rounded-full bg-canvas px-2 py-0.5 font-medium",
+    <div className="-mx-4 overflow-x-auto px-4 pb-4 md:mx-0 md:px-0">
+      <table className="w-full min-w-max border-separate border-spacing-0 text-sm">
+        <thead>
+          <tr>
+            <th className={cn(stickyLabelCell, "bg-canvas")} />
+            {attempts.map((attempt) => (
+              <th
+                key={attempt.id}
+                className="min-w-[130px] border-b border-border bg-canvas px-3 py-2 text-left align-bottom"
+              >
+                <div className="flex items-center gap-1.5">
+                  <span className="font-display text-lg text-ink">#{attempt.attempt_no}</span>
+                  {attempt.id === preferredAttemptId && (
+                    <IconFavorita aria-label={dict.attempts.preferred} className="size-4 shrink-0 text-coffee" />
                   )}
-                >
-                  {valuesByField.get(field.key)?.[index]}
-                </span>
-              </div>
+                </div>
+                <p className="text-xs font-normal text-ink-muted">{formatDate(attempt.created_at, locale)}</p>
+              </th>
             ))}
+          </tr>
+        </thead>
+        <tbody>
+          {renderSectionRow(dict.attempts.technical, attempts)}
+          {technicalFields.map((field) => (
+            <tr key={field.key}>
+              <th scope="row" className={cn(stickyLabelCell, "border-b border-border bg-surface font-normal text-ink-muted")}>
+                {field.label}
+              </th>
+              {attempts.map((attempt, index) => (
+                <td key={attempt.id} className="border-b border-border bg-surface px-3 py-2 text-ink">
+                  <span
+                    className={cn(differs(field.key) && "rounded-full bg-canvas px-2 py-0.5 font-medium")}
+                  >
+                    {valuesByField.get(field.key)?.[index]}
+                  </span>
+                </td>
+              ))}
+            </tr>
+          ))}
 
-            <p className="pt-2 text-[11px] font-medium uppercase tracking-wide text-ink-muted">
-              {dict.attempts.tasting}
-            </p>
-            {sensoryFields.map((field) => (
-              <div key={field.key} className="flex items-baseline justify-between gap-2 text-sm">
-                <span className="text-ink-muted">{field.label}</span>
-                <span
-                  className={cn(
-                    "text-right text-ink",
-                    differs(field.key) && "rounded-full bg-canvas px-2 py-0.5 font-medium",
-                  )}
-                >
-                  {valuesByField.get(field.key)?.[index]}
-                </span>
-              </div>
-            ))}
-          </div>
+          {renderSectionRow(dict.attempts.tasting, attempts)}
+          {sensoryFields.map((field) => (
+            <tr key={field.key}>
+              <th scope="row" className={cn(stickyLabelCell, "border-b border-border bg-surface font-normal text-ink-muted")}>
+                {field.label}
+              </th>
+              {attempts.map((attempt, index) => (
+                <td key={attempt.id} className="border-b border-border bg-surface px-3 py-2 text-ink">
+                  <span
+                    className={cn(differs(field.key) && "rounded-full bg-canvas px-2 py-0.5 font-medium")}
+                  >
+                    {valuesByField.get(field.key)?.[index]}
+                  </span>
+                </td>
+              ))}
+            </tr>
+          ))}
 
-          {attempt.notes && (
-            <p className="mt-3 border-t border-border pt-2 text-xs text-ink-muted">
-              {attempt.notes}
-            </p>
+          {hasNotes && (
+            <tr>
+              <th scope="row" className={cn(stickyLabelCell, "border-b border-border bg-surface align-top font-normal text-ink-muted")}>
+                {dict.brew.notes}
+              </th>
+              {attempts.map((attempt) => (
+                <td key={attempt.id} className="border-b border-border bg-surface px-3 py-2 align-top text-ink">
+                  {attempt.notes ?? "—"}
+                </td>
+              ))}
+            </tr>
           )}
 
-          <Link
-            href={`/attempts/new?coffeeBagId=${attempt.coffee_bag_id}&duplicateFrom=${attempt.id}`}
-            className="mt-4 block min-h-11 rounded-input border border-border px-3 text-center text-sm font-medium leading-[2.75rem] text-ink"
-          >
-            {dict.attempts.useAsBase}
-          </Link>
-        </div>
-      ))}
+          <tr>
+            <th scope="row" className={cn(stickyLabelCell, "bg-surface")} />
+            {attempts.map((attempt) => (
+              <td key={attempt.id} className="bg-surface px-3 py-3 align-top">
+                <Link
+                  href={`/attempts/new?coffeeBagId=${attempt.coffee_bag_id}&duplicateFrom=${attempt.id}`}
+                  className="block min-h-11 rounded-input border border-border px-3 text-center text-sm font-medium leading-[2.75rem] text-ink"
+                >
+                  {dict.attempts.useAsBase}
+                </Link>
+              </td>
+            ))}
+          </tr>
+        </tbody>
+      </table>
     </div>
   );
 }
