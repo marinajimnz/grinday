@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef } from "react";
 import Image from "next/image";
 import { ImagePlus } from "lucide-react";
 import { IconCafe } from "@/components/icons/pencil-icons";
+import { Button } from "@/components/ui/Button";
 import { useDictionary } from "@/components/i18n/LocaleProvider";
 
 // No `capture` attribute on purpose: a plain accept="image/*" file input is
@@ -42,22 +43,14 @@ export function CoverPhotoPicker({
       </div>
 
       <div className="flex flex-wrap gap-2">
-        <button
-          type="button"
-          onClick={() => inputRef.current?.click()}
-          className="inline-flex min-h-11 items-center gap-1.5 rounded-input border border-border px-4 text-sm font-medium text-ink"
-        >
+        <Button type="button" variant="secondary" onClick={() => inputRef.current?.click()}>
           <ImagePlus aria-hidden className="size-4" />
           {file ? dict.coffees.changePhoto : dict.ui.addPhoto}
-        </button>
+        </Button>
         {file && (
-          <button
-            type="button"
-            onClick={() => onChange(null)}
-            className="min-h-11 rounded-input border border-border px-4 text-sm font-medium text-ink"
-          >
+          <Button type="button" variant="secondary" onClick={() => onChange(null)}>
             {dict.ui.remove}
-          </button>
+          </Button>
         )}
       </div>
 

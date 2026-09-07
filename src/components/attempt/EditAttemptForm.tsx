@@ -10,6 +10,7 @@ import { updateAttemptAction } from "@/features/attempts/actions";
 import type { BrewAttemptRow } from "@/features/attempts/queries";
 import { useDictionary } from "@/components/i18n/LocaleProvider";
 import { LoadingLabel } from "@/components/ui/LoadingLabel";
+import { Button } from "@/components/ui/Button";
 
 const formSchema = z.object({ attempt: attemptFieldsSchema });
 type FormValues = z.infer<typeof formSchema>;
@@ -87,20 +88,12 @@ export function EditAttemptForm({
         </p>
       )}
       <div className="flex gap-2">
-        <button
-          type="submit"
-          disabled={isPending}
-          className="min-h-11 rounded-input bg-ink px-4 text-sm font-medium text-surface disabled:opacity-60"
-        >
+        <Button type="submit" disabled={isPending}>
           <LoadingLabel loading={isPending}>{dict.coffees.saveChanges}</LoadingLabel>
-        </button>
-        <button
-          type="button"
-          onClick={onCancel}
-          className="min-h-11 rounded-input border border-border px-4 text-sm font-medium text-ink"
-        >
+        </Button>
+        <Button type="button" variant="secondary" onClick={onCancel}>
           {dict.common.cancel}
-        </button>
+        </Button>
       </div>
     </form>
   );

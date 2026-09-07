@@ -7,6 +7,7 @@ import { createClient } from "@/lib/supabase/client";
 import { Field, inputClassName } from "@/components/ui/Field";
 import { useDictionary } from "@/components/i18n/LocaleProvider";
 import { LoadingLabel } from "@/components/ui/LoadingLabel";
+import { Button } from "@/components/ui/Button";
 
 // The recovery link's tokens arrive as a URL hash (implicit flow), but
 // @supabase/ssr's browser client always forces flowType "pkce", which makes
@@ -131,15 +132,11 @@ export function ResetPasswordForm() {
         </p>
       )}
 
-      <button
-        type="submit"
-        disabled={isPending}
-        className="min-h-11 w-full rounded-input bg-ink px-4 text-sm font-medium text-surface disabled:opacity-60"
-      >
+      <Button type="submit" disabled={isPending} fullWidth>
         <LoadingLabel loading={isPending} loadingText={dict.resetPassword.submitting}>
           {dict.resetPassword.submit}
         </LoadingLabel>
-      </button>
+      </Button>
     </form>
   );
 }

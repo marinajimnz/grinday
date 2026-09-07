@@ -5,6 +5,7 @@ import { Field, inputClassName } from "@/components/ui/Field";
 import { changeEmailAction } from "@/features/account/actions";
 import { useDictionary } from "@/components/i18n/LocaleProvider";
 import { LoadingLabel } from "@/components/ui/LoadingLabel";
+import { Button } from "@/components/ui/Button";
 
 export function ChangeEmailForm() {
   const dict = useDictionary();
@@ -51,13 +52,9 @@ export function ChangeEmailForm() {
       )}
       {saved && !error && <p className="text-sm text-ink-muted">{dict.settings.emailChanged}</p>}
 
-      <button
-        type="submit"
-        disabled={isPending}
-        className="min-h-11 rounded-input bg-ink px-4 text-sm font-medium text-surface disabled:opacity-60"
-      >
+      <Button type="submit" disabled={isPending}>
         <LoadingLabel loading={isPending}>{dict.common.save}</LoadingLabel>
-      </button>
+      </Button>
     </form>
   );
 }

@@ -7,6 +7,7 @@ import { createClient } from "@/lib/supabase/client";
 import { Field, inputClassName } from "@/components/ui/Field";
 import { resolveLoginEmailAction } from "@/features/auth/actions";
 import { useDictionary } from "@/components/i18n/LocaleProvider";
+import { Button } from "@/components/ui/Button";
 
 export function LoginForm() {
   const router = useRouter();
@@ -80,13 +81,9 @@ export function LoginForm() {
         </p>
       )}
 
-      <button
-        type="submit"
-        disabled={isSubmitting}
-        className="min-h-11 w-full rounded-input bg-ink px-4 text-sm font-medium text-surface disabled:opacity-60"
-      >
+      <Button type="submit" disabled={isSubmitting} fullWidth>
         {isSubmitting ? dict.login.submitting : dict.login.submit}
-      </button>
+      </Button>
 
       <p className="text-center text-sm text-ink-muted">
         {dict.login.newHerePrompt}{" "}

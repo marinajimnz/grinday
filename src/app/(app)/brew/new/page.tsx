@@ -1,5 +1,5 @@
-import Link from "next/link";
 import { Coffee } from "lucide-react";
+import { Button } from "@/components/ui/Button";
 import { createClient } from "@/lib/supabase/server";
 import { listBrewableCoffees } from "@/features/attempts/queries";
 import { getUserBrewEquipment } from "@/features/equipment/queries";
@@ -35,12 +35,9 @@ export default async function BrewNewPage() {
             title={dict.brew.noEquipmentTitle}
             description={dict.brew.noEquipmentDescription}
             action={
-              <Link
-                href="/settings/machines/new"
-                className="mt-2 inline-flex min-h-11 items-center rounded-input bg-ink px-4 text-sm font-medium text-surface"
-              >
+              <Button href="/settings/machines/new" className="mt-2">
                 {dict.equipment.addNewMachine}
-              </Link>
+              </Button>
             }
           />
         ) : !coffees.length ? (

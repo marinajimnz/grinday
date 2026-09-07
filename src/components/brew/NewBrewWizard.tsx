@@ -10,6 +10,7 @@ import { buildDraftFromRecipe, saveDraft } from "@/features/brew/draft";
 import type { BrewMethod } from "@/features/equipment/constants";
 import type { BrewableCoffee } from "@/features/attempts/queries";
 import { useDictionary } from "@/components/i18n/LocaleProvider";
+import { Button } from "@/components/ui/Button";
 
 export function NewBrewWizard({
   availableMethods,
@@ -63,13 +64,9 @@ export function NewBrewWizard({
 
   return (
     <div>
-      <button
-        type="button"
-        onClick={() => setMethod(null)}
-        className="min-h-11 rounded-input border border-border px-4 text-sm font-medium text-ink"
-      >
+      <Button type="button" variant="secondary" onClick={() => setMethod(null)}>
         {dict.common.back}
-      </button>
+      </Button>
 
       <div className="mt-4">
         <BrewStepHeader step={2} title={dict.brew.chooseCoffeeTitle} />

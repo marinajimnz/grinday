@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { buttonClassName } from "@/components/ui/Button";
 import { buildDraftFromRecipe, saveDraft, type RecipeSourceAttempt } from "@/features/brew/draft";
 import type { BrewMethod } from "@/features/equipment/constants";
 
@@ -28,7 +29,7 @@ export function PrepareWithRecipeButton({
   return (
     <button
       type="button"
-      className={className}
+      className={buttonClassName("primary", { className })}
       onClick={() => {
         const draft = buildDraftFromRecipe({
           coffeeId,

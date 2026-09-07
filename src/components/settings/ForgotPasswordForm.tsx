@@ -6,6 +6,7 @@ import { Field, inputClassName } from "@/components/ui/Field";
 import { requestPasswordResetAction } from "@/features/auth/actions";
 import { useDictionary } from "@/components/i18n/LocaleProvider";
 import { LoadingLabel } from "@/components/ui/LoadingLabel";
+import { Button } from "@/components/ui/Button";
 
 export function ForgotPasswordForm() {
   const dict = useDictionary();
@@ -58,15 +59,11 @@ export function ForgotPasswordForm() {
         </p>
       )}
 
-      <button
-        type="submit"
-        disabled={isPending}
-        className="min-h-11 w-full rounded-input bg-ink px-4 text-sm font-medium text-surface disabled:opacity-60"
-      >
+      <Button type="submit" disabled={isPending} fullWidth>
         <LoadingLabel loading={isPending} loadingText={dict.forgotPassword.submitting}>
           {dict.forgotPassword.submit}
         </LoadingLabel>
-      </button>
+      </Button>
 
       <p className="text-center text-sm text-ink-muted">
         <Link href="/login" className="font-medium text-ink underline">

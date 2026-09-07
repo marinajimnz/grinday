@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { LogOut } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { useDictionary } from "@/components/i18n/LocaleProvider";
+import { Button } from "@/components/ui/Button";
 
 export function SignOutButton() {
   const router = useRouter();
@@ -12,8 +13,9 @@ export function SignOutButton() {
   const [isSigningOut, setIsSigningOut] = useState(false);
 
   return (
-    <button
+    <Button
       type="button"
+      variant="secondary"
       disabled={isSigningOut}
       onClick={async () => {
         setIsSigningOut(true);
@@ -22,10 +24,9 @@ export function SignOutButton() {
         router.push("/login");
         router.refresh();
       }}
-      className="inline-flex min-h-11 items-center gap-1.5 rounded-input border border-border px-4 text-sm font-medium text-ink disabled:opacity-60"
     >
       <LogOut aria-hidden className="size-4" />
       {isSigningOut ? dict.settings.signingOut : dict.settings.signOut}
-    </button>
+    </Button>
   );
 }

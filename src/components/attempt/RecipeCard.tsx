@@ -1,6 +1,6 @@
-import Link from "next/link";
 import { IconFavorita } from "@/components/icons/pencil-icons";
 import { PrepareWithRecipeButton } from "@/components/brew/PrepareWithRecipeButton";
+import { Button } from "@/components/ui/Button";
 import type { BrewAttemptRow } from "@/features/attempts/queries";
 import { getLocale } from "@/lib/i18n/locale";
 import { getDictionary } from "@/lib/i18n/get-dictionary";
@@ -53,12 +53,9 @@ export async function RecipeCard({
       </div>
 
       <div className="mt-4 flex gap-2">
-        <Link
-          href={`/attempts/${attempt.id}`}
-          className="min-h-11 flex-1 rounded-input border border-border px-4 text-center text-sm font-medium leading-[2.75rem] text-ink"
-        >
+        <Button href={`/attempts/${attempt.id}`} variant="secondary" className="flex-1">
           {dict.dashboard.viewAttempt} #{attempt.attempt_no}
-        </Link>
+        </Button>
         <PrepareWithRecipeButton
           coffeeId={coffeeId}
           coffeeBagId={targetBagId}
@@ -66,7 +63,7 @@ export async function RecipeCard({
           roaster={roaster}
           userId={userId}
           sourceAttempt={attempt}
-          className="min-h-11 flex-1 rounded-input bg-ink px-4 text-center text-sm font-medium text-surface"
+          className="flex-1"
         >
           {dict.dashboard.prepareWithRecipe}
         </PrepareWithRecipeButton>

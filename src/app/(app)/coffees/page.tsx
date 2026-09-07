@@ -6,6 +6,7 @@ import { listCoffees } from "@/features/coffees/queries";
 import { CoffeeCard } from "@/components/coffee/CoffeeCard";
 import { CoffeeFilters } from "@/components/coffee/CoffeeFilters";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { Button } from "@/components/ui/Button";
 import { getLocale } from "@/lib/i18n/locale";
 import { getDictionary } from "@/lib/i18n/get-dictionary";
 
@@ -35,20 +36,12 @@ export default async function CoffeesPage({
           <p className="mt-1 text-sm text-ink-muted">{dict.coffees.subtitle}</p>
         </div>
         <div className="flex gap-2">
-          <Link
-            href="/inventory"
-            aria-label={dict.coffees.inventory}
-            className="inline-flex min-h-11 items-center gap-1.5 rounded-input border border-border px-3 text-sm font-medium text-ink"
-          >
+          <Button href="/inventory" aria-label={dict.coffees.inventory} variant="secondary" className="px-3">
             <IconArchivar aria-hidden className="size-4" />
-          </Link>
-          <Link
-            href="/coffees/new"
-            aria-label={dict.coffees.addCoffee}
-            className="inline-flex min-h-11 items-center justify-center rounded-input bg-ink px-4 text-surface"
-          >
+          </Button>
+          <Button href="/coffees/new" aria-label={dict.coffees.addCoffee}>
             <IconAnadir aria-hidden className="size-4" />
-          </Link>
+          </Button>
         </div>
       </div>
 

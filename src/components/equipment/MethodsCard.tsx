@@ -1,11 +1,11 @@
 "use client";
 
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useTransition } from "react";
 import { X } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { Button } from "@/components/ui/Button";
 import { SettingsAccordionCard } from "@/components/settings/SettingsAccordionCard";
 import { IconFavorita, IconMaquinas } from "@/components/icons/pencil-icons";
 import { BREW_METHODS } from "@/features/equipment/constants";
@@ -24,14 +24,7 @@ export function MethodsCard({ equipment }: { equipment: Equipment[] }) {
     items: equipment.filter((e) => e.method === method),
   })).filter((g) => g.items.length > 0);
 
-  const addButton = (
-    <Link
-      href="/settings/machines/new"
-      className="inline-flex min-h-11 items-center justify-center rounded-input bg-ink px-4 text-sm font-medium text-surface"
-    >
-      {dict.equipment.addNewMachine}
-    </Link>
-  );
+  const addButton = <Button href="/settings/machines/new">{dict.equipment.addNewMachine}</Button>;
 
   return (
     <div className="rounded-card border border-border bg-surface p-5">

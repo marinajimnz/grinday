@@ -31,6 +31,7 @@ import { useDictionary } from "@/components/i18n/LocaleProvider";
 import { useHideBottomNav } from "@/components/ui/BottomNavVisibility";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { LoadingLabel } from "@/components/ui/LoadingLabel";
+import { Button } from "@/components/ui/Button";
 import { IconBolsa, IconFlecha, IconGrano } from "@/components/icons/pencil-icons";
 import type { Dictionary } from "@/lib/i18n/dictionaries/es";
 
@@ -311,25 +312,20 @@ export function NewCoffeeForm() {
           </p>
         )}
         <div className="mt-4 flex flex-col gap-2 sm:flex-row">
-          <button
-            type="button"
-            disabled={isPending}
-            onClick={handleUseExistingCoffee}
-            className="min-h-11 flex-1 rounded-input bg-ink px-4 text-sm font-medium text-surface"
-          >
+          <Button className="flex-1" disabled={isPending} onClick={handleUseExistingCoffee}>
             {dict.coffees.addThisBagTo} “{conflict.name}”
-          </button>
-          <button
-            type="button"
+          </Button>
+          <Button
+            variant="secondary"
+            className="flex-1"
             disabled={isPending}
             onClick={() => {
               setConflict(null);
               startTransition(goToNextStep);
             }}
-            className="min-h-11 flex-1 rounded-input border border-border px-4 text-sm font-medium text-ink"
           >
             {dict.coffees.createNewAnyway}
-          </button>
+          </Button>
         </div>
         <button type="button" onClick={() => setConflict(null)} className="mt-3 text-sm text-ink-muted underline">
           {dict.coffees.backToEdit}
@@ -375,20 +371,12 @@ export function NewCoffeeForm() {
     <>
       <form onSubmit={handleFormSubmit} className="space-y-6">
       <div className="flex items-center justify-between gap-4">
-        <button
-          type="button"
-          onClick={requestExit}
-          className="min-h-11 rounded-input border border-border px-4 text-sm font-medium text-ink"
-        >
+        <Button type="button" variant="secondary" onClick={requestExit}>
           {dict.coffees.exit}
-        </button>
-        <button
-          type="button"
-          onClick={requestChangeMode}
-          className="min-h-11 rounded-input border border-border px-4 text-sm font-medium text-ink"
-        >
+        </Button>
+        <Button type="button" variant="secondary" onClick={requestChangeMode}>
           {dict.coffees.changeMode}
-        </button>
+        </Button>
       </div>
 
       <div>
@@ -423,21 +411,17 @@ export function NewCoffeeForm() {
 
       <div className="flex gap-2">
         {showBack && (
-          <button
-            type="button"
-            onClick={handleBack}
-            className="min-h-11 rounded-input border border-border px-4 text-sm font-medium text-ink"
-          >
+          <Button type="button" variant="secondary" onClick={handleBack}>
             {dict.common.back}
-          </button>
+          </Button>
         )}
-        <button
+        <Button
           type="submit"
           disabled={isPending}
-          className={`min-h-11 flex-1 rounded-input bg-ink px-4 text-sm font-medium text-surface disabled:opacity-60${showBack ? " sm:flex-none" : ""}`}
+          className={`flex-1${showBack ? " sm:flex-none" : ""}`}
         >
           {nextLabel}
-        </button>
+        </Button>
       </div>
       </form>
       <ConfirmDialog

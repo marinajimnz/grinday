@@ -6,6 +6,7 @@ import { ImagePlus } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { compressImage } from "@/lib/media/compressImage";
 import { useDictionary } from "@/components/i18n/LocaleProvider";
+import { Button } from "@/components/ui/Button";
 
 export function PhotoUploader<K extends string>({
   kinds,
@@ -72,15 +73,10 @@ export function PhotoUploader<K extends string>({
         ))}
       </select>
 
-      <button
-        type="button"
-        disabled={isUploading}
-        onClick={() => inputRef.current?.click()}
-        className="inline-flex min-h-11 items-center gap-1.5 rounded-input border border-border px-4 text-sm font-medium text-ink disabled:opacity-60"
-      >
+      <Button variant="secondary" disabled={isUploading} onClick={() => inputRef.current?.click()}>
         <ImagePlus aria-hidden className="size-4" />
         {isUploading ? dict.ui.uploading : dict.ui.addPhoto}
-      </button>
+      </Button>
       <input
         ref={inputRef}
         type="file"

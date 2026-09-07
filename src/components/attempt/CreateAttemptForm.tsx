@@ -11,6 +11,7 @@ import { createAttemptAction } from "@/features/attempts/actions";
 import type { BrewAttemptRow } from "@/features/attempts/queries";
 import { useDictionary } from "@/components/i18n/LocaleProvider";
 import { LoadingLabel } from "@/components/ui/LoadingLabel";
+import { Button } from "@/components/ui/Button";
 
 const formSchema = z.object({ attempt: attemptFieldsSchema });
 type FormValues = z.infer<typeof formSchema>;
@@ -80,13 +81,9 @@ export function CreateAttemptForm({
           {formError}
         </p>
       )}
-      <button
-        type="submit"
-        disabled={isPending}
-        className="min-h-11 w-full rounded-input bg-ink px-4 text-sm font-medium text-surface disabled:opacity-60 sm:w-auto"
-      >
+      <Button type="submit" disabled={isPending} fullWidth className="sm:w-auto">
         <LoadingLabel loading={isPending}>{dict.attempts.saveAttempt}</LoadingLabel>
-      </button>
+      </Button>
     </form>
   );
 }

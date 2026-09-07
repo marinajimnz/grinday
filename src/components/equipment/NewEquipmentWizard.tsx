@@ -10,6 +10,7 @@ import { useDictionary } from "@/components/i18n/LocaleProvider";
 import { useHideBottomNav } from "@/components/ui/BottomNavVisibility";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { LoadingLabel } from "@/components/ui/LoadingLabel";
+import { Button } from "@/components/ui/Button";
 
 export function NewEquipmentWizard() {
   const router = useRouter();
@@ -72,13 +73,9 @@ export function NewEquipmentWizard() {
     <>
       <form onSubmit={handleFormSubmit} className="space-y-6">
         <div className="flex items-center justify-between gap-4">
-          <button
-            type="button"
-            onClick={() => setConfirmExit(true)}
-            className="min-h-11 rounded-input border border-border px-4 text-sm font-medium text-ink"
-          >
+          <Button type="button" variant="secondary" onClick={() => setConfirmExit(true)}>
             {dict.equipment.exit}
-          </button>
+          </Button>
         </div>
 
         <div>
@@ -108,23 +105,19 @@ export function NewEquipmentWizard() {
 
         <div className="flex gap-2">
           {step > 0 && (
-            <button
-              type="button"
-              onClick={handleBack}
-              className="min-h-11 rounded-input border border-border px-4 text-sm font-medium text-ink"
-            >
+            <Button type="button" variant="secondary" onClick={handleBack}>
               {dict.common.back}
-            </button>
+            </Button>
           )}
-          <button
+          <Button
             type="submit"
             disabled={isPending || nextDisabled}
-            className={`min-h-11 flex-1 rounded-input bg-ink px-4 text-sm font-medium text-surface disabled:opacity-60${step > 0 ? " sm:flex-none" : ""}`}
+            className={`flex-1${step > 0 ? " sm:flex-none" : ""}`}
           >
             <LoadingLabel loading={isPending} loadingText={dict.common.saving}>
               {isLastStep ? dict.equipment.saveEquipment : dict.equipment.continueLabel}
             </LoadingLabel>
-          </button>
+          </Button>
         </div>
       </form>
       <ConfirmDialog

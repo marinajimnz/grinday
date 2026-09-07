@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import { useDictionary } from "@/components/i18n/LocaleProvider";
+import { buttonClassName } from "@/components/ui/Button";
 
 // A confirm()/alert() replacement: window.confirm() is real browser chrome
 // (Chrome adds its own "prevent this page from creating additional
@@ -54,7 +55,7 @@ export function ConfirmDialog({
           <button
             type="button"
             onClick={onCancel}
-            className="min-h-11 flex-1 rounded-input border border-border px-4 text-sm font-medium text-ink"
+            className={buttonClassName("secondary", { className: "flex-1" })}
           >
             {dict.common.no}
           </button>
@@ -62,7 +63,7 @@ export function ConfirmDialog({
             type="button"
             ref={confirmRef}
             onClick={onConfirm}
-            className="min-h-11 flex-1 rounded-input bg-ink px-4 text-sm font-medium text-surface"
+            className={buttonClassName("primary", { className: "flex-1" })}
           >
             {dict.common.yes}
           </button>

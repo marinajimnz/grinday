@@ -5,6 +5,7 @@ import { ChangeUsernameForm } from "@/components/settings/ChangeUsernameForm";
 import { ChangeEmailForm } from "@/components/settings/ChangeEmailForm";
 import { ChangePasswordForm } from "@/components/settings/ChangePasswordForm";
 import { SettingsAccordionCard } from "@/components/settings/SettingsAccordionCard";
+import { buttonClassName } from "@/components/ui/Button";
 import { getLocale } from "@/lib/i18n/locale";
 import { getDictionary } from "@/lib/i18n/get-dictionary";
 
@@ -54,17 +55,11 @@ export default async function AccountSettingsPage() {
         <p className="text-sm font-medium text-ink">{dict.settings.exportData}</p>
         <p className="mt-1 text-sm text-ink-muted">{dict.settings.exportDescription}</p>
         <div className="mt-4 flex flex-wrap gap-2">
-          <a
-            href="/api/export?format=json"
-            className="inline-flex min-h-11 items-center gap-1.5 rounded-input bg-ink px-4 text-sm font-medium text-surface"
-          >
+          <a href="/api/export?format=json" className={buttonClassName("primary")}>
             <Download aria-hidden className="size-4" />
             {dict.settings.downloadJson}
           </a>
-          <a
-            href="/api/export?format=csv"
-            className="inline-flex min-h-11 items-center gap-1.5 rounded-input border border-border px-4 text-sm font-medium text-ink"
-          >
+          <a href="/api/export?format=csv" className={buttonClassName("secondary")}>
             <Download aria-hidden className="size-4" />
             {dict.settings.downloadCsv}
           </a>

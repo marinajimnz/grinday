@@ -8,6 +8,7 @@ import { DraftResumeBanner } from "@/components/dashboard/DraftResumeBanner";
 import { DashboardStats } from "@/components/dashboard/DashboardStats";
 import { RecentAttemptsList } from "@/components/dashboard/RecentAttemptsList";
 import { DashboardSnapshotWriter } from "@/components/dashboard/DashboardSnapshotWriter";
+import { Button } from "@/components/ui/Button";
 import { getLocale } from "@/lib/i18n/locale";
 import { getDictionary } from "@/lib/i18n/get-dictionary";
 
@@ -56,12 +57,9 @@ export default async function DashboardPage() {
               title={dict.dashboard.emptyTitle}
               description={dict.dashboard.emptyDescription}
               action={
-                <Link
-                  href="/coffees/new"
-                  className="mt-2 inline-flex min-h-11 items-center rounded-input bg-ink px-4 text-sm font-medium text-surface"
-                >
+                <Button href="/coffees/new" className="mt-2">
                   {dict.dashboard.addCoffee}
-                </Link>
+                </Button>
               }
             />
           </div>

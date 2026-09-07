@@ -7,6 +7,7 @@ import { inputClassName } from "@/components/ui/Field";
 import { adjustInventoryAction } from "@/features/inventory/actions";
 import { useDictionary } from "@/components/i18n/LocaleProvider";
 import { LoadingLabel } from "@/components/ui/LoadingLabel";
+import { Button } from "@/components/ui/Button";
 
 export function InventoryAdjustPanel({
   coffeeBagId,
@@ -25,14 +26,10 @@ export function InventoryAdjustPanel({
 
   if (!editing) {
     return (
-      <button
-        type="button"
-        onClick={() => setEditing(true)}
-        className="inline-flex min-h-11 items-center gap-1.5 rounded-input border border-border px-3 text-sm font-medium text-ink"
-      >
+      <Button variant="secondary" className="px-3" onClick={() => setEditing(true)}>
         <Scale aria-hidden className="size-4" />
         {dict.inventoryPage.adjustInventory}
-      </button>
+      </Button>
     );
   }
 
@@ -67,8 +64,7 @@ export function InventoryAdjustPanel({
       )}
 
       <div className="mt-3 flex gap-2">
-        <button
-          type="button"
+        <Button
           disabled={isPending}
           onClick={() =>
             startTransition(async () => {
@@ -85,17 +81,12 @@ export function InventoryAdjustPanel({
               router.refresh();
             })
           }
-          className="min-h-11 rounded-input bg-ink px-4 text-sm font-medium text-surface disabled:opacity-60"
         >
           <LoadingLabel loading={isPending}>{dict.common.save}</LoadingLabel>
-        </button>
-        <button
-          type="button"
-          onClick={() => setEditing(false)}
-          className="min-h-11 rounded-input border border-border px-4 text-sm font-medium text-ink"
-        >
+        </Button>
+        <Button variant="secondary" onClick={() => setEditing(false)}>
           {dict.common.cancel}
-        </button>
+        </Button>
       </div>
     </div>
   );

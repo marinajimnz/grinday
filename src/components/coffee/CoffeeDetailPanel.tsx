@@ -10,6 +10,7 @@ import {
 } from "@/components/icons/pencil-icons";
 import { EditCoffeeForm } from "./EditCoffeeForm";
 import { Field, inputClassName } from "@/components/ui/Field";
+import { Button } from "@/components/ui/Button";
 import { type ROAST_LEVELS } from "@/features/coffees/constants";
 import { archiveCoffeeAction, deleteCoffeeAction } from "@/features/coffees/actions";
 import type { CoffeeRow } from "@/features/coffees/queries";
@@ -50,14 +51,10 @@ export function CoffeeDetailPanel({ coffee }: { coffee: CoffeeRow }) {
             <h1 className="font-display text-2xl text-ink">{coffee.name}</h1>
           </div>
         </div>
-        <button
-          type="button"
-          onClick={() => setEditing(true)}
-          className="inline-flex min-h-11 items-center gap-1.5 rounded-input border border-border px-3 text-sm font-medium text-ink"
-        >
+        <Button variant="secondary" className="px-3" onClick={() => setEditing(true)}>
           <IconEditar aria-hidden className="size-4" />
           {dict.common.edit}
-        </button>
+        </Button>
       </div>
 
       <dl className="mt-5 grid grid-cols-2 gap-4 text-sm sm:grid-cols-3">
@@ -137,8 +134,9 @@ export function CoffeeDetailPanel({ coffee }: { coffee: CoffeeRow }) {
       )}
 
       <div className="mt-6 flex flex-wrap gap-3">
-        <button
-          type="button"
+        <Button
+          variant="secondary"
+          className="px-3"
           disabled={isArchiving}
           onClick={() => {
             if (!confirm(`${dict.coffees.archiveConfirm} "${coffee.name}"${dict.coffees.archiveConfirmSuffix}`))
@@ -148,25 +146,24 @@ export function CoffeeDetailPanel({ coffee }: { coffee: CoffeeRow }) {
               router.push("/coffees");
             });
           }}
-          className="inline-flex min-h-11 items-center gap-1.5 rounded-input border border-border px-3 text-sm font-medium text-ink disabled:opacity-60"
         >
           <IconArchivar aria-hidden className="size-4" />
           {isArchiving ? dict.coffees.archiving : dict.coffees.archiveCoffee}
-        </button>
+        </Button>
 
         {!isDeletingOpen && (
-          <button
-            type="button"
+          <Button
+            variant="destructive"
+            className="px-3"
             onClick={() => {
               setIsDeletingOpen(true);
               setDeleteError(null);
               setDeleteConfirmName("");
             }}
-            className="inline-flex min-h-11 items-center gap-1.5 rounded-input bg-[#F47174] px-3 text-sm font-medium text-[#1b2a6e]"
           >
             <IconEliminar aria-hidden className="size-4" />
             {dict.coffees.deleteCoffee}
-          </button>
+          </Button>
         )}
       </div>
 
@@ -190,8 +187,8 @@ export function CoffeeDetailPanel({ coffee }: { coffee: CoffeeRow }) {
             </p>
           )}
           <div className="mt-3 flex gap-2">
-            <button
-              type="button"
+            <Button
+              variant="destructive"
               disabled={isDeleting || deleteConfirmName.trim() !== coffee.name}
               onClick={() => {
                 setDeleteError(null);
@@ -204,17 +201,12 @@ export function CoffeeDetailPanel({ coffee }: { coffee: CoffeeRow }) {
                   router.push("/coffees");
                 });
               }}
-              className="min-h-11 rounded-input bg-[#F47174] px-4 text-sm font-medium text-[#1b2a6e] disabled:opacity-50"
             >
               {isDeleting ? dict.coffees.deleting : dict.coffees.deleteConfirmButton}
-            </button>
-            <button
-              type="button"
-              onClick={() => setIsDeletingOpen(false)}
-              className="min-h-11 rounded-input border border-border px-4 text-sm font-medium text-ink"
-            >
+            </Button>
+            <Button variant="secondary" onClick={() => setIsDeletingOpen(false)}>
               {dict.common.cancel}
-            </button>
+            </Button>
           </div>
         </div>
       )}

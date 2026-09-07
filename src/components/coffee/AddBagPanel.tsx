@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Plus } from "lucide-react";
 import { AddBagForm } from "./AddBagForm";
+import { Button } from "@/components/ui/Button";
 import { useDictionary } from "@/components/i18n/LocaleProvider";
 
 export function AddBagPanel({ coffeeId }: { coffeeId: string }) {
@@ -14,13 +15,9 @@ export function AddBagPanel({ coffeeId }: { coffeeId: string }) {
   }
 
   return (
-    <button
-      type="button"
-      onClick={() => setAdding(true)}
-      className="inline-flex min-h-11 items-center gap-1.5 rounded-input border border-border px-4 text-sm font-medium text-ink"
-    >
+    <Button type="button" variant="secondary" onClick={() => setAdding(true)}>
       <Plus aria-hidden className="size-4" />
       {dict.coffees.addBag}
-    </button>
+    </Button>
   );
 }

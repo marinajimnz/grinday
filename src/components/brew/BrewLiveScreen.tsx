@@ -2,7 +2,6 @@
 
 import { useEffect, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
 import { CupSoda } from "lucide-react";
 import { IconFavorita } from "@/components/icons/pencil-icons";
 import { BrewStepHeader } from "./BrewStepHeader";
@@ -22,6 +21,7 @@ import { createAttemptAction } from "@/features/attempts/actions";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { useDictionary } from "@/components/i18n/LocaleProvider";
 import { LoadingLabel } from "@/components/ui/LoadingLabel";
+import { Button } from "@/components/ui/Button";
 
 export function BrewLiveScreen({ draftId }: { draftId: string }) {
   const router = useRouter();
@@ -168,12 +168,9 @@ export function BrewLiveScreen({ draftId }: { draftId: string }) {
         title={dict.brew.draftGoneTitle}
         description={dict.brew.draftGoneDescription}
         action={
-          <Link
-            href="/brew/new"
-            className="mt-2 inline-flex min-h-11 items-center rounded-input bg-ink px-4 text-sm font-medium text-surface"
-          >
+          <Button href="/brew/new" className="mt-2">
             {dict.brew.backToBrew}
-          </Link>
+          </Button>
         }
       />
     );
@@ -206,13 +203,9 @@ export function BrewLiveScreen({ draftId }: { draftId: string }) {
           <p className="mt-1 text-sm text-ink-muted">{dict.brew.recipeRememberedNote}</p>
           <div className="mt-6 space-y-6">
             <RecipeFields value={draft.recipe} onChange={updateRecipe} />
-            <button
-              type="button"
-              onClick={() => setShowTimer(true)}
-              className="min-h-11 w-full rounded-input bg-ink px-4 text-sm font-medium text-surface"
-            >
+            <Button type="button" onClick={() => setShowTimer(true)} fullWidth>
               {dict.common.next}
-            </button>
+            </Button>
           </div>
         </div>
       )}
@@ -221,13 +214,9 @@ export function BrewLiveScreen({ draftId }: { draftId: string }) {
         <div className="mt-6 space-y-6">
           <BrewStepHeader step={4} title={dict.brew.stepTimerTitle} />
           {draft.startedAtEpochMs === null && (
-            <button
-              type="button"
-              onClick={() => setShowTimer(false)}
-              className="min-h-11 rounded-input border border-border px-4 text-sm font-medium text-ink"
-            >
+            <Button type="button" variant="secondary" onClick={() => setShowTimer(false)}>
               {dict.common.back}
-            </button>
+            </Button>
           )}
           <TimerStage
             method={method}
@@ -239,16 +228,11 @@ export function BrewLiveScreen({ draftId }: { draftId: string }) {
 
           {saveStatus}
 
-          <button
-            type="button"
-            disabled={isSaving}
-            onClick={handleSave}
-            className="min-h-11 w-full rounded-input border border-border px-4 text-sm font-medium text-ink disabled:opacity-60"
-          >
+          <Button type="button" variant="secondary" disabled={isSaving} onClick={handleSave} fullWidth>
             <LoadingLabel loading={isSaving}>
               {pendingSync ? dict.brew.retryNow : saveError ? dict.common.retry : dict.brew.saveWithoutTimer}
             </LoadingLabel>
-          </button>
+          </Button>
         </div>
       )}
 
@@ -267,16 +251,17 @@ export function BrewLiveScreen({ draftId }: { draftId: string }) {
 
           {saveStatus}
 
-          <button
+          <Button
             type="button"
             disabled={isSaving}
             onClick={handleSave}
-            className="min-h-11 w-full rounded-input bg-ink px-4 text-sm font-medium text-surface disabled:opacity-60 sm:w-auto"
+            fullWidth
+            className="sm:w-auto"
           >
             <LoadingLabel loading={isSaving}>
               {pendingSync ? dict.brew.retryNow : saveError ? dict.common.retry : dict.brew.saveRecipe}
             </LoadingLabel>
-          </button>
+          </Button>
         </div>
       )}
     </div>

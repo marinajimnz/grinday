@@ -1,11 +1,11 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Copy, Pencil } from "lucide-react";
 import { IconFavorita } from "@/components/icons/pencil-icons";
 import { EditAttemptForm } from "./EditAttemptForm";
+import { Button } from "@/components/ui/Button";
 import { TASTE_DIMENSIONS } from "@/features/attempts/constants";
 import { setPreferredAttemptAction } from "@/features/attempts/actions";
 import type { BrewAttemptRow } from "@/features/attempts/queries";
@@ -59,19 +59,16 @@ export function AttemptDetailPanel({
           </h1>
           <p className="text-xs text-ink-muted">{formatDateTime(attempt.created_at, locale)}</p>
         </div>
-        <button
-          type="button"
-          onClick={() => setEditing(true)}
-          className="inline-flex min-h-11 items-center gap-1.5 rounded-input border border-border px-3 text-sm font-medium text-ink"
-        >
+        <Button variant="secondary" className="px-3" onClick={() => setEditing(true)}>
           <Pencil aria-hidden className="size-4" />
           {dict.attempts.correct}
-        </button>
+        </Button>
       </div>
 
       <div className="mt-4 flex flex-wrap gap-2">
-        <button
-          type="button"
+        <Button
+          variant="secondary"
+          className="border-coffee px-3 text-coffee"
           disabled={isTogglingPreferred}
           onClick={() =>
             startTogglePreferred(async () => {
@@ -82,22 +79,22 @@ export function AttemptDetailPanel({
               router.refresh();
             })
           }
-          className="inline-flex min-h-11 items-center gap-1.5 rounded-input border border-coffee px-3 text-sm font-medium text-coffee disabled:opacity-60"
         >
           <IconFavorita
             aria-hidden
             className={isPreferred ? "size-4 text-coffee" : "size-4 fill-none"}
           />
           {isPreferred ? dict.attempts.removeFromPreferred : dict.attempts.markAsPreferred}
-        </button>
+        </Button>
 
-        <Link
+        <Button
           href={`/attempts/new?coffeeBagId=${attempt.coffee_bag_id}&duplicateFrom=${attempt.id}`}
-          className="inline-flex min-h-11 items-center gap-1.5 rounded-input border border-border px-3 text-sm font-medium text-ink"
+          variant="secondary"
+          className="px-3"
         >
           <Copy aria-hidden className="size-4" />
           {dict.attempts.duplicateAndAdjust}
-        </Link>
+        </Button>
       </div>
 
       <dl className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-3">

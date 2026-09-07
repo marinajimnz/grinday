@@ -1,9 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
 import { WifiOff } from "lucide-react";
 import { loadDashboardSnapshot, listPendingDraftIds, type DashboardSnapshot } from "@/features/dashboard/snapshot";
+import { Button } from "@/components/ui/Button";
 import { getDictionary } from "@/lib/i18n/get-dictionary";
 import { DEFAULT_LOCALE, isLocale, LOCALE_COOKIE } from "@/lib/i18n/types";
 
@@ -71,12 +71,9 @@ export default function OfflinePage() {
         <p className="mt-6 text-sm text-ink-muted">{dict.offline.nothingSavedLocally}</p>
       )}
 
-      <Link
-        href="/"
-        className="mt-6 inline-flex min-h-11 items-center rounded-input bg-ink px-4 text-sm font-medium text-surface"
-      >
+      <Button href="/" className="mt-6">
         {dict.common.retry}
-      </Link>
+      </Button>
     </div>
   );
 }

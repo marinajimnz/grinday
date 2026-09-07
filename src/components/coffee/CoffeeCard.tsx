@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, useTransition } from "react";
+import { useState, useTransition } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -13,16 +13,12 @@ import {
 } from "@/components/icons/pencil-icons";
 import { Field, inputClassName } from "@/components/ui/Field";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
+import { Button } from "@/components/ui/Button";
+import { useLongPress } from "@/components/ui/useLongPress";
 import { type ROAST_LEVELS } from "@/features/coffees/constants";
 import { archiveCoffeeAction, deleteCoffeeAction } from "@/features/coffees/actions";
 import type { CoffeeListItem } from "@/features/coffees/queries";
 import type { Dictionary } from "@/lib/i18n/dictionaries/es";
-
-// Same long-press timing as the recipe cards on Inicio/Preparaciones — see
-// AttemptRow.tsx for why this is done via pointer events instead of the
-// "contextmenu" DOM event (iOS Safari doesn't fire it for a touch-and-hold).
-const HOLD_DELAY_MS = 500;
-const MOVE_CANCEL_PX = 10;
 
 export function CoffeeCard({ coffee, dict }: { coffee: CoffeeListItem; dict: Dictionary }) {
   const router = useRouter();
@@ -34,18 +30,6 @@ export function CoffeeCard({ coffee, dict }: { coffee: CoffeeListItem; dict: Dic
   const [deleteConfirmName, setDeleteConfirmName] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
-
-  const holdTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const heldRef = useRef(false);
-  const startPosRef = useRef<{ x: number; y: number } | null>(null);
-
-  function clearHoldTimer() {
-    if (holdTimeoutRef.current) {
-      clearTimeout(holdTimeoutRef.current);
-      holdTimeoutRef.current = null;
-    }
-  }
-  useEffect(() => clearHoldTimer, []);
 
   function openMenu() {
     setError(null);
@@ -59,36 +43,7 @@ export function CoffeeCard({ coffee, dict }: { coffee: CoffeeListItem; dict: Dic
     setError(null);
   }
 
-  function handlePointerDown(e: React.PointerEvent) {
-    if (e.pointerType === "mouse" && e.button !== 0) return;
-    heldRef.current = false;
-    startPosRef.current = { x: e.clientX, y: e.clientY };
-    clearHoldTimer();
-    holdTimeoutRef.current = setTimeout(() => {
-      heldRef.current = true;
-      openMenu();
-    }, HOLD_DELAY_MS);
-  }
-
-  function handlePointerMove(e: React.PointerEvent) {
-    const start = startPosRef.current;
-    if (!start) return;
-    if (Math.hypot(e.clientX - start.x, e.clientY - start.y) > MOVE_CANCEL_PX) {
-      clearHoldTimer();
-    }
-  }
-
-  function handleClick(e: React.MouseEvent) {
-    if (heldRef.current) {
-      e.preventDefault();
-      heldRef.current = false;
-    }
-  }
-
-  function handleContextMenu(e: React.MouseEvent) {
-    e.preventDefault();
-    openMenu();
-  }
+  const longPress = useLongPress(openMenu);
 
   function handleArchive() {
     setError(null);
@@ -121,12 +76,7 @@ export function CoffeeCard({ coffee, dict }: { coffee: CoffeeListItem; dict: Dic
     <>
       <Link
         href={`/coffees/${coffee.id}`}
-        onPointerDown={handlePointerDown}
-        onPointerMove={handlePointerMove}
-        onPointerUp={clearHoldTimer}
-        onPointerCancel={clearHoldTimer}
-        onContextMenu={handleContextMenu}
-        onClick={handleClick}
+        {...longPress}
         className="block select-none overflow-hidden rounded-card border border-border bg-surface transition-shadow hover:shadow-soft"
       >
         <div className="relative flex aspect-[4/3] items-center justify-center overflow-hidden bg-canvas">
@@ -243,21 +193,17 @@ export function CoffeeCard({ coffee, dict }: { coffee: CoffeeListItem; dict: Dic
                   </Field>
                 </div>
                 <div className="mt-3 flex gap-2">
-                  <button
-                    type="button"
+                  <Button
+                    variant="destructive"
+                    className="flex-1"
                     disabled={isPending || deleteConfirmName.trim() !== coffee.name}
                     onClick={handleDelete}
-                    className="min-h-11 flex-1 rounded-input bg-[#F47174] px-4 text-sm font-medium text-[#1b2a6e] disabled:opacity-50"
                   >
                     {isPending ? dict.coffees.deleting : dict.coffees.deleteConfirmButton}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setDeleteOpen(false)}
-                    className="min-h-11 flex-1 rounded-input border border-border px-4 text-sm font-medium text-ink"
-                  >
+                  </Button>
+                  <Button variant="secondary" className="flex-1" onClick={() => setDeleteOpen(false)}>
                     {dict.common.cancel}
-                  </button>
+                  </Button>
                 </div>
               </div>
             )}

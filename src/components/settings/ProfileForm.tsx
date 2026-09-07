@@ -7,6 +7,7 @@ import { updateProfileAction } from "@/features/profile/actions";
 import { useDictionary } from "@/components/i18n/LocaleProvider";
 import { IconGrano } from "@/components/icons/pencil-icons";
 import { LoadingLabel } from "@/components/ui/LoadingLabel";
+import { Button } from "@/components/ui/Button";
 
 const ROLE_LABELS: Record<string, string> = { admin: "Admin", coffee_lover: "Coffee lover" };
 const ROLE_ICONS: Record<string, React.ComponentType<React.SVGProps<SVGSVGElement>>> = {
@@ -77,13 +78,9 @@ export function ProfileForm({
       )}
       {saved && !error && <p className="text-sm text-ink-muted">{dict.common.saved}</p>}
 
-      <button
-        type="submit"
-        disabled={isPending}
-        className="min-h-11 rounded-input bg-ink px-4 text-sm font-medium text-surface disabled:opacity-60"
-      >
+      <Button type="submit" disabled={isPending}>
         <LoadingLabel loading={isPending}>{dict.common.save}</LoadingLabel>
-      </button>
+      </Button>
     </form>
   );
 }

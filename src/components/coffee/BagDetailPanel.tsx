@@ -6,6 +6,7 @@ import { Pencil } from "lucide-react";
 import { EditBagForm } from "./EditBagForm";
 import { BagStatusBadge } from "./BagStatusBadge";
 import { InventoryAdjustPanel } from "@/components/inventory/InventoryAdjustPanel";
+import { Button } from "@/components/ui/Button";
 import { formatRemaining } from "@/features/inventory/format";
 import type { CoffeeBagRow } from "@/features/coffees/queries";
 import { useDictionary, useLocale } from "@/components/i18n/LocaleProvider";
@@ -41,14 +42,10 @@ export function BagDetailPanel({ bag }: { bag: CoffeeBagRow }) {
           <BagStatusBadge status={bag.status} dict={dict} />
           {bag.lot_label && <span className="text-xs text-ink-muted">{bag.lot_label}</span>}
         </div>
-        <button
-          type="button"
-          onClick={() => setEditing(true)}
-          className="inline-flex min-h-11 items-center gap-1.5 rounded-input border border-border px-3 text-sm font-medium text-ink"
-        >
+        <Button variant="secondary" className="px-3" onClick={() => setEditing(true)}>
           <Pencil aria-hidden className="size-4" />
           {dict.common.edit}
-        </button>
+        </Button>
       </div>
 
       <dl className="mt-5 grid grid-cols-2 gap-4 text-sm sm:grid-cols-3">
