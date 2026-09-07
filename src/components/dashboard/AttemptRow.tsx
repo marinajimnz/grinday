@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/cn";
@@ -38,6 +38,15 @@ function formatSummary(attempt: RecentAttempt, noRecipeData: string) {
   return parts.length ? parts.join(" · ") : noRecipeData;
 }
 
+// iOS Safari doesn't reliably fire a "contextmenu" DOM event for a
+// touch-and-hold on a plain link (unlike Android Chrome, where it does) —
+// -webkit-touch-callout:none (set globally) already stops the native
+// share/copy callout from stealing the gesture, so timing our own hold via
+// pointer events works consistently everywhere instead of depending on
+// contextmenu at all. Right-click still opens it instantly on desktop.
+const HOLD_DELAY_MS = 500;
+const MOVE_CANCEL_PX = 10;
+
 function StarRow({ rating }: { rating: number | null }) {
   if (rating == null) return null;
   return (
@@ -62,10 +71,57 @@ export function AttemptRow({ attempt }: { attempt: RecentAttempt }) {
   const Icon = METHOD_ICONS[method] ?? IconCafe;
   const duration = formatDuration(attempt.extraction_ms);
 
-  function openMenu(e: React.MouseEvent) {
-    e.preventDefault();
+  const holdTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const heldRef = useRef(false);
+  const startPosRef = useRef<{ x: number; y: number } | null>(null);
+
+  function clearHoldTimer() {
+    if (holdTimeoutRef.current) {
+      clearTimeout(holdTimeoutRef.current);
+      holdTimeoutRef.current = null;
+    }
+  }
+  useEffect(() => clearHoldTimer, []);
+
+  function openMenu() {
     setError(null);
     setMenuOpen(true);
+  }
+
+  function handlePointerDown(e: React.PointerEvent) {
+    // Right mouse button already opens the menu instantly via onContextMenu
+    // below — don't also start a hold timer for it.
+    if (e.pointerType === "mouse" && e.button !== 0) return;
+    heldRef.current = false;
+    startPosRef.current = { x: e.clientX, y: e.clientY };
+    clearHoldTimer();
+    holdTimeoutRef.current = setTimeout(() => {
+      heldRef.current = true;
+      openMenu();
+    }, HOLD_DELAY_MS);
+  }
+
+  function handlePointerMove(e: React.PointerEvent) {
+    const start = startPosRef.current;
+    if (!start) return;
+    // Scrolling the list shouldn't be mistaken for a long press.
+    if (Math.hypot(e.clientX - start.x, e.clientY - start.y) > MOVE_CANCEL_PX) {
+      clearHoldTimer();
+    }
+  }
+
+  function handleClick(e: React.MouseEvent) {
+    // The hold already opened the menu — the click that fires on release
+    // would otherwise also navigate to the attempt underneath it.
+    if (heldRef.current) {
+      e.preventDefault();
+      heldRef.current = false;
+    }
+  }
+
+  function handleContextMenu(e: React.MouseEvent) {
+    e.preventDefault();
+    openMenu();
   }
 
   function handlePrepare() {
@@ -123,8 +179,13 @@ export function AttemptRow({ attempt }: { attempt: RecentAttempt }) {
     <>
       <Link
         href={`/attempts/${attempt.id}`}
-        onContextMenu={openMenu}
-        className="flex items-center gap-3 rounded-card border border-border bg-surface p-4"
+        onPointerDown={handlePointerDown}
+        onPointerMove={handlePointerMove}
+        onPointerUp={clearHoldTimer}
+        onPointerCancel={clearHoldTimer}
+        onContextMenu={handleContextMenu}
+        onClick={handleClick}
+        className="flex items-center gap-3 rounded-card border border-border bg-surface p-4 select-none"
       >
         <span className="flex size-11 shrink-0 items-center justify-center rounded-full bg-canvas text-ink">
           <Icon aria-hidden className="size-5" />
