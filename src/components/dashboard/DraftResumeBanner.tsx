@@ -13,8 +13,26 @@ export function DraftResumeBanner({ currentUserId }: { currentUserId: string }) 
   useEffect(() => {
     // localStorage doesn't exist during SSR — this can only run client-side
     // after mount.
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setDraft(getMostRecentDraft(currentUserId));
+    function refresh() {
+      setDraft(getMostRecentDraft(currentUserId));
+    }
+    refresh();
+
+    // A mount-only check goes stale the moment this exact page instance is
+    // reused instead of remounted — returning to Inicio via the PWA's
+    // background/foreground resume, a bfcache restore, or the router's
+    // client-side cache can all show this component without re-running its
+    // effect, so a draft saved (and cleared) elsewhere in the meantime would
+    // otherwise still show a reminder for it. Re-checking whenever the tab
+    // becomes visible/focused again covers all of those regardless of cause.
+    document.addEventListener("visibilitychange", refresh);
+    window.addEventListener("focus", refresh);
+    window.addEventListener("pageshow", refresh);
+    return () => {
+      document.removeEventListener("visibilitychange", refresh);
+      window.removeEventListener("focus", refresh);
+      window.removeEventListener("pageshow", refresh);
+    };
   }, [currentUserId]);
 
   if (!draft) return null;
