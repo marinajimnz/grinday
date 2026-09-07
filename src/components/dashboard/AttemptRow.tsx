@@ -5,7 +5,14 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/cn";
 import { METHOD_ICONS } from "@/features/equipment/methodIcons";
-import { IconArchivar, IconCafe, IconEliminar, IconFavorita, IconPreparar } from "@/components/icons/pencil-icons";
+import {
+  IconAnadir,
+  IconArchivar,
+  IconCafe,
+  IconEliminar,
+  IconFavorita,
+  IconPreparar,
+} from "@/components/icons/pencil-icons";
 import type { RecentAttempt } from "@/features/dashboard/queries";
 import type { BrewMethod } from "@/features/equipment/constants";
 import { useDictionary, useLocale } from "@/components/i18n/LocaleProvider";
@@ -147,10 +154,13 @@ export function AttemptRow({ attempt }: { attempt: RecentAttempt }) {
     });
   }
 
-  function handleRemoveFromDashboard() {
+  function handleToggleDashboardVisibility() {
     setError(null);
     startTransition(async () => {
-      const result = await setAttemptDashboardVisibilityAction({ attemptId: attempt.id, hidden: true });
+      const result = await setAttemptDashboardVisibilityAction({
+        attemptId: attempt.id,
+        hidden: !attempt.hidden_from_dashboard,
+      });
       if (!result.success) {
         setError(result.message);
         return;
@@ -240,11 +250,17 @@ export function AttemptRow({ attempt }: { attempt: RecentAttempt }) {
             <button
               type="button"
               disabled={isPending}
-              onClick={handleRemoveFromDashboard}
+              onClick={handleToggleDashboardVisibility}
               className="flex w-full items-center gap-3 rounded-input px-3 py-3 text-left text-sm font-medium text-ink disabled:opacity-60"
             >
-              <IconArchivar aria-hidden className="size-5" />
-              {dict.dashboard.removeFromDashboard}
+              {attempt.hidden_from_dashboard ? (
+                <IconAnadir aria-hidden className="size-5" />
+              ) : (
+                <IconArchivar aria-hidden className="size-5" />
+              )}
+              {attempt.hidden_from_dashboard
+                ? dict.dashboard.includeInDashboard
+                : dict.dashboard.removeFromDashboard}
             </button>
             <button
               type="button"

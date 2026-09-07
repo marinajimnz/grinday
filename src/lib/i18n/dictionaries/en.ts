@@ -106,6 +106,7 @@ const en: Dictionary = {
     resumeDraft: "Resume",
     attemptMenuLabel: "Brew actions",
     removeFromDashboard: "Remove from home",
+    includeInDashboard: "Add to home",
     deleteAttemptConfirm: "Delete this brew? You won't be able to get it back.",
   },
   settings: {

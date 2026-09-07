@@ -104,6 +104,7 @@ const es = {
     resumeDraft: "Continuar",
     attemptMenuLabel: "Acciones de la preparación",
     removeFromDashboard: "Quitar del inicio",
+    includeInDashboard: "Incluir en el inicio",
     deleteAttemptConfirm: "¿Eliminar este intento? No podrás recuperarlo.",
   },
   settings: {
