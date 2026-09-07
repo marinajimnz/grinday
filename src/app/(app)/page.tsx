@@ -25,7 +25,10 @@ export default async function DashboardPage() {
   const hasCoffee = await hasAnyCoffee(supabase);
 
   const [overview, recentAttempts] = hasCoffee
-    ? await Promise.all([getDashboardOverview(supabase), getRecentAttempts(supabase)])
+    ? await Promise.all([
+        getDashboardOverview(supabase),
+        getRecentAttempts(supabase, 4, { excludeHiddenFromDashboard: true }),
+      ])
     : [null, []];
 
   const lastAttempt = recentAttempts[0];

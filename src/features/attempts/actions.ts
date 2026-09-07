@@ -7,6 +7,7 @@ import {
   attemptFieldsSchema,
   createAttemptSchema,
   registerAttemptMediaSchema,
+  setAttemptDashboardVisibilitySchema,
   setPreferredAttemptSchema,
   updateAttemptSchema,
 } from "@/lib/validation/attempts";
@@ -221,6 +222,45 @@ export async function setPreferredAttemptAction(
 
   revalidatePath(`/coffees/${coffeeId}`);
   revalidatePath("/");
+  return { success: true, data: undefined };
+}
+
+export async function setAttemptDashboardVisibilityAction(
+  rawInput: unknown,
+): Promise<ActionResult> {
+  const parsed = setAttemptDashboardVisibilitySchema.safeParse(rawInput);
+  if (!parsed.success) {
+    return { success: false, message: parsed.error.issues[0]?.message ?? "Datos inválidos" };
+  }
+  const { attemptId, hidden } = parsed.data;
+
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("brew_attempts")
+    .update({ hidden_from_dashboard: hidden })
+    .eq("id", attemptId);
+  if (error) return { success: false, message: error.message };
+
+  revalidatePath("/");
+  return { success: true, data: undefined };
+}
+
+// Cascades to attempt_media and inventory_events (both "on delete cascade"),
+// and clears coffees.preferred_attempt_id if this was the starred one (that
+// FK is "on delete set null") — nothing is left orphaned.
+export async function deleteAttemptAction(attemptId: string): Promise<ActionResult> {
+  const supabase = await createClient();
+  const { data: deleted, error } = await supabase
+    .from("brew_attempts")
+    .delete()
+    .eq("id", attemptId)
+    .select("coffee_id")
+    .maybeSingle();
+  if (error) return { success: false, message: error.message };
+
+  if (deleted) revalidatePath(`/coffees/${deleted.coffee_id}`);
+  revalidatePath("/");
+  revalidatePath("/attempts");
   return { success: true, data: undefined };
 }
 

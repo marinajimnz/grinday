@@ -5,3 +5,7 @@ export const startBrewSchema = z.object({
   coffeeId: z.uuid(),
   method: z.enum(BREW_METHODS),
 });
+
+export const startBrewFromAttemptSchema = z.object({
+  attemptId: z.uuid(),
+});

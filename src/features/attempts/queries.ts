@@ -73,7 +73,7 @@ export type BrewableCoffee = {
   preferredAttempt: Pick<BrewAttemptRow, "id" | "attempt_no"> | null;
 };
 
-const RECIPE_SOURCE_ATTEMPT_FIELDS =
+export const RECIPE_SOURCE_ATTEMPT_FIELDS =
   "id, attempt_no, method, dose_g, water_g, dilution_water_g, target_weight_g, temperature_c, target_time_ms, grind_setting, moka_cup_size, heat_intensity, equipment_id, grinder_id, equipment_snapshot";
 
 // The recipe defaults for a new brew come from the most recent attempt

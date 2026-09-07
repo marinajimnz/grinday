@@ -102,6 +102,9 @@ const es = {
     yesterday: "ayer",
     draftInProgress: "Preparación sin terminar",
     resumeDraft: "Continuar",
+    attemptMenuLabel: "Acciones de la preparación",
+    removeFromDashboard: "Quitar del inicio",
+    deleteAttemptConfirm: "¿Eliminar este intento? No podrás recuperarlo.",
   },
   settings: {
     title: "Ajustes",

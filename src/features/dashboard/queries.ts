@@ -21,12 +21,24 @@ export type RecentAttempt = {
 const RECENT_ATTEMPT_FIELDS =
   "id, attempt_no, method, created_at, dose_g, water_g, target_weight_g, output_weight_g, extraction_ms, overall_rating, coffee:coffees!brew_attempts_coffee_id_fkey(id, name, roaster)";
 
-export async function getRecentAttempts(supabase: Client, limit = 4): Promise<RecentAttempt[]> {
-  const { data, error } = await supabase
+// The dashboard's own "recent" list respects "Quitar del inicio" (a
+// per-attempt opt-out that keeps the attempt everywhere else — its coffee's
+// history, /attempts — just off this specific list); every other caller of
+// this query (the full /attempts page included) leaves it out on purpose.
+export async function getRecentAttempts(
+  supabase: Client,
+  limit = 4,
+  options?: { excludeHiddenFromDashboard?: boolean },
+): Promise<RecentAttempt[]> {
+  let query = supabase
     .from("brew_attempts")
     .select(RECENT_ATTEMPT_FIELDS)
     .order("created_at", { ascending: false })
     .limit(limit);
+  if (options?.excludeHiddenFromDashboard) {
+    query = query.eq("hidden_from_dashboard", false);
+  }
+  const { data, error } = await query;
   if (error) throw error;
   return data ?? [];
 }

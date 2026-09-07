@@ -103,6 +103,7 @@ export type Database = {
           grind_setting: number | null
           grinder_id: string | null
           heat_intensity: string | null
+          hidden_from_dashboard: boolean
           id: string
           idempotency_key: string | null
           input_weight_g: number | null
@@ -154,6 +155,7 @@ export type Database = {
           grind_setting?: number | null
           grinder_id?: string | null
           heat_intensity?: string | null
+          hidden_from_dashboard?: boolean
           id?: string
           idempotency_key?: string | null
           input_weight_g?: number | null
@@ -205,6 +207,7 @@ export type Database = {
           grind_setting?: number | null
           grinder_id?: string | null
           heat_intensity?: string | null
+          hidden_from_dashboard?: boolean
           id?: string
           idempotency_key?: string | null
           input_weight_g?: number | null

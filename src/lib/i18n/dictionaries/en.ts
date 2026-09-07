@@ -104,6 +104,9 @@ const en: Dictionary = {
     yesterday: "yesterday",
     draftInProgress: "Unfinished brew",
     resumeDraft: "Resume",
+    attemptMenuLabel: "Brew actions",
+    removeFromDashboard: "Remove from home",
+    deleteAttemptConfirm: "Delete this brew? You won't be able to get it back.",
   },
   settings: {
     title: "Settings",

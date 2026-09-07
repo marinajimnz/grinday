@@ -1,8 +1,8 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
-import { startBrewSchema } from "@/lib/validation/brew";
-import { getLastAttemptForCoffeeAndMethod } from "@/features/attempts/queries";
+import { startBrewFromAttemptSchema, startBrewSchema } from "@/lib/validation/brew";
+import { getLastAttemptForCoffeeAndMethod, RECIPE_SOURCE_ATTEMPT_FIELDS } from "@/features/attempts/queries";
 import { getDefaultEquipmentForMethod, getDefaultGrinder } from "@/features/equipment/queries";
 
 type ActionResult<T = undefined> =
@@ -79,6 +79,63 @@ export async function startBrewAction(rawInput: unknown): Promise<ActionResult<S
       defaultGrinder: defaultGrinder
         ? { id: defaultGrinder.id, model_name: defaultGrinder.model_name }
         : null,
+    },
+  };
+}
+
+// "Preparar" from one specific past attempt (dashboard long-press menu):
+// seeds the recipe from that exact attempt rather than the coffee's latest
+// for its method, and — like PrepareWithRecipeButton — carries its own
+// equipment/grinder along instead of substituting today's default.
+export async function startBrewFromAttemptAction(
+  rawInput: unknown,
+): Promise<ActionResult<StartBrewData>> {
+  const parsed = startBrewFromAttemptSchema.safeParse(rawInput);
+  if (!parsed.success) {
+    return { success: false, message: parsed.error.issues[0]?.message ?? "Datos inválidos" };
+  }
+  const { attemptId } = parsed.data;
+
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { success: false, message: "No autenticado" };
+
+  const { data: attempt, error: attemptError } = await supabase
+    .from("brew_attempts")
+    .select(
+      `${RECIPE_SOURCE_ATTEMPT_FIELDS}, coffee_id, coffee:coffees!brew_attempts_coffee_id_fkey(id, name, roaster)`,
+    )
+    .eq("id", attemptId)
+    .maybeSingle();
+  if (attemptError) return { success: false, message: attemptError.message };
+  if (!attempt || !attempt.coffee) return { success: false, message: "Intento no encontrado" };
+
+  const { data: bags, error: bagsError } = await supabase
+    .from("coffee_bags")
+    .select("id, status, created_at")
+    .eq("coffee_id", attempt.coffee_id)
+    .order("created_at", { ascending: false });
+  if (bagsError) return { success: false, message: bagsError.message };
+
+  const bag =
+    bags?.find((b) => b.status === "open") ??
+    bags?.find((b) => b.status === "sealed") ??
+    bags?.[0];
+  if (!bag) return { success: false, message: "Este café no tiene ninguna bolsa disponible" };
+
+  return {
+    success: true,
+    data: {
+      userId: user.id,
+      coffeeId: attempt.coffee.id,
+      coffeeBagId: bag.id,
+      coffeeName: attempt.coffee.name,
+      roaster: attempt.coffee.roaster,
+      sourceAttempt: attempt,
+      defaultEquipment: null,
+      defaultGrinder: null,
     },
   };
 }

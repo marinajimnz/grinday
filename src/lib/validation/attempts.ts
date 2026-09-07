@@ -92,6 +92,11 @@ export const setPreferredAttemptSchema = z.object({
   attemptId: z.uuid().nullable(),
 });
 
+export const setAttemptDashboardVisibilitySchema = z.object({
+  attemptId: z.uuid(),
+  hidden: z.boolean(),
+});
+
 export const registerAttemptMediaSchema = z.object({
   attemptId: z.uuid(),
   kind: z.enum(ATTEMPT_MEDIA_KINDS).default("espresso"),
