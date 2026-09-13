@@ -22,6 +22,8 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { useDictionary } from "@/components/i18n/LocaleProvider";
 import { LoadingLabel } from "@/components/ui/LoadingLabel";
 import { Button } from "@/components/ui/Button";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
+import { useConfirmBeforeLeaving } from "./useConfirmBeforeLeaving";
 
 export function BrewLiveScreen({ draftId }: { draftId: string }) {
   const router = useRouter();
@@ -32,10 +34,26 @@ export function BrewLiveScreen({ draftId }: { draftId: string }) {
   const [saveError, setSaveError] = useState<string | null>(null);
   const [pendingSync, setPendingSync] = useState(false);
 
+  // Only the timer step risks losing something on an accidental exit — the
+  // recipe step has nothing running yet, and the result step already has
+  // its own leave-and-decide-later flow (see the dashboard's draft banner).
+  const isTimerStep = showTimer && draft != null && draft.stoppedAtEpochMs === null;
+  const leaveGuard = useConfirmBeforeLeaving(isTimerStep);
+
   useEffect(() => {
     // localStorage doesn't exist during SSR, so this can only run client-side
     // after mount — there's no way to derive this as render-time state.
-    const loaded = loadDraft(draftId);
+    let loaded = loadDraft(draftId);
+    // Finding the result step already reached on a fresh mount means the
+    // user is re-entering it — via the dashboard's "Continuar", a direct
+    // link, or a reload — rather than arriving at it for the first time in
+    // this session. Bump resumeCount so that if it's left again, the
+    // dashboard prompts to keep-or-discard instead of just offering to
+    // resume silently a second time.
+    if (loaded && loaded.stoppedAtEpochMs !== null) {
+      loaded = { ...loaded, resumeCount: (loaded.resumeCount ?? 0) + 1 };
+      saveDraft(loaded);
+    }
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setDraft(loaded);
     if (loaded && (loaded.startedAtEpochMs !== null || loaded.stoppedAtEpochMs !== null)) {
@@ -265,6 +283,13 @@ export function BrewLiveScreen({ draftId }: { draftId: string }) {
           </Button>
         </div>
       )}
+
+      <ConfirmDialog
+        open={leaveGuard.open}
+        message={dict.brew.confirmLeaveTimer}
+        onConfirm={leaveGuard.confirmLeave}
+        onCancel={leaveGuard.cancelLeave}
+      />
     </div>
   );
 }

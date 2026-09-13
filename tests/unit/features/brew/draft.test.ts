@@ -1,5 +1,11 @@
-import { describe, expect, it } from "vitest";
-import { buildDraftFromRecipe, type RecipeSourceAttempt } from "@/features/brew/draft";
+import { beforeEach, describe, expect, it } from "vitest";
+import {
+  buildDraftFromRecipe,
+  getMostRecentDraft,
+  saveDraft,
+  type BrewDraft,
+  type RecipeSourceAttempt,
+} from "@/features/brew/draft";
 
 const baseParams = {
   coffeeId: "coffee-1",
@@ -88,5 +94,50 @@ describe("buildDraftFromRecipe", () => {
     const a = buildDraftFromRecipe(baseParams);
     const b = buildDraftFromRecipe(baseParams);
     expect(a.draftId).not.toBe(b.draftId);
+  });
+});
+
+function makeDraft(overrides: Partial<BrewDraft>): BrewDraft {
+  return {
+    draftId: "draft-1",
+    userId: "user-1",
+    coffeeId: "coffee-1",
+    coffeeBagId: "bag-1",
+    coffeeName: "La Esperanza",
+    roaster: "Tostador X",
+    recipe: { method: "v60" },
+    startedAtEpochMs: null,
+    stoppedAtEpochMs: null,
+    extractionMs: null,
+    postShot: {},
+    createdAt: Date.now(),
+    ...overrides,
+  };
+}
+
+describe("getMostRecentDraft", () => {
+  beforeEach(() => {
+    localStorage.clear();
+  });
+
+  it("ignores a draft still stuck in the recipe or timer step (never reached results)", () => {
+    saveDraft(makeDraft({ draftId: "mid-flow", stoppedAtEpochMs: null }));
+    expect(getMostRecentDraft("user-1")).toBeNull();
+  });
+
+  it("returns a draft that reached the result step and hasn't been saved", () => {
+    saveDraft(makeDraft({ draftId: "at-results", stoppedAtEpochMs: Date.now() }));
+    expect(getMostRecentDraft("user-1")?.draftId).toBe("at-results");
+  });
+
+  it("ignores drafts belonging to a different user", () => {
+    saveDraft(makeDraft({ draftId: "someone-elses", userId: "user-2", stoppedAtEpochMs: Date.now() }));
+    expect(getMostRecentDraft("user-1")).toBeNull();
+  });
+
+  it("picks the most recently created qualifying draft", () => {
+    saveDraft(makeDraft({ draftId: "older", stoppedAtEpochMs: Date.now(), createdAt: 1 }));
+    saveDraft(makeDraft({ draftId: "newer", stoppedAtEpochMs: Date.now(), createdAt: 2 }));
+    expect(getMostRecentDraft("user-1")?.draftId).toBe("newer");
   });
 });

@@ -102,6 +102,10 @@ const es = {
     yesterday: "ayer",
     draftInProgress: "Preparación sin terminar",
     resumeDraft: "Continuar",
+    draftAbandonedTitle: "¿Qué quieres hacer con esta preparación?",
+    draftAbandonedDescription: "Has vuelto a salir de {coffeeName} sin guardarla.",
+    draftAbandonedContinueLater: "Seguir más tarde",
+    draftAbandonedDiscard: "Descartar receta",
     attemptMenuLabel: "Acciones de la preparación",
     removeFromDashboard: "Quitar del inicio",
     includeInDashboard: "Incluir en el inicio",
@@ -433,6 +437,7 @@ const es = {
     recipeRememberedNote:
       "La próxima vez que prepares este café con este método, partirás de estos mismos ajustes. Si algo varía durante la preparación, podrás corregirlo en la pantalla de resultado.",
     stepTimerTitle: "Cronómetro",
+    confirmLeaveTimer: "¿Seguro que quieres salir? Se perderán los datos de esta preparación.",
     stepResultTitle: "Resultado",
     resultEditableNote: "Toca cualquier dato para corregirlo si ha variado — el ratio se recalcula solo.",
     doseG: "Café",

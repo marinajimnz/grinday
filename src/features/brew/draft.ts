@@ -78,6 +78,11 @@ export type BrewDraft = {
   extractionMs: number | null;
   postShot: BrewDraftPostShot;
   createdAt: number;
+  // How many times the user has re-entered this draft after already reaching
+  // the result step once (i.e. via the dashboard's "Continuar", a direct
+  // link, or a reload). 0/undefined means the result step has never been
+  // left-and-resumed yet, so leaving it again is still a first offense.
+  resumeCount?: number;
 };
 
 const KEY_PREFIX = "grinday:brew-draft:";
@@ -86,18 +91,24 @@ function key(draftId: string) {
   return `${KEY_PREFIX}${draftId}`;
 }
 
-// Any draft left behind mid-flow (recipe, timer, or result step — it's
-// autosaved on every change either way) so the dashboard can offer to
-// resume it instead of it just sitting there unreachable. Scoped to the
-// current user — localStorage is shared by the browser, not the account, so
-// a draft with no matching userId (or a different one) never surfaces here.
+// Only a draft left behind AT the result step (stoppedAtEpochMs set) counts
+// as resumable — leaving mid-recipe or mid-timer means the shot never
+// actually happened, so there's nothing worth offering to continue.
+// Autosaved on every change either way, but this filter is what keeps a
+// still-in-progress recipe/timer draft from ever surfacing on the
+// dashboard. Scoped to the current user — localStorage is shared by the
+// browser, not the account, so a draft with no matching userId (or a
+// different one) never surfaces here.
 export function getMostRecentDraft(currentUserId: string): BrewDraft | null {
   try {
     const drafts = Object.keys(localStorage)
       .filter((k) => k.startsWith(KEY_PREFIX))
       .map((k) => k.slice(KEY_PREFIX.length))
       .map(loadDraft)
-      .filter((d): d is BrewDraft => d !== null && d.userId === currentUserId);
+      .filter(
+        (d): d is BrewDraft =>
+          d !== null && d.userId === currentUserId && d.stoppedAtEpochMs !== null,
+      );
     if (drafts.length === 0) return null;
     return drafts.reduce((latest, d) => (d.createdAt > latest.createdAt ? d : latest));
   } catch (err) {

@@ -104,6 +104,10 @@ const en: Dictionary = {
     yesterday: "yesterday",
     draftInProgress: "Unfinished brew",
     resumeDraft: "Resume",
+    draftAbandonedTitle: "What do you want to do with this brew?",
+    draftAbandonedDescription: "You left {coffeeName} again without saving it.",
+    draftAbandonedContinueLater: "Continue later",
+    draftAbandonedDiscard: "Discard brew",
     attemptMenuLabel: "Brew actions",
     removeFromDashboard: "Remove from home",
     includeInDashboard: "Add to home",
@@ -435,6 +439,7 @@ const en: Dictionary = {
     recipeRememberedNote:
       "Next time you brew this coffee with this method, it'll start from these same settings. If anything changes while you brew, you can correct it on the result screen.",
     stepTimerTitle: "Timer",
+    confirmLeaveTimer: "Are you sure you want to leave? This brew's data will be lost.",
     stepResultTitle: "Result",
     resultEditableNote: "Tap any number to correct it if it changed — the ratio recalculates on its own.",
     doseG: "Coffee",

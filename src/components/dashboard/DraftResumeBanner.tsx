@@ -3,7 +3,8 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
-import { getMostRecentDraft, type BrewDraft } from "@/features/brew/draft";
+import { buttonClassName } from "@/components/ui/Button";
+import { clearDraft, getMostRecentDraft, saveDraft, type BrewDraft } from "@/features/brew/draft";
 import { useDictionary } from "@/components/i18n/LocaleProvider";
 
 export function DraftResumeBanner({ currentUserId }: { currentUserId: string }) {
@@ -36,6 +37,53 @@ export function DraftResumeBanner({ currentUserId }: { currentUserId: string }) 
   }, [currentUserId]);
 
   if (!draft) return null;
+
+  // resumeCount is only bumped when the result step is re-entered after
+  // already having been left once — so seeing it here means this is at
+  // least the second time it's sitting abandoned, and a silent "Continuar"
+  // isn't enough anymore: ask the user to explicitly keep or drop it.
+  const awaitingDecision = (draft.resumeCount ?? 0) >= 1;
+
+  if (awaitingDecision) {
+    const continueLater = () => {
+      const reset = { ...draft, resumeCount: 0 };
+      saveDraft(reset);
+      setDraft(reset);
+    };
+
+    const discard = () => {
+      clearDraft(draft.draftId);
+      setDraft(null);
+    };
+
+    return (
+      <div className="rounded-card border border-ink bg-canvas p-4">
+        <p className="text-xs font-medium uppercase tracking-wide text-ink-muted">
+          {dict.dashboard.draftAbandonedTitle}
+        </p>
+        <p className="mt-1 font-display text-xl text-ink">{draft.coffeeName}</p>
+        <p className="mt-1 text-sm text-ink-muted">
+          {dict.dashboard.draftAbandonedDescription.replace("{coffeeName}", draft.coffeeName)}
+        </p>
+        <div className="mt-4 flex gap-2">
+          <button
+            type="button"
+            onClick={discard}
+            className={buttonClassName("destructive", { className: "flex-1" })}
+          >
+            {dict.dashboard.draftAbandonedDiscard}
+          </button>
+          <button
+            type="button"
+            onClick={continueLater}
+            className={buttonClassName("secondary", { className: "flex-1" })}
+          >
+            {dict.dashboard.draftAbandonedContinueLater}
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <Link
