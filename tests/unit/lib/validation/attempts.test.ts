@@ -15,14 +15,36 @@ describe("attemptFieldsSchema", () => {
     expect(result.success).toBe(true);
   });
 
-  it("requires only grindSetting — grindSeconds/doseMode/basketSize/shotMode are legacy and now optional", () => {
-    expect(attemptFieldsSchema.safeParse({}).success).toBe(false);
-    const keys = ["grindSeconds", "doseMode", "basketSize", "shotMode"] as const;
+  it("requires nothing — every field, including grindSetting, is optional", () => {
+    expect(attemptFieldsSchema.safeParse({}).success).toBe(true);
+    const keys = ["grindSetting", "grindSeconds", "doseMode", "basketSize", "shotMode"] as const;
     for (const key of keys) {
       const rest: Partial<typeof validAttempt> = { ...validAttempt };
       delete rest[key];
       expect(attemptFieldsSchema.safeParse(rest).success).toBe(true);
     }
+  });
+
+  it("accepts an optional grinder burr configuration within 1-24", () => {
+    const result = attemptFieldsSchema.safeParse({
+      ...validAttempt,
+      grinderUpperBurr: 8,
+      grinderLowerBurr: 3,
+    });
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.grinderUpperBurr).toBe(8);
+      expect(result.data.grinderLowerBurr).toBe(3);
+    }
+  });
+
+  it("rejects a grinder burr setting outside 1-24", () => {
+    expect(
+      attemptFieldsSchema.safeParse({ ...validAttempt, grinderUpperBurr: 25 }).success,
+    ).toBe(false);
+    expect(
+      attemptFieldsSchema.safeParse({ ...validAttempt, grinderLowerBurr: 0 }).success,
+    ).toBe(false);
   });
 
   it("accepts the new generic multi-method recipe fields", () => {

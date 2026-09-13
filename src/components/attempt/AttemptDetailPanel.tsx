@@ -99,6 +99,8 @@ export function AttemptDetailPanel({
 
       <dl className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-3">
         <Stat label={dict.brew.grindSetting} value={attempt.grind_setting} />
+        <Stat label={dict.brew.grinderUpperBurr} value={attempt.grinder_upper_burr} />
+        <Stat label={dict.brew.grinderLowerBurr} value={attempt.grinder_lower_burr} />
         <Stat label={dict.attempts.grindSeconds} value={attempt.grind_seconds} />
         <Stat
           label={dict.brew.doseMode}

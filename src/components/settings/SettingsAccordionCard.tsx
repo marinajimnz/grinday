@@ -9,11 +9,13 @@ import { ChevronDown, ChevronUp } from "lucide-react";
 export function SettingsAccordionCard({
   title,
   children,
+  defaultExpanded = false,
 }: {
   title: string;
   children: React.ReactNode;
+  defaultExpanded?: boolean;
 }) {
-  const [expanded, setExpanded] = useState(false);
+  const [expanded, setExpanded] = useState(defaultExpanded);
 
   return (
     <div className="rounded-card border border-border bg-surface">

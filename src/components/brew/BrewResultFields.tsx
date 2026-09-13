@@ -123,21 +123,39 @@ export function BrewResultFields({
       step: 1,
       suffix: "°C",
     },
+  );
+
+  const grinderConfigFields: SteppableField[] = [
     {
-      key: "grindSetting",
-      label: dict.brew.grindSetting,
-      value: recipe.grindSetting,
-      onChange: (v) => setRecipe("grindSetting", v),
-      step: 0.5,
+      key: "grinderUpperBurr",
+      label: dict.brew.grinderUpperBurr,
+      value: recipe.grinderUpperBurr,
+      onChange: (v) => setRecipe("grinderUpperBurr", v),
+      min: 1,
+      max: 24,
       sublabel: recipe.grinderModelName,
     },
-  );
+    {
+      key: "grinderLowerBurr",
+      label: dict.brew.grinderLowerBurr,
+      value: recipe.grinderLowerBurr,
+      onChange: (v) => setRecipe("grinderLowerBurr", v),
+      min: 1,
+      max: 24,
+    },
+  ];
+  const hasGrinderConfig = recipe.grinderUpperBurr != null || recipe.grinderLowerBurr != null;
 
   return (
     <div className="space-y-6">
       <p className="text-xs text-ink-muted">{dict.brew.resultEditableNote}</p>
 
       <SteppableFieldGrid fields={fields} />
+
+      <SettingsAccordionCard title={dict.brew.grinderConfigTitle} defaultExpanded={hasGrinderConfig}>
+        <p className="mb-4 text-xs text-ink-muted">{dict.brew.grinderConfigHint}</p>
+        <SteppableFieldGrid fields={grinderConfigFields} />
+      </SettingsAccordionCard>
 
       <div className="rounded-card border border-coffee/40 bg-surface p-4 text-center">
         <div className="flex items-center justify-center gap-2">

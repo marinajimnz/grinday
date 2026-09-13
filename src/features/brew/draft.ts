@@ -23,10 +23,14 @@ export type BrewDraftRecipe = {
   equipmentModelName?: string;
   grinderId?: string;
   grinderModelName?: string;
-  grindSetting?: number;
+  // Optional dual-burr grinder configuration (e.g. Sage: one dial on the
+  // grinder, one on the machine) — independent of each other, both 1-24.
+  grinderUpperBurr?: number;
+  grinderLowerBurr?: number;
   // Legacy Sage-only fields — no longer written by the live brew flow, kept
   // only so a draft already sitting in a browser's localStorage from before
   // this change still parses without throwing.
+  grindSetting?: number;
   grindSeconds?: number;
   doseMode?: "auto" | "manual";
   basketSize?: "single" | "double";
@@ -143,6 +147,8 @@ export type RecipeSourceAttempt = {
   temperature_c: number | null;
   target_time_ms: number | null;
   grind_setting: number | null;
+  grinder_upper_burr: number | null;
+  grinder_lower_burr: number | null;
   moka_cup_size: number | null;
   heat_intensity: string | null;
   equipment_id: string | null;
@@ -172,7 +178,6 @@ const FIRST_TIME_DEFAULTS = {
   targetWeightG: 40,
   temperatureC: 94,
   targetTimeMs: 27000,
-  grindSetting: 0.5,
 };
 
 export function buildDraftFromRecipe(params: {
@@ -211,7 +216,8 @@ export function buildDraftFromRecipe(params: {
         p?.target_weight_g ?? (isFirstTime && config.brewWeightMode !== "hidden" ? FIRST_TIME_DEFAULTS.targetWeightG : undefined),
       temperatureC: p?.temperature_c ?? (isFirstTime ? FIRST_TIME_DEFAULTS.temperatureC : undefined),
       targetTimeMs: p?.target_time_ms ?? (isFirstTime ? FIRST_TIME_DEFAULTS.targetTimeMs : undefined),
-      grindSetting: p?.grind_setting ?? (isFirstTime ? FIRST_TIME_DEFAULTS.grindSetting : undefined),
+      grinderUpperBurr: p?.grinder_upper_burr ?? undefined,
+      grinderLowerBurr: p?.grinder_lower_burr ?? undefined,
       mokaCupSize: p?.moka_cup_size ?? undefined,
       heatIntensity: (p?.heat_intensity as BrewDraftRecipe["heatIntensity"]) ?? undefined,
       equipmentId: params.defaultEquipment?.id ?? p?.equipment_id ?? undefined,

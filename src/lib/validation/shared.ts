@@ -20,6 +20,13 @@ export const optionalRating = z
   .optional()
   .transform((v) => (typeof v === "number" && !Number.isNaN(v) ? v : undefined));
 
+// Grinder burr dial position (e.g. Sage-style upper/lower burr rings) — a
+// whole number from 1 to 24.
+export const optionalBurrSetting = z
+  .union([z.number().int().min(1).max(24), z.nan(), z.undefined()])
+  .optional()
+  .transform((v) => (typeof v === "number" && !Number.isNaN(v) ? v : undefined));
+
 export function optionalEnum<T extends readonly [string, ...string[]]>(values: T) {
   return z
     .enum(values)

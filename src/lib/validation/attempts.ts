@@ -9,7 +9,14 @@ import {
   SHOT_MODES,
 } from "@/features/attempts/constants";
 import { BREW_METHODS } from "@/features/equipment/constants";
-import { optionalEnum, optionalInt, optionalPositiveNumber, optionalRating } from "./shared";
+import {
+  optionalBurrSetting,
+  optionalEnum,
+  optionalInt,
+  optionalNonNegativeNumber,
+  optionalPositiveNumber,
+  optionalRating,
+} from "./shared";
 
 export const attemptFieldsSchema = z.object({
   // Método + receta genérica (multi-method brew flow)
@@ -32,11 +39,17 @@ export const attemptFieldsSchema = z.object({
   grinderModelName: z.string().trim().max(200).optional(),
 
   // Molienda
-  grindSetting: z.number("El molido es obligatorio").min(0),
+  grindSetting: optionalNonNegativeNumber,
   grindSeconds: optionalPositiveNumber,
   doseMode: optionalEnum(DOSE_MODES),
   doseFeedback: optionalEnum(DOSE_FEEDBACKS),
   usedBitMore: z.boolean().default(false),
+
+  // Configuración del molinillo (opcional, todos los métodos): molinillos
+  // de doble muela (p. ej. Sage) exponen un dial en el molinillo y otro en
+  // la máquina. Independiente de upperBurrSetting (legado, solo espresso).
+  grinderUpperBurr: optionalBurrSetting,
+  grinderLowerBurr: optionalBurrSetting,
 
   // Cesta (legado, solo espresso Sage)
   basketSize: optionalEnum(BASKET_SIZES),

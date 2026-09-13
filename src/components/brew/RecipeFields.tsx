@@ -2,6 +2,7 @@
 
 import { cn } from "@/lib/cn";
 import { SteppableFieldGrid, type SteppableField } from "./SteppableFieldGrid";
+import { SettingsAccordionCard } from "@/components/settings/SettingsAccordionCard";
 import { getRecipeFieldConfig, formatRatio } from "@/features/brew/recipeFieldConfig";
 import { HEAT_INTENSITIES } from "@/features/attempts/constants";
 import type { BrewDraftRecipe } from "@/features/brew/draft";
@@ -76,16 +77,28 @@ export function RecipeFields({
       min: 0,
       suffix: "s",
     },
+  );
+
+  const grinderConfigFields: SteppableField[] = [
     {
-      key: "grindSetting",
-      label: dict.brew.grindSetting,
-      value: value.grindSetting,
-      onChange: (v) => set("grindSetting", v),
-      step: 0.5,
-      min: 0,
+      key: "grinderUpperBurr",
+      label: dict.brew.grinderUpperBurr,
+      value: value.grinderUpperBurr,
+      onChange: (v) => set("grinderUpperBurr", v),
+      min: 1,
+      max: 24,
       sublabel: value.grinderModelName,
     },
-  );
+    {
+      key: "grinderLowerBurr",
+      label: dict.brew.grinderLowerBurr,
+      value: value.grinderLowerBurr,
+      onChange: (v) => set("grinderLowerBurr", v),
+      min: 1,
+      max: 24,
+    },
+  ];
+  const hasGrinderConfig = value.grinderUpperBurr != null || value.grinderLowerBurr != null;
   if (config.hasMoka) {
     fields.push({
       key: "mokaCupSize",
@@ -112,6 +125,11 @@ export function RecipeFields({
   return (
     <div className="space-y-6">
       <SteppableFieldGrid fields={fields} />
+
+      <SettingsAccordionCard title={dict.brew.grinderConfigTitle} defaultExpanded={hasGrinderConfig}>
+        <p className="mb-4 text-xs text-ink-muted">{dict.brew.grinderConfigHint}</p>
+        <SteppableFieldGrid fields={grinderConfigFields} />
+      </SettingsAccordionCard>
 
       {config.hasMoka && (
         <div>

@@ -452,6 +452,11 @@ const en: Dictionary = {
     auto: "Auto",
     target: "target",
     addSensoryRating: "Add sensory rating (optional)",
+    grinderConfigTitle: "Grinder configuration (optional)",
+    grinderConfigHint:
+      "If your grinder has two independent settings (one on the grinder, one on the machine), enter them here.",
+    grinderUpperBurr: "Upper burr",
+    grinderLowerBurr: "Lower burr",
     tds: "TDS",
     wouldBrewAgain: "Would you brew this again?",
     running: "Running",

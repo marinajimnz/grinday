@@ -19,7 +19,6 @@ describe("buildDraftFromRecipe", () => {
       targetWeightG: 40,
       temperatureC: 94,
       targetTimeMs: 27000,
-      grindSetting: 0.5,
     });
     expect(draft.parentAttemptId).toBeUndefined();
     expect(draft.startedAtEpochMs).toBeNull();
@@ -40,6 +39,8 @@ describe("buildDraftFromRecipe", () => {
       temperature_c: 94,
       target_time_ms: 180000,
       grind_setting: 12,
+      grinder_upper_burr: 8,
+      grinder_lower_burr: 3,
       moka_cup_size: null,
       heat_intensity: null,
       equipment_id: "equip-1",
@@ -58,7 +59,8 @@ describe("buildDraftFromRecipe", () => {
       targetWeightG: 240,
       temperatureC: 94,
       targetTimeMs: 180000,
-      grindSetting: 12,
+      grinderUpperBurr: 8,
+      grinderLowerBurr: 3,
       equipmentId: "equip-1",
       equipmentModelName: "Hario V60-02",
       grinderId: "grinder-1",

@@ -450,6 +450,11 @@ const es = {
     auto: "Auto",
     target: "objetivo",
     addSensoryRating: "Añadir valoración sensorial (opcional)",
+    grinderConfigTitle: "Configuración del molinillo (opcional)",
+    grinderConfigHint:
+      "Si tu molinillo tiene dos ajustes independientes (uno en el molinillo y otro en la máquina), indícalos aquí.",
+    grinderUpperBurr: "Muela superior",
+    grinderLowerBurr: "Muela inferior",
     tds: "TDS",
     wouldBrewAgain: "¿Lo volverías a preparar?",
     running: "En marcha",

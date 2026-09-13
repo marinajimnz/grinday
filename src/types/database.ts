@@ -102,6 +102,8 @@ export type Database = {
           grind_seconds: number | null
           grind_setting: number | null
           grinder_id: string | null
+          grinder_lower_burr: number | null
+          grinder_upper_burr: number | null
           heat_intensity: string | null
           hidden_from_dashboard: boolean
           id: string
@@ -154,6 +156,8 @@ export type Database = {
           grind_seconds?: number | null
           grind_setting?: number | null
           grinder_id?: string | null
+          grinder_lower_burr?: number | null
+          grinder_upper_burr?: number | null
           heat_intensity?: string | null
           hidden_from_dashboard?: boolean
           id?: string
@@ -206,6 +210,8 @@ export type Database = {
           grind_seconds?: number | null
           grind_setting?: number | null
           grinder_id?: string | null
+          grinder_lower_burr?: number | null
+          grinder_upper_burr?: number | null
           heat_intensity?: string | null
           hidden_from_dashboard?: boolean
           id?: string
