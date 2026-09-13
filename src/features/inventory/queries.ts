@@ -8,25 +8,37 @@ export type InventoryBagRow = Database["public"]["Tables"]["coffee_bags"]["Row"]
   coffee: { id: string; name: string; roaster: string };
 };
 
-async function listBagsByStatus(supabase: Client, statuses: string[]): Promise<InventoryBagRow[]> {
+export type GroupedInventoryBags = {
+  active: InventoryBagRow[];
+  finished: InventoryBagRow[];
+  archived: InventoryBagRow[];
+};
+
+// A bag's own status (sealed/open/finished/archived) is independent from
+// its coffee's — archiving a coffee never touches its bags' status rows.
+// So a bag belongs under "archivados" either because it was archived on
+// its own, or because its coffee was (regardless of the bag's own status —
+// an archived coffee's still-"open" bag belongs here too, not under
+// Activos). PostgREST's `.or()` can't express a condition on a joined
+// table's column (confirmed against the live project: it fails to parse
+// the logic tree), so this fetches every bag once and buckets it in JS
+// instead of running three separately-filtered queries.
+export async function listBagsGrouped(supabase: Client): Promise<GroupedInventoryBags> {
   const { data, error } = await supabase
     .from("coffee_bags")
-    .select("*, coffee:coffees(id, name, roaster)")
-    .in("status", statuses)
+    .select("*, coffee:coffees!inner(id, name, roaster, archived_at)")
     .order("status", { ascending: true })
     .order("updated_at", { ascending: false });
   if (error) throw error;
-  return data ?? [];
-}
 
-export async function listActiveBags(supabase: Client) {
-  return listBagsByStatus(supabase, ["open", "sealed"]);
-}
-
-export async function listFinishedBags(supabase: Client) {
-  return listBagsByStatus(supabase, ["finished"]);
-}
-
-export async function listArchivedBags(supabase: Client) {
-  return listBagsByStatus(supabase, ["archived"]);
+  const active: InventoryBagRow[] = [];
+  const finished: InventoryBagRow[] = [];
+  const archived: InventoryBagRow[] = [];
+  for (const bag of data ?? []) {
+    const coffeeArchived = bag.coffee.archived_at !== null;
+    if (bag.status === "archived" || coffeeArchived) archived.push(bag);
+    else if (bag.status === "finished") finished.push(bag);
+    else active.push(bag);
+  }
+  return { active, finished, archived };
 }

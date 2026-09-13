@@ -218,6 +218,7 @@ export async function archiveCoffeeAction(coffeeId: string): Promise<ActionResul
 
   revalidatePath("/coffees");
   revalidatePath("/");
+  revalidatePath("/inventory");
   return { success: true, data: undefined };
 }
 

@@ -1,5 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
-import { listActiveBags, listArchivedBags, listFinishedBags } from "@/features/inventory/queries";
+import { listBagsGrouped } from "@/features/inventory/queries";
 import { BagInventoryRow } from "@/components/inventory/BagInventoryRow";
 import { InventoryTabs } from "@/components/inventory/InventoryTabs";
 import { EmptyState } from "@/components/ui/EmptyState";
@@ -9,11 +9,11 @@ import { getDictionary } from "@/lib/i18n/get-dictionary";
 
 export default async function InventoryPage() {
   const supabase = await createClient();
-  const [activeBags, finishedBags, archivedBags] = await Promise.all([
-    listActiveBags(supabase),
-    listFinishedBags(supabase),
-    listArchivedBags(supabase),
-  ]);
+  const {
+    active: activeBags,
+    finished: finishedBags,
+    archived: archivedBags,
+  } = await listBagsGrouped(supabase);
   const dict = getDictionary(await getLocale());
 
   return (
