@@ -577,6 +577,14 @@ const en: Dictionary = {
     noEquipmentDescription: "Once they add machines or a grinder, they'll show up here.",
     noAttemptsTitle: "No brews yet",
     noAttemptsDescription: "Once they log a brew, it'll show up here.",
+    follow: "Follow",
+    following: "Following",
+    followersLabel: "followers",
+    followingLabel: "following",
+    followersTitle: "Followers",
+    followingTitle: "Following",
+    noFollowersYet: "No followers yet.",
+    noFollowingYet: "Not following anyone yet.",
   },
 };
 

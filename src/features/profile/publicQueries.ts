@@ -40,21 +40,30 @@ const RECENT_ATTEMPTS_LIMIT = 10;
 
 /**
  * A username that doesn't exist, or whose profile has is_public = false
- * (viewed by anyone other than its owner), resolves to `null` here —
+ * (looked up by anyone other than its owner), resolves to `null` here —
  * RLS's `profiles_select_public`/`profiles_select_own` policies are what
- * actually decide visibility, this just surfaces "not found" for the page
- * to 404 on.
+ * actually decide visibility, this just surfaces "not found" to the caller.
+ * Used both for the full profile page and for the lighter followers/
+ * following list pages, which don't need coffees/equipment/attempts too.
  */
-export async function getPublicProfileByUsername(
+export async function getProfileByUsername(
   supabase: Client,
   username: string,
-): Promise<PublicProfileData | null> {
-  const { data: profile, error: profileError } = await supabase
+): Promise<PublicProfile | null> {
+  const { data: profile, error } = await supabase
     .from("profiles")
     .select("*")
     .eq("username", username)
     .maybeSingle();
-  if (profileError) throw profileError;
+  if (error) throw error;
+  return profile;
+}
+
+export async function getPublicProfileByUsername(
+  supabase: Client,
+  username: string,
+): Promise<PublicProfileData | null> {
+  const profile = await getProfileByUsername(supabase, username);
   if (!profile) return null;
 
   const userId = profile.id;

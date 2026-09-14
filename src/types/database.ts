@@ -465,6 +465,24 @@ export type Database = {
           },
         ]
       }
+      follows: {
+        Row: {
+          created_at: string
+          followee_id: string
+          follower_id: string
+        }
+        Insert: {
+          created_at?: string
+          followee_id: string
+          follower_id: string
+        }
+        Update: {
+          created_at?: string
+          followee_id?: string
+          follower_id?: string
+        }
+        Relationships: []
+      }
       inventory_events: {
         Row: {
           attempt_id: string | null

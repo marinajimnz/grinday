@@ -575,6 +575,14 @@ const es = {
     noEquipmentDescription: "Cuando añada máquinas o molinillo, aparecerán aquí.",
     noAttemptsTitle: "Todavía no hay preparaciones",
     noAttemptsDescription: "Cuando registre una preparación, aparecerá aquí.",
+    follow: "Seguir",
+    following: "Siguiendo",
+    followersLabel: "seguidores",
+    followingLabel: "siguiendo",
+    followersTitle: "Seguidores",
+    followingTitle: "Siguiendo",
+    noFollowersYet: "Todavía no tiene ningún seguidor.",
+    noFollowingYet: "Todavía no sigue a nadie.",
   },
 } as const;
 

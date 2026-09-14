@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getPublicProfileByUsername } from "@/features/profile/publicQueries";
+import { getFollowCounts, isFollowing } from "@/features/social/queries";
 import { ProfileHeader } from "@/components/profile/ProfileHeader";
 import { ProfileCoffeeGrid } from "@/components/profile/ProfileCoffeeGrid";
 import { ProfileEquipmentList } from "@/components/profile/ProfileEquipmentList";
@@ -19,12 +20,29 @@ export default async function PublicProfilePage({
 
   if (!data) notFound();
 
+  const {
+    data: { user: viewer },
+  } = await supabase.auth.getUser();
+
+  const [followCounts, viewerIsFollowing] = await Promise.all([
+    getFollowCounts(supabase, data.profile.id),
+    viewer && viewer.id !== data.profile.id
+      ? isFollowing(supabase, viewer.id, data.profile.id)
+      : Promise.resolve(false),
+  ]);
+
   const locale = await getLocale();
   const dict = getDictionary(locale);
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-8 md:px-8">
-      <ProfileHeader profile={data.profile} dict={dict} />
+      <ProfileHeader
+        profile={data.profile}
+        dict={dict}
+        followCounts={followCounts}
+        viewerId={viewer?.id ?? null}
+        isFollowing={viewerIsFollowing}
+      />
 
       <section className="mt-8">
         <h2 className="font-display text-xl text-ink">{dict.profile.coffeesTitle}</h2>
