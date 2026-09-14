@@ -565,6 +565,17 @@ const es = {
     willSyncAutomatically: "Se sincronizarán solos en cuanto vuelva la conexión — no hace falta que hagas nada.",
     nothingSavedLocally: "Todavía no hay nada guardado localmente para mostrar sin conexión.",
   },
+  profile: {
+    coffeesTitle: "Cafés",
+    equipmentTitle: "Equipo",
+    recentActivityTitle: "Actividad reciente",
+    noCoffeesTitle: "Todavía no hay cafés en este perfil",
+    noCoffeesDescription: "Cuando añada cafés a su biblioteca, aparecerán aquí.",
+    noEquipmentTitle: "Todavía no hay equipo registrado",
+    noEquipmentDescription: "Cuando añada máquinas o molinillo, aparecerán aquí.",
+    noAttemptsTitle: "Todavía no hay preparaciones",
+    noAttemptsDescription: "Cuando registre una preparación, aparecerá aquí.",
+  },
 } as const;
 
 export default es;

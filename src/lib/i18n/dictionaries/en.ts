@@ -567,6 +567,17 @@ const en: Dictionary = {
     willSyncAutomatically: "They'll sync on their own once the connection comes back — no need to do anything.",
     nothingSavedLocally: "Nothing saved locally yet to show offline.",
   },
+  profile: {
+    coffeesTitle: "Coffees",
+    equipmentTitle: "Equipment",
+    recentActivityTitle: "Recent activity",
+    noCoffeesTitle: "No coffees on this profile yet",
+    noCoffeesDescription: "Once they add coffees to their library, they'll show up here.",
+    noEquipmentTitle: "No equipment listed yet",
+    noEquipmentDescription: "Once they add machines or a grinder, they'll show up here.",
+    noAttemptsTitle: "No brews yet",
+    noAttemptsDescription: "Once they log a brew, it'll show up here.",
+  },
 };
 
 export default en;
