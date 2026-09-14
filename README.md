@@ -71,6 +71,7 @@ npx supabase gen types typescript --linked > src/types/database.ts
 - [x] Fase 5 — Inventario (este commit).
 - [x] Fase 6 — Estadísticas y dashboard (este commit).
 - [x] Fase 7 — Hardening PWA, offline, cuenta y release (este commit).
+- [x] Fase 8 — Identidad pública y cimientos de datos (este commit).
 
 ## Offline y PWA
 

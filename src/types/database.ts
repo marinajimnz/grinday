@@ -548,37 +548,46 @@ export type Database = {
       }
       profiles: {
         Row: {
+          avatar_url: string | null
+          bio: string | null
           created_at: string
           default_machine_id: string | null
           display_name: string | null
           id: string
           is_anonymous: boolean
+          is_public: boolean
           locale: string
           role: string
           updated_at: string
-          username: string | null
+          username: string
         }
         Insert: {
+          avatar_url?: string | null
+          bio?: string | null
           created_at?: string
           default_machine_id?: string | null
           display_name?: string | null
           id: string
           is_anonymous?: boolean
+          is_public?: boolean
           locale?: string
           role?: string
           updated_at?: string
-          username?: string | null
+          username: string
         }
         Update: {
+          avatar_url?: string | null
+          bio?: string | null
           created_at?: string
           default_machine_id?: string | null
           display_name?: string | null
           id?: string
           is_anonymous?: boolean
+          is_public?: boolean
           locale?: string
           role?: string
           updated_at?: string
-          username?: string | null
+          username?: string
         }
         Relationships: [
           {
