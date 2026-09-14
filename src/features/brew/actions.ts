@@ -41,6 +41,7 @@ export async function startBrewAction(rawInput: unknown): Promise<ActionResult<S
     .from("coffees")
     .select("id, name, roaster")
     .eq("id", coffeeId)
+    .eq("user_id", user.id)
     .maybeSingle();
   if (coffeeError) return { success: false, message: coffeeError.message };
   if (!coffee) return { success: false, message: "Café no encontrado" };
@@ -59,9 +60,9 @@ export async function startBrewAction(rawInput: unknown): Promise<ActionResult<S
   if (!bag) return { success: false, message: "Este café no tiene ninguna bolsa disponible" };
 
   const [sourceAttempt, defaultEquipment, defaultGrinder] = await Promise.all([
-    getLastAttemptForCoffeeAndMethod(supabase, coffeeId, method),
-    getDefaultEquipmentForMethod(supabase, method),
-    getDefaultGrinder(supabase),
+    getLastAttemptForCoffeeAndMethod(supabase, coffeeId, method, user.id),
+    getDefaultEquipmentForMethod(supabase, method, user.id),
+    getDefaultGrinder(supabase, user.id),
   ]);
 
   return {
@@ -108,6 +109,7 @@ export async function startBrewFromAttemptAction(
       `${RECIPE_SOURCE_ATTEMPT_FIELDS}, coffee_id, coffee:coffees!brew_attempts_coffee_id_fkey(id, name, roaster)`,
     )
     .eq("id", attemptId)
+    .eq("user_id", user.id)
     .maybeSingle();
   if (attemptError) return { success: false, message: attemptError.message };
   if (!attempt || !attempt.coffee) return { success: false, message: "Intento no encontrado" };

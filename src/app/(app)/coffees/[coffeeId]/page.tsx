@@ -24,14 +24,15 @@ export default async function CoffeeDetailPage({
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  const result = await getCoffeeWithBags(supabase, coffeeId);
+  if (!user) notFound();
+  const result = await getCoffeeWithBags(supabase, coffeeId, user.id);
 
   if (!result) notFound();
   const { coffee, bags } = result;
   const locale = await getLocale();
   const dict = getDictionary(locale);
 
-  const attempts = await listAttemptsForCoffee(supabase, coffeeId);
+  const attempts = await listAttemptsForCoffee(supabase, coffeeId, user.id);
   const preferredAttempt = coffee.preferred_attempt_id
     ? (attempts.find((a) => a.id === coffee.preferred_attempt_id) ?? null)
     : null;

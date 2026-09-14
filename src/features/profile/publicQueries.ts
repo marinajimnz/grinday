@@ -152,7 +152,8 @@ export async function getPublicProfileByUsername(
     const { data: preferredAttempts, error: preferredError } = await supabase
       .from("brew_attempts")
       .select("*")
-      .in("id", preferredIds);
+      .in("id", preferredIds)
+      .eq("user_id", userId);
     if (preferredError) throw preferredError;
     for (const attempt of preferredAttempts ?? []) preferredById.set(attempt.id, attempt);
   }

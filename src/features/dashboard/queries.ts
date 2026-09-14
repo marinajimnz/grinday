@@ -28,12 +28,14 @@ const RECENT_ATTEMPT_FIELDS =
 // this query (the full /attempts page included) leaves it out on purpose.
 export async function getRecentAttempts(
   supabase: Client,
+  userId: string,
   limit = 4,
   options?: { excludeHiddenFromDashboard?: boolean },
 ): Promise<RecentAttempt[]> {
   let query = supabase
     .from("brew_attempts")
     .select(RECENT_ATTEMPT_FIELDS)
+    .eq("user_id", userId)
     .order("created_at", { ascending: false })
     .limit(limit);
   if (options?.excludeHiddenFromDashboard) {
@@ -54,10 +56,11 @@ export async function getDashboardOverview(supabase: Client) {
   };
 }
 
-export async function hasAnyCoffee(supabase: Client) {
+export async function hasAnyCoffee(supabase: Client, userId: string) {
   const { count, error } = await supabase
     .from("coffees")
     .select("id", { count: "exact", head: true })
+    .eq("user_id", userId)
     .is("archived_at", null);
   if (error) throw error;
   return (count ?? 0) > 0;
