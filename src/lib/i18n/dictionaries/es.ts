@@ -521,6 +521,7 @@ const es = {
     compare: "Comparar",
     technical: "Técnico",
     useAsBase: "Usar como base",
+    clonedFromRecipe: "Receta de @{username}",
   },
   comparePage: {
     backToCoffee: "Volver al café",
@@ -584,6 +585,7 @@ const es = {
     followingTitle: "Siguiendo",
     noFollowersYet: "Todavía no tiene ningún seguidor.",
     noFollowingYet: "Todavía no sigue a nadie.",
+    tryThisRecipe: "Probar esta receta",
   },
   search: {
     title: "Buscar",

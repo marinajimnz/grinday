@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { Copy, Pencil } from "lucide-react";
 import { IconEliminar, IconFavorita } from "@/components/icons/pencil-icons";
 import { EditAttemptForm } from "./EditAttemptForm";
@@ -27,10 +28,12 @@ export function AttemptDetailPanel({
   attempt,
   coffeeId,
   isPreferred,
+  clonedFromUsername,
 }: {
   attempt: BrewAttemptRow;
   coffeeId: string;
   isPreferred: boolean;
+  clonedFromUsername?: string | null;
 }) {
   const router = useRouter();
   const dict = useDictionary();
@@ -75,6 +78,14 @@ export function AttemptDetailPanel({
             {dict.attempts.attemptNo} #{attempt.attempt_no}
           </h1>
           <p className="text-xs text-ink-muted">{formatDateTime(attempt.created_at, locale)}</p>
+          {clonedFromUsername && (
+            <Link
+              href={`/u/${clonedFromUsername}`}
+              className="mt-2 inline-flex items-center rounded-full bg-coffee/15 px-2.5 py-1 text-xs font-medium text-coffee"
+            >
+              {dict.attempts.clonedFromRecipe.replace("{username}", clonedFromUsername)}
+            </Link>
+          )}
         </div>
         <Button variant="secondary" className="px-3" onClick={() => setEditing(true)}>
           <Pencil aria-hidden className="size-4" />

@@ -72,6 +72,11 @@ export type BrewDraft = {
   roaster: string;
   parentAttemptId?: string;
   parentAttemptNo?: number;
+  // Set only when this draft started from "Probar esta receta" on another
+  // user's public profile — distinct from parentAttemptId, which is your
+  // own prior attempt of the same coffee (a same-user correction/redo
+  // lineage), not a cross-user recipe attribution.
+  clonedFromAttemptId?: string;
   recipe: BrewDraftRecipe;
   startedAtEpochMs: number | null;
   stoppedAtEpochMs: number | null;
@@ -201,6 +206,7 @@ export function buildDraftFromRecipe(params: {
   sourceAttempt?: RecipeSourceAttempt | null;
   defaultEquipment?: DefaultEquipment;
   defaultGrinder?: DefaultGrinder;
+  clonedFromAttemptId?: string;
 }): BrewDraft {
   const p = params.sourceAttempt;
   const names = namesFromSnapshot(p?.equipment_snapshot);
@@ -218,6 +224,7 @@ export function buildDraftFromRecipe(params: {
     roaster: params.roaster,
     parentAttemptId: p?.id,
     parentAttemptNo: p?.attempt_no,
+    clonedFromAttemptId: params.clonedFromAttemptId,
     recipe: {
       method: params.method,
       doseG: p?.dose_g ?? (isFirstTime ? FIRST_TIME_DEFAULTS.doseG : undefined),

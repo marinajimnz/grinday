@@ -61,6 +61,34 @@ export async function getFollowingIdsAmong(
   return new Set((data ?? []).map((row) => row.followee_id));
 }
 
+/**
+ * Resolves the @handle to show in a cloned attempt's "Receta de @usuario"
+ * badge. Two-step for the same reason as getFollowers/getFollowing (no FK
+ * PostgREST can embed through), and gracefully returns null — hiding the
+ * badge — if the source attempt was deleted or its owner has since gone
+ * private, rather than throwing.
+ */
+export async function getClonedFromUsername(
+  supabase: Client,
+  clonedFromAttemptId: string,
+): Promise<string | null> {
+  const { data: sourceAttempt, error } = await supabase
+    .from("brew_attempts")
+    .select("user_id")
+    .eq("id", clonedFromAttemptId)
+    .maybeSingle();
+  if (error) throw error;
+  if (!sourceAttempt) return null;
+
+  const { data: profile, error: profileError } = await supabase
+    .from("profiles")
+    .select("username")
+    .eq("id", sourceAttempt.user_id)
+    .maybeSingle();
+  if (profileError) throw profileError;
+  return profile?.username ?? null;
+}
+
 // follows.follower_id/followee_id reference auth.users, not public.profiles
 // directly (same pattern as coffees.user_id etc.), so there's no FK
 // PostgREST can embed through — fetch the follow rows, then batch-fetch

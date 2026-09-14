@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { ChevronLeft } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { getAttempt, getAttemptMedia } from "@/features/attempts/queries";
+import { getClonedFromUsername } from "@/features/social/queries";
 import { AttemptDetailPanel } from "@/components/attempt/AttemptDetailPanel";
 import { AttemptMediaSection } from "@/components/attempt/AttemptMediaSection";
 import { getLocale } from "@/lib/i18n/locale";
@@ -15,11 +16,18 @@ export default async function AttemptDetailPage({
 }) {
   const { attemptId } = await params;
   const supabase = await createClient();
-  const attempt = await getAttempt(supabase, attemptId);
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) notFound();
+  const attempt = await getAttempt(supabase, attemptId, user.id);
 
   if (!attempt) notFound();
 
   const media = await getAttemptMedia(supabase, attemptId);
+  const clonedFromUsername = attempt.cloned_from_attempt_id
+    ? await getClonedFromUsername(supabase, attempt.cloned_from_attempt_id)
+    : null;
   const dict = getDictionary(await getLocale());
 
   return (
@@ -37,6 +45,7 @@ export default async function AttemptDetailPage({
           attempt={attempt}
           coffeeId={attempt.coffee.id}
           isPreferred={attempt.coffee.preferred_attempt_id === attempt.id}
+          clonedFromUsername={clonedFromUsername}
         />
       </div>
 

@@ -523,6 +523,7 @@ const en: Dictionary = {
     compare: "Compare",
     technical: "Technical",
     useAsBase: "Use as base",
+    clonedFromRecipe: "Recipe from @{username}",
   },
   comparePage: {
     backToCoffee: "Back to coffee",
@@ -586,6 +587,7 @@ const en: Dictionary = {
     followingTitle: "Following",
     noFollowersYet: "No followers yet.",
     noFollowingYet: "Not following anyone yet.",
+    tryThisRecipe: "Try this recipe",
   },
   search: {
     title: "Search",

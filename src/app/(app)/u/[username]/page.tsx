@@ -47,7 +47,11 @@ export default async function PublicProfilePage({
       <section className="mt-8">
         <h2 className="font-display text-xl text-ink">{dict.profile.coffeesTitle}</h2>
         <div className="mt-3">
-          <ProfileCoffeeGrid coffees={data.coffees} dict={dict} />
+          <ProfileCoffeeGrid
+            coffees={data.coffees}
+            dict={dict}
+            isOwnProfile={viewer?.id === data.profile.id}
+          />
         </div>
       </section>
 

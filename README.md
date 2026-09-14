@@ -75,6 +75,7 @@ npx supabase gen types typescript --linked > src/types/database.ts
 - [x] Fase 9 — Página de perfil público, solo lectura (este commit).
 - [x] Fase 10 — Seguir y seguidores (este commit).
 - [x] Fase 11 — Buscador y descubrimiento (este commit).
+- [x] Fase 12 — Clonar receta ("Probar esta receta") (este commit).
 
 ## Offline y PWA
 

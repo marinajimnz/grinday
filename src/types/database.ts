@@ -89,6 +89,7 @@ export type Database = {
           basket_wall: string | null
           bitterness: number | null
           body: number | null
+          cloned_from_attempt_id: string | null
           coffee_bag_id: string
           coffee_id: string
           created_at: string
@@ -143,6 +144,7 @@ export type Database = {
           basket_wall?: string | null
           bitterness?: number | null
           body?: number | null
+          cloned_from_attempt_id?: string | null
           coffee_bag_id: string
           coffee_id: string
           created_at?: string
@@ -197,6 +199,7 @@ export type Database = {
           basket_wall?: string | null
           bitterness?: number | null
           body?: number | null
+          cloned_from_attempt_id?: string | null
           coffee_bag_id?: string
           coffee_id?: string
           created_at?: string
@@ -244,6 +247,13 @@ export type Database = {
           would_brew_again?: boolean | null
         }
         Relationships: [
+          {
+            foreignKeyName: "brew_attempts_cloned_from_attempt_id_fkey"
+            columns: ["cloned_from_attempt_id"]
+            isOneToOne: false
+            referencedRelation: "brew_attempts"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "brew_attempts_coffee_bag_id_fkey"
             columns: ["coffee_bag_id"]

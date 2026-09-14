@@ -42,11 +42,14 @@ export type TestFixtureUser = { id: string; email: string; client: SupabaseClien
 const FIXTURE_PASSWORD = "Grinday-test-fixture-1!";
 
 /**
- * Returns an authenticated client for one of two persistent test accounts
- * (`label` "a" or "b"), creating the account the first time it's needed and
- * just signing in on every later call/test run.
+ * Returns an authenticated client for one of three persistent test
+ * accounts ("a"/"b"/"c"), creating the account the first time it's needed
+ * and just signing in on every later call/test run. "c" doubles as the
+ * non-public fixture profile tests/e2e/searchFixture.ts sets up (same
+ * email, "perfil-privado-e2e") — don't flip its is_public back to true,
+ * other suites rely on it staying private.
  */
-export async function getTestUser(label: "a" | "b"): Promise<TestFixtureUser> {
+export async function getTestUser(label: "a" | "b" | "c"): Promise<TestFixtureUser> {
   const email = `test-fixture-${label}@grinday.test`;
 
   const { error: createError } = await admin.auth.admin.createUser({

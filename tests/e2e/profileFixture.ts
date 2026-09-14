@@ -32,15 +32,12 @@ const admin = createClient(supabaseUrl, serviceRoleKey, {
   auth: { autoRefreshToken: false, persistSession: false },
 });
 
-const FIXTURE_EMAIL = "test-fixture-a@grinday.test";
-const FIXTURE_PASSWORD = "Grinday-test-fixture-1!";
+export const FIXTURE_EMAIL = "test-fixture-a@grinday.test";
+export const FIXTURE_PASSWORD = "Grinday-test-fixture-1!";
 const FIXTURE_USERNAME = "perfil-publico-e2e";
 const FIXTURE_COFFEE_NAME = "E2E Fixture Blend";
 
-export async function ensurePublicProfileFixture(): Promise<{
-  username: string;
-  coffeeName: string;
-}> {
+async function ensureFixtureUserA(): Promise<string> {
   const { error: createError } = await admin.auth.admin.createUser({
     email: FIXTURE_EMAIL,
     password: FIXTURE_PASSWORD,
@@ -54,29 +51,34 @@ export async function ensurePublicProfileFixture(): Promise<{
     .eq("username", FIXTURE_USERNAME)
     .maybeSingle();
 
-  let userId: string;
-  if (existingProfile) {
-    userId = existingProfile.id;
-  } else {
-    // First run ever: the account has whatever auto-generated username the
-    // signup trigger gave it — sign in to find its id, then rename it to
-    // the fixed handle this spec expects.
-    const anonClient = createClient(supabaseUrl, anonKey, {
-      auth: { autoRefreshToken: false, persistSession: false },
-    });
-    const { data: signIn, error: signInError } = await anonClient.auth.signInWithPassword({
-      email: FIXTURE_EMAIL,
-      password: FIXTURE_PASSWORD,
-    });
-    if (signInError || !signIn.user) throw signInError ?? new Error("sign-in returned no user");
-    userId = signIn.user.id;
+  if (existingProfile) return existingProfile.id;
 
-    const { error: updateError } = await admin
-      .from("profiles")
-      .update({ username: FIXTURE_USERNAME, display_name: "Perfil Público E2E" })
-      .eq("id", userId);
-    if (updateError) throw updateError;
-  }
+  // First run ever: the account has whatever auto-generated username the
+  // signup trigger gave it — sign in to find its id, then rename it to
+  // the fixed handle this spec expects.
+  const anonClient = createClient(supabaseUrl, anonKey, {
+    auth: { autoRefreshToken: false, persistSession: false },
+  });
+  const { data: signIn, error: signInError } = await anonClient.auth.signInWithPassword({
+    email: FIXTURE_EMAIL,
+    password: FIXTURE_PASSWORD,
+  });
+  if (signInError || !signIn.user) throw signInError ?? new Error("sign-in returned no user");
+
+  const { error: updateError } = await admin
+    .from("profiles")
+    .update({ username: FIXTURE_USERNAME, display_name: "Perfil Público E2E" })
+    .eq("id", signIn.user.id);
+  if (updateError) throw updateError;
+
+  return signIn.user.id;
+}
+
+export async function ensurePublicProfileFixture(): Promise<{
+  username: string;
+  coffeeName: string;
+}> {
+  const userId = await ensureFixtureUserA();
 
   const { data: existingCoffee } = await admin
     .from("coffees")
@@ -136,4 +138,89 @@ export async function ensurePublicProfileFixture(): Promise<{
   }
 
   return { username: FIXTURE_USERNAME, coffeeName: FIXTURE_COFFEE_NAME };
+}
+
+// A second coffee on the same fixture account, whose preferred attempt
+// carries real dose/water/temperature/time values (the fields the current
+// multi-method recipe flow actually recalls into a new draft — unlike
+// ensurePublicProfileFixture's attempt, which only ever set the legacy
+// grind_setting field that buildDraftFromRecipe no longer copies).
+const CLONE_SOURCE_COFFEE_NAME = "E2E Clone Source";
+export const CLONE_SOURCE_RECIPE = {
+  doseG: 18,
+  waterG: 30,
+  targetWeightG: 36,
+  temperatureC: 93,
+  targetTimeMs: 28000,
+} as const;
+
+export async function ensureCloneSourceFixture(): Promise<{
+  username: string;
+  coffeeName: string;
+}> {
+  const userId = await ensureFixtureUserA();
+
+  const { data: existingCoffee } = await admin
+    .from("coffees")
+    .select("id")
+    .eq("user_id", userId)
+    .eq("name", CLONE_SOURCE_COFFEE_NAME)
+    .maybeSingle();
+
+  if (!existingCoffee) {
+    const { data: machine, error: machineModelError } = await admin
+      .from("machine_models")
+      .select("id")
+      .eq("slug", "sage-barista-express-impress")
+      .single();
+    if (machineModelError || !machine)
+      throw machineModelError ?? new Error("seed machine model not found");
+
+    const { data: userMachine, error: machineError } = await admin
+      .from("user_machines")
+      .insert({ user_id: userId, machine_model_id: machine.id })
+      .select("id")
+      .single();
+    if (machineError || !userMachine) throw machineError ?? new Error("no user_machine");
+
+    const { data: coffee, error: coffeeError } = await admin
+      .from("coffees")
+      .insert({ user_id: userId, name: CLONE_SOURCE_COFFEE_NAME, roaster: "E2E Roaster" })
+      .select("id")
+      .single();
+    if (coffeeError || !coffee) throw coffeeError ?? new Error("no coffee");
+
+    const { data: bag, error: bagError } = await admin
+      .from("coffee_bags")
+      .insert({ coffee_id: coffee.id, user_id: userId })
+      .select("id")
+      .single();
+    if (bagError || !bag) throw bagError ?? new Error("no bag");
+
+    const { data: attempt, error: attemptError } = await admin
+      .from("brew_attempts")
+      .insert({
+        user_id: userId,
+        coffee_id: coffee.id,
+        coffee_bag_id: bag.id,
+        machine_id: userMachine.id,
+        method: "espresso",
+        dose_g: CLONE_SOURCE_RECIPE.doseG,
+        water_g: CLONE_SOURCE_RECIPE.waterG,
+        target_weight_g: CLONE_SOURCE_RECIPE.targetWeightG,
+        temperature_c: CLONE_SOURCE_RECIPE.temperatureC,
+        target_time_ms: CLONE_SOURCE_RECIPE.targetTimeMs,
+      })
+      .select("id")
+      .single();
+    if (attemptError || !attempt) throw attemptError ?? new Error("no attempt");
+
+    const { error: preferredError } = await admin
+      .from("coffees")
+      .update({ preferred_attempt_id: attempt.id })
+      .eq("id", coffee.id);
+    if (preferredError) throw preferredError;
+  }
+
+  return { username: FIXTURE_USERNAME, coffeeName: CLONE_SOURCE_COFFEE_NAME };
 }

@@ -1,5 +1,6 @@
 import { IconCafe, IconFavorita } from "@/components/icons/pencil-icons";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { CloneRecipeButton } from "./CloneRecipeButton";
 import type { PublicCoffeeItem } from "@/features/profile/publicQueries";
 import type { Dictionary } from "@/lib/i18n/dictionaries/es";
 
@@ -9,9 +10,11 @@ import type { Dictionary } from "@/lib/i18n/dictionaries/es";
 export function ProfileCoffeeGrid({
   coffees,
   dict,
+  isOwnProfile,
 }: {
   coffees: PublicCoffeeItem[];
   dict: Dictionary;
+  isOwnProfile: boolean;
 }) {
   if (!coffees.length) {
     return (
@@ -43,6 +46,16 @@ export function ProfileCoffeeGrid({
                     : "—"}
                 </span>
               </div>
+            </div>
+          )}
+
+          {coffee.preferredAttempt && !isOwnProfile && (
+            <div className="mt-3">
+              <CloneRecipeButton
+                sourceAttemptId={coffee.preferredAttempt.id}
+                dict={dict}
+                className="w-full"
+              />
             </div>
           )}
         </article>
