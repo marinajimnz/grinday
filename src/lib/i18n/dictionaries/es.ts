@@ -2,6 +2,7 @@ const es = {
   nav: {
     home: "Inicio",
     coffees: "Cafés",
+    search: "Buscar",
     brew: "Preparar",
     stats: "Estadísticas",
     settings: "Ajustes",
@@ -583,6 +584,15 @@ const es = {
     followingTitle: "Siguiendo",
     noFollowersYet: "Todavía no tiene ningún seguidor.",
     noFollowingYet: "Todavía no sigue a nadie.",
+  },
+  search: {
+    title: "Buscar",
+    subtitle: "Encuentra a otras usuarias por nombre de usuario o nombre.",
+    placeholder: "Buscar por usuario o nombre…",
+    label: "Buscar usuarias",
+    prompt: "Escribe algo para empezar a buscar.",
+    noResultsTitle: "Sin resultados",
+    noResultsDescription: "Prueba con otro nombre de usuario o nombre.",
   },
 } as const;
 

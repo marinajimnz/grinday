@@ -59,6 +59,43 @@ export async function getProfileByUsername(
   return profile;
 }
 
+export type ProfileSearchResult = {
+  id: string;
+  username: string;
+  display_name: string | null;
+  avatar_url: string | null;
+};
+
+const SEARCH_PAGE_SIZE = 20;
+
+/**
+ * `ilike` on username and display_name — RLS (profiles_select_public /
+ * _own) is what actually keeps non-public profiles out of results, same
+ * as everywhere else in this feature; no need to duplicate is_public here.
+ */
+export async function searchProfiles(
+  supabase: Client,
+  query: string,
+  page = 0,
+): Promise<{ results: ProfileSearchResult[]; hasMore: boolean }> {
+  const term = query.trim().replace(/[%,]/g, "");
+  if (!term) return { results: [], hasMore: false };
+
+  const from = page * SEARCH_PAGE_SIZE;
+  const to = from + SEARCH_PAGE_SIZE; // one extra row to detect a next page
+
+  const { data, error } = await supabase
+    .from("profiles")
+    .select("id, username, display_name, avatar_url")
+    .or(`username.ilike.%${term}%,display_name.ilike.%${term}%`)
+    .order("username", { ascending: true })
+    .range(from, to);
+  if (error) throw error;
+
+  const rows = data ?? [];
+  return { results: rows.slice(0, SEARCH_PAGE_SIZE), hasMore: rows.length > SEARCH_PAGE_SIZE };
+}
+
 export async function getPublicProfileByUsername(
   supabase: Client,
   username: string,

@@ -4,6 +4,7 @@ const en: Dictionary = {
   nav: {
     home: "Home",
     coffees: "Coffees",
+    search: "Search",
     brew: "Brew",
     stats: "Stats",
     settings: "Settings",
@@ -585,6 +586,15 @@ const en: Dictionary = {
     followingTitle: "Following",
     noFollowersYet: "No followers yet.",
     noFollowingYet: "Not following anyone yet.",
+  },
+  search: {
+    title: "Search",
+    subtitle: "Find other users by username or name.",
+    placeholder: "Search by username or name…",
+    label: "Search users",
+    prompt: "Type something to start searching.",
+    noResultsTitle: "No results",
+    noResultsDescription: "Try a different username or name.",
   },
 };
 
