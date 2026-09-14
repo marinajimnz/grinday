@@ -329,6 +329,10 @@ const es = {
     deleteConfirmButton: "Eliminar definitivamente",
     deleteBlocked:
       "Este café ya tiene bolsas o intentos registrados — no se puede eliminar para no perder ese historial. Archívalo en su lugar.",
+    deleteBag: "Eliminar bolsa",
+    deleteBagConfirm: "¿Eliminar esta bolsa? No podrás recuperarla.",
+    deleteBagBlocked:
+      "Esta bolsa todavía tiene intentos registrados — elimínalos primero desde su ficha, o archiva el café si quieres conservar el historial.",
     tabAttempts: "Intentos",
     tabBags: "Bolsas",
     tabsAriaLabel: "Secciones del café",

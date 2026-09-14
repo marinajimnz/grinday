@@ -3,11 +3,12 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Copy, Pencil } from "lucide-react";
-import { IconFavorita } from "@/components/icons/pencil-icons";
+import { IconEliminar, IconFavorita } from "@/components/icons/pencil-icons";
 import { EditAttemptForm } from "./EditAttemptForm";
 import { Button } from "@/components/ui/Button";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { TASTE_DIMENSIONS } from "@/features/attempts/constants";
-import { setPreferredAttemptAction } from "@/features/attempts/actions";
+import { deleteAttemptAction, setPreferredAttemptAction } from "@/features/attempts/actions";
 import type { BrewAttemptRow } from "@/features/attempts/queries";
 import { useDictionary, useLocale } from "@/components/i18n/LocaleProvider";
 import { formatDateTime } from "@/lib/i18n/format-date";
@@ -36,6 +37,22 @@ export function AttemptDetailPanel({
   const locale = useLocale();
   const [editing, setEditing] = useState(false);
   const [isTogglingPreferred, startTogglePreferred] = useTransition();
+  const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [isDeleting, startDelete] = useTransition();
+
+  function handleDelete() {
+    setDeleteError(null);
+    startDelete(async () => {
+      const result = await deleteAttemptAction(attempt.id);
+      if (!result.success) {
+        setConfirmDeleteOpen(false);
+        setDeleteError(result.message);
+        return;
+      }
+      router.push(`/coffees/${coffeeId}`);
+    });
+  }
 
   if (editing) {
     return (
@@ -95,7 +112,33 @@ export function AttemptDetailPanel({
           <Copy aria-hidden className="size-4" />
           {dict.attempts.duplicateAndAdjust}
         </Button>
+
+        <Button
+          variant="destructive"
+          className="px-3"
+          disabled={isDeleting}
+          onClick={() => {
+            setDeleteError(null);
+            setConfirmDeleteOpen(true);
+          }}
+        >
+          <IconEliminar aria-hidden className="size-4" />
+          {dict.common.delete}
+        </Button>
       </div>
+
+      {deleteError && (
+        <p role="alert" className="mt-2 text-sm text-red-700">
+          {deleteError}
+        </p>
+      )}
+
+      <ConfirmDialog
+        open={confirmDeleteOpen}
+        message={dict.dashboard.deleteAttemptConfirm}
+        onConfirm={handleDelete}
+        onCancel={() => setConfirmDeleteOpen(false)}
+      />
 
       <dl className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-3">
         <Stat label={dict.brew.grindSetting} value={attempt.grind_setting} />

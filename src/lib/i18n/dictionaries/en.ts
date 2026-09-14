@@ -331,6 +331,10 @@ const en: Dictionary = {
     deleteConfirmButton: "Delete permanently",
     deleteBlocked:
       "This coffee already has bags or attempts logged — it can't be deleted without losing that history. Archive it instead.",
+    deleteBag: "Delete bag",
+    deleteBagConfirm: "Delete this bag? You won't be able to get it back.",
+    deleteBagBlocked:
+      "This bag still has brews logged against it — delete them first from their own page, or archive the coffee if you want to keep that history.",
     tabAttempts: "Attempts",
     tabBags: "Bags",
     tabsAriaLabel: "Coffee sections",

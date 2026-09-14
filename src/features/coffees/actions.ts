@@ -246,6 +246,38 @@ export async function deleteCoffeeAction(coffeeId: string): Promise<ActionResult
   return { success: true, data: undefined };
 }
 
+// Same "permanent, but never at the cost of real history" rule as
+// deleteCoffeeAction — coffee_bags -> brew_attempts is an ON DELETE CASCADE
+// FK, so without this guard deleting a bag would silently wipe every
+// attempt logged against it instead of asking the user to deal with that
+// history first (delete it or archive the coffee instead).
+export async function deleteBagAction(bagId: string): Promise<ActionResult> {
+  const supabase = await createClient();
+  const dict = getDictionary(await getLocale());
+
+  const { count: attemptCount } = await supabase
+    .from("brew_attempts")
+    .select("id", { count: "exact", head: true })
+    .eq("coffee_bag_id", bagId);
+
+  if ((attemptCount ?? 0) > 0) {
+    return { success: false, message: dict.coffees.deleteBagBlocked };
+  }
+
+  const { data: deleted, error } = await supabase
+    .from("coffee_bags")
+    .delete()
+    .eq("id", bagId)
+    .select("coffee_id")
+    .maybeSingle();
+  if (error) return { success: false, message: error.message };
+
+  if (deleted) revalidatePath(`/coffees/${deleted.coffee_id}`);
+  revalidatePath("/coffees");
+  revalidatePath("/inventory");
+  return { success: true, data: undefined };
+}
+
 export async function registerCoffeeMediaAction(
   rawInput: unknown,
 ): Promise<ActionResult<{ mediaId: string }>> {
