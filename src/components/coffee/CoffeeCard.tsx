@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -16,7 +16,12 @@ import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { Button } from "@/components/ui/Button";
 import { useLongPress } from "@/components/ui/useLongPress";
 import { type ROAST_LEVELS } from "@/features/coffees/constants";
-import { archiveCoffeeAction, deleteCoffeeAction } from "@/features/coffees/actions";
+import {
+  archiveCoffeeAction,
+  deleteCoffeeAction,
+  getCoffeeDeletionImpactAction,
+} from "@/features/coffees/actions";
+import { formatDeletionImpact, type DeletionImpact } from "@/features/coffees/deletionImpact";
 import type { CoffeeListItem } from "@/features/coffees/queries";
 import type { Dictionary } from "@/lib/i18n/dictionaries/es";
 
@@ -28,6 +33,7 @@ export function CoffeeCard({ coffee, dict }: { coffee: CoffeeListItem; dict: Dic
   const [archiveConfirmOpen, setArchiveConfirmOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [deleteConfirmName, setDeleteConfirmName] = useState("");
+  const [impact, setImpact] = useState<DeletionImpact | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
@@ -40,10 +46,26 @@ export function CoffeeCard({ coffee, dict }: { coffee: CoffeeListItem; dict: Dic
     setMenuOpen(false);
     setDeleteOpen(false);
     setDeleteConfirmName("");
+    setImpact(null);
     setError(null);
   }
 
   const longPress = useLongPress(openMenu);
+
+  // Counted only once the delete pane is actually opened — the card itself
+  // doesn't know how many attempts a coffee has, and asking for every card on
+  // the page up front would be a query per coffee for a panel almost nobody
+  // opens.
+  useEffect(() => {
+    if (!deleteOpen) return;
+    let active = true;
+    void getCoffeeDeletionImpactAction(coffee.id).then((result) => {
+      if (active && result.success) setImpact(result.data);
+    });
+    return () => {
+      active = false;
+    };
+  }, [deleteOpen, coffee.id]);
 
   function handleArchive() {
     setError(null);
@@ -163,6 +185,7 @@ export function CoffeeCard({ coffee, dict }: { coffee: CoffeeListItem; dict: Dic
                   onClick={() => {
                     setError(null);
                     setDeleteConfirmName("");
+                    setImpact(null);
                     setDeleteOpen(true);
                   }}
                   className="flex w-full items-center gap-3 rounded-input px-3 py-3 text-left text-sm font-medium text-red-700 disabled:opacity-60"
@@ -181,6 +204,11 @@ export function CoffeeCard({ coffee, dict }: { coffee: CoffeeListItem; dict: Dic
             ) : (
               <div className="p-2">
                 <p className="text-xs text-ink">{dict.coffees.deleteConfirmPrompt}</p>
+                {impact && (
+                  <p className="mt-1 text-xs text-ink-muted">
+                    {formatDeletionImpact(dict, impact)} {dict.coffees.deleteArchiveHint}
+                  </p>
+                )}
                 <div className="mt-2">
                   <Field label={coffee.name} htmlFor="coffee-card-delete-confirm-name">
                     <input
