@@ -1,3 +1,4 @@
+import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getLocale } from "@/lib/i18n/locale";
 import { getDictionary } from "@/lib/i18n/get-dictionary";
@@ -7,11 +8,15 @@ import { MethodsCard } from "@/components/equipment/MethodsCard";
 
 export default async function MachinesSettingsPage() {
   const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) notFound();
   const dict = getDictionary(await getLocale());
 
   const [grinders, equipment] = await Promise.all([
-    getUserGrinders(supabase),
-    getUserBrewEquipment(supabase),
+    getUserGrinders(supabase, user.id),
+    getUserBrewEquipment(supabase, user.id),
   ]);
 
   return (

@@ -86,9 +86,15 @@ export async function findSimilarCoffeeAction(input: { name: string; roaster: st
   if (!parsed.success) return null;
 
   const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return null;
+
   const { data } = await supabase
     .from("coffees")
     .select("id, name, roaster")
+    .eq("user_id", user.id)
     .ilike("name", parsed.data.name)
     .ilike("roaster", parsed.data.roaster)
     .is("archived_at", null)
@@ -228,10 +234,18 @@ export async function archiveCoffeeAction(coffeeId: string): Promise<ActionResul
 export async function deleteCoffeeAction(coffeeId: string): Promise<ActionResult> {
   const supabase = await createClient();
   const dict = getDictionary(await getLocale());
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { success: false, message: "No autenticado" };
 
   const [{ count: bagCount }, { count: attemptCount }] = await Promise.all([
     supabase.from("coffee_bags").select("id", { count: "exact", head: true }).eq("coffee_id", coffeeId),
-    supabase.from("brew_attempts").select("id", { count: "exact", head: true }).eq("coffee_id", coffeeId),
+    supabase
+      .from("brew_attempts")
+      .select("id", { count: "exact", head: true })
+      .eq("coffee_id", coffeeId)
+      .eq("user_id", user.id),
   ]);
 
   if ((bagCount ?? 0) > 0 || (attemptCount ?? 0) > 0) {
@@ -254,11 +268,16 @@ export async function deleteCoffeeAction(coffeeId: string): Promise<ActionResult
 export async function deleteBagAction(bagId: string): Promise<ActionResult> {
   const supabase = await createClient();
   const dict = getDictionary(await getLocale());
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { success: false, message: "No autenticado" };
 
   const { count: attemptCount } = await supabase
     .from("brew_attempts")
     .select("id", { count: "exact", head: true })
-    .eq("coffee_bag_id", bagId);
+    .eq("coffee_bag_id", bagId)
+    .eq("user_id", user.id);
 
   if ((attemptCount ?? 0) > 0) {
     return { success: false, message: dict.coffees.deleteBagBlocked };

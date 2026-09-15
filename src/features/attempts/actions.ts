@@ -110,7 +110,7 @@ export async function createAttemptAction(
   // ever visiting Ajustes → Máquinas. When there is one, its capabilities and
   // current settings are snapshotted onto the attempt; without one the
   // snapshot just stays empty.
-  const machine = await getUserDefaultMachine(supabase);
+  const machine = await getUserDefaultMachine(supabase, user.id);
   const machineSnapshot: Json = machine
     ? {
         machine_model_slug: machine.machine_model?.slug ?? null,
