@@ -23,3 +23,5 @@ export const MAX_COMPARE_ATTEMPTS = 4;
 export const MIN_COMPARE_ATTEMPTS = 2;
 
 export const ATTEMPT_MEDIA_KINDS = ["espresso", "setup", "other"] as const;
+
+export type AttemptMediaKind = (typeof ATTEMPT_MEDIA_KINDS)[number];

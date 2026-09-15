@@ -4,7 +4,8 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { buttonClassName } from "@/components/ui/Button";
-import { clearDraft, getMostRecentDraft, saveDraft, type BrewDraft } from "@/features/brew/draft";
+import { getMostRecentDraft, saveDraft, type BrewDraft } from "@/features/brew/draft";
+import { discardDraft } from "@/features/brew/discardDraft";
 import { useDictionary } from "@/components/i18n/LocaleProvider";
 
 export function DraftResumeBanner({ currentUserId }: { currentUserId: string }) {
@@ -52,7 +53,9 @@ export function DraftResumeBanner({ currentUserId }: { currentUserId: string }) 
     };
 
     const discard = () => {
-      clearDraft(draft.draftId);
+      // Deliberately not awaited: the banner should go the moment it's
+      // dismissed, and the Storage cleanup inside has nothing to report.
+      void discardDraft(draft.draftId);
       setDraft(null);
     };
 
