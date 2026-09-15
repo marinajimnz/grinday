@@ -1,3 +1,4 @@
+import { notFound } from "next/navigation";
 import { Download } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { SignOutButton } from "@/components/settings/SignOutButton";
@@ -14,6 +15,11 @@ export default async function AccountSettingsPage() {
   const {
     data: { user },
   } = await supabase.auth.getUser();
+  // Every other authed page guards instead of asserting. Without it a
+  // session that's gone by the time this renders — expired, signed out in
+  // another tab, or the account itself deleted — turns the proxy's clean
+  // redirect to /login into a 500 on `user!.id`.
+  if (!user) notFound();
   const dict = getDictionary(await getLocale());
 
   // Show the username when one is set (e.g. "admin") — its email is a
@@ -22,7 +28,7 @@ export default async function AccountSettingsPage() {
   const { data: profile } = await supabase
     .from("profiles")
     .select("username")
-    .eq("id", user!.id)
+    .eq("id", user.id)
     .single();
   const loginIdentifier = profile?.username ?? user?.email;
 

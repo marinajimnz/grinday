@@ -28,9 +28,12 @@ test("dashboard shows the active coffee and stats aggregate once there's enough 
   void testUser;
   const name = `Stats Coffee ${Date.now()}`;
 
-  await page.goto("/settings/machines");
-  await page.getByRole("button", { name: "Usar como predeterminada" }).click();
-  await expect(page.getByText("Predeterminada")).toBeVisible();
+  // No equipment setup here on purpose: /attempts/new asks for a bag, not a
+  // machine (brew_attempts.machine_id became optional in 0019), so a brand-new
+  // account can log one straight away. This used to open with a "pick a
+  // default machine" step against a /settings/machines that offered a
+  // catalogue of models; the 0020 equipment rework replaced that page with
+  // grinder/method cards, and the step had been failing ever since.
 
   await createCoffeeComplete(page, { name, roaster: "E2E Stats Roaster", country: "Colombia" });
   await expect(page).toHaveURL(/\/coffees\/[0-9a-f-]+$/);
@@ -48,10 +51,15 @@ test("dashboard shows the active coffee and stats aggregate once there's enough 
   await logRatedAttempt(page, bagId, "5");
   await logRatedAttempt(page, bagId, "3");
 
-  // Dashboard: this coffee is now "el café activo" (most recent attempt).
+  // Dashboard: all three attempts show up under "Preparaciones recientes",
+  // newest first. This used to assert a single "café activo" card with
+  // "Último intento: #3"; that card is gone — the dashboard lists the recent
+  // attempts instead, so the coffee's name now appears once per row and the
+  // old single-element locator was matching three.
   await page.goto("/");
-  await expect(page.getByRole("link", { name })).toBeVisible();
-  await expect(page.getByText("Último intento: #3")).toBeVisible();
+  const recentRows = page.getByRole("link", { name: new RegExp(name) });
+  await expect(recentRows).toHaveCount(3);
+  await expect(recentRows.first()).toBeVisible();
 
   // Stats: 3 rated attempts clears the threshold. The page-level empty
   // state is gone (this test only fills country and roaster, so the

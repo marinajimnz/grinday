@@ -47,17 +47,25 @@ export const test = base.extend<{ testUser: { email: string; password: string } 
     });
     if (error) throw error;
 
-    // A long sequential run (many tests, each creating + signing in its own
-    // account) occasionally outpaces Supabase Auth under load — same known
-    // class of flakiness as the old anonymous-sign-in rate limiting, just
-    // hitting a different endpoint now. Retrying the whole attempt clears it.
+    // Signing in is the first click of every single test, and under `next
+    // dev` the login form is interactive-looking well before hydration
+    // attaches its submit handler — a click that passes every actionability
+    // check can land on nothing at all, leaving the form sitting there with
+    // no error to report.
+    //
+    // The goto stays outside the retry on purpose. Re-navigating threw away
+    // whatever hydration progress the page had made, so every attempt raced
+    // from scratch and a slow-to-hydrate page could lose all of them; keeping
+    // one page and retrying only fill-then-submit lets each attempt start
+    // closer to hydrated than the last. Supabase Auth itself has also been
+    // seen to hiccup under a long run, and the same retry covers that.
+    await page.goto("/login");
     await expect(async () => {
-      await page.goto("/login");
       await page.getByLabel("Usuario o email").fill(email);
       await page.getByLabel("Contraseña").fill(password);
       await page.getByRole("button", { name: "Iniciar sesión" }).click();
       await expect(page).toHaveURL("/", { timeout: 8000 });
-    }).toPass({ intervals: [1000, 2000, 4000], timeout: 30000 });
+    }).toPass({ intervals: [500, 1000, 2000], timeout: 40000 });
 
     // Playwright's fixture callback, not a React hook — the rule matches on
     // the `use` name alone and can't tell the two apart.

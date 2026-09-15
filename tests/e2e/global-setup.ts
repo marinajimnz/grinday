@@ -5,14 +5,16 @@ import { randomUUID } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 
-// `next dev` compiles each route lazily on its first request. A server
-// Playwright just started (webServer, cold) hasn't compiled anything yet —
-// the very first real interaction on a route can land mid-compile, and
-// we've seen that manifest as an uncontrolled input losing the value a test
-// just filled (something racing the test's own actions while the biggest
-// pages — the coffee/attempt detail views, which pull in most of that
-// component tree — compile for the first time). A pre-warmed server (a few
-// seconds old, or already running) doesn't hit this.
+// `next dev` compiles each route lazily on its first request, and the very
+// first real interaction on a route could land mid-compile — we've seen that
+// manifest as an uncontrolled input losing the value a test just filled.
+// Walking every route once, logged in, gets that cost out of the way before
+// any test starts.
+//
+// The suite runs against a production build now (see playwright.config.ts),
+// where routes are compiled ahead of time and none of this applies. This
+// stays for the one case that still hits it: playwright.config's
+// reuseExistingServer picking up a `next dev` you already had running.
 //
 // The protected routes redirect to /login for an anonymous request, so a
 // plain fetch() never actually reaches (and so never compiles) them — this

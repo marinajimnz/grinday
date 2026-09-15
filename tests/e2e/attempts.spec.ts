@@ -8,10 +8,12 @@ test("logs an attempt, marks it preferred, duplicates it, and compares both", as
   void testUser;
   const name = `Attempt Coffee ${Date.now()}`;
 
-  // Fresh guest session: pick a default machine first (Fase 0 onboarding step).
-  await page.goto("/settings/machines");
-  await page.getByRole("button", { name: "Usar como predeterminada" }).click();
-  await expect(page.getByText("Predeterminada")).toBeVisible();
+  // No equipment setup here on purpose: /attempts/new asks for a bag, not a
+  // machine (brew_attempts.machine_id became optional in 0019), so a brand-new
+  // account can log one straight away. This used to open with a "pick a
+  // default machine" step against a /settings/machines that offered a
+  // catalogue of models; the 0020 equipment rework replaced that page with
+  // grinder/method cards, and the step had been failing ever since.
 
   await createCoffeeBasic(page, { name });
   await expect(page).toHaveURL(/\/coffees\/[0-9a-f-]+$/);
