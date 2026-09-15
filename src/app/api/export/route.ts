@@ -26,15 +26,12 @@ export async function GET(request: Request) {
     return NextResponse.json({ message: "No autenticado" }, { status: 401 });
   }
 
-  // coffees/brew_attempts got a public-read RLS policy in Fase 8 (public
-  // profiles) — RLS alone no longer scopes these to just the calling user,
-  // so this export needs its own explicit filter. coffee_bags stayed
-  // owner-only, but filtering it too costs nothing and removes any future
-  // reliance on that staying true.
+  // RLS scopes every one of these to the calling user automatically — no
+  // explicit .eq("user_id", ...) needed, same guarantee as everywhere else.
   const [{ data: coffees }, { data: bags }, { data: attempts }] = await Promise.all([
-    supabase.from("coffees").select("*").eq("user_id", user.id).order("created_at"),
-    supabase.from("coffee_bags").select("*").eq("user_id", user.id).order("created_at"),
-    supabase.from("brew_attempts").select("*").eq("user_id", user.id).order("created_at"),
+    supabase.from("coffees").select("*").order("created_at"),
+    supabase.from("coffee_bags").select("*").order("created_at"),
+    supabase.from("brew_attempts").select("*").order("created_at"),
   ]);
 
   const format = new URL(request.url).searchParams.get("format") === "csv" ? "csv" : "json";

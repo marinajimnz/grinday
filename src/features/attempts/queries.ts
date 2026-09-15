@@ -8,18 +8,17 @@ type Client = SupabaseClient<Database>;
 export type BrewAttemptRow = Database["public"]["Tables"]["brew_attempts"]["Row"];
 export type AttemptMediaRow = Database["public"]["Tables"]["attempt_media"]["Row"];
 
-export async function listAttemptsForCoffee(supabase: Client, coffeeId: string, userId: string) {
+export async function listAttemptsForCoffee(supabase: Client, coffeeId: string) {
   const { data, error } = await supabase
     .from("brew_attempts")
     .select("*")
     .eq("coffee_id", coffeeId)
-    .eq("user_id", userId)
     .order("attempt_no", { ascending: false });
   if (error) throw error;
   return data ?? [];
 }
 
-export async function getAttempt(supabase: Client, attemptId: string, userId: string) {
+export async function getAttempt(supabase: Client, attemptId: string) {
   const { data, error } = await supabase
     .from("brew_attempts")
     // Disambiguate: coffees<->brew_attempts has two FKs (coffee_id, and
@@ -27,29 +26,23 @@ export async function getAttempt(supabase: Client, attemptId: string, userId: st
     // unless we name the constraint to use.
     .select("*, coffee:coffees!brew_attempts_coffee_id_fkey(id, name, roaster, preferred_attempt_id)")
     .eq("id", attemptId)
-    .eq("user_id", userId)
     .maybeSingle();
   if (error) throw error;
   return data;
 }
 
-export async function getAttemptsByIds(supabase: Client, ids: string[], userId: string) {
+export async function getAttemptsByIds(supabase: Client, ids: string[]) {
   if (!ids.length) return [];
-  const { data, error } = await supabase
-    .from("brew_attempts")
-    .select("*")
-    .in("id", ids)
-    .eq("user_id", userId);
+  const { data, error } = await supabase.from("brew_attempts").select("*").in("id", ids);
   if (error) throw error;
   const byId = new Map(data?.map((a) => [a.id, a]) ?? []);
   return ids.map((id) => byId.get(id)).filter((a): a is BrewAttemptRow => Boolean(a));
 }
 
-export async function getUserDefaultMachine(supabase: Client, userId: string) {
+export async function getUserDefaultMachine(supabase: Client) {
   const { data, error } = await supabase
     .from("user_machines")
     .select("*, machine_model:machine_models(*)")
-    .eq("user_id", userId)
     .eq("is_default", true)
     .maybeSingle();
   if (error) throw error;
@@ -91,14 +84,12 @@ export async function getLastAttemptForCoffeeAndMethod(
   supabase: Client,
   coffeeId: string,
   method: string,
-  userId: string,
 ) {
   const { data, error } = await supabase
     .from("brew_attempts")
     .select(RECIPE_SOURCE_ATTEMPT_FIELDS)
     .eq("coffee_id", coffeeId)
     .eq("method", method)
-    .eq("user_id", userId)
     .order("created_at", { ascending: false })
     .limit(1)
     .maybeSingle();
@@ -109,11 +100,10 @@ export async function getLastAttemptForCoffeeAndMethod(
 // Coffees the user can start a brew for: at least one bag that isn't
 // finished/archived, picking the most relevant one (open, else sealed, else
 // most recent) the same way the coffee detail page does.
-export async function listBrewableCoffees(supabase: Client, userId: string): Promise<BrewableCoffee[]> {
+export async function listBrewableCoffees(supabase: Client): Promise<BrewableCoffee[]> {
   const { data: coffees, error } = await supabase
     .from("coffees")
     .select("id, name, roaster, preferred_attempt_id")
-    .eq("user_id", userId)
     .is("archived_at", null)
     .order("updated_at", { ascending: false });
   if (error) throw error;
@@ -131,11 +121,7 @@ export async function listBrewableCoffees(supabase: Client, userId: string): Pro
 
   const preferredIds = coffees.map((c) => c.preferred_attempt_id).filter((id): id is string => Boolean(id));
   const { data: preferredAttempts } = preferredIds.length
-    ? await supabase
-        .from("brew_attempts")
-        .select(PREFERRED_ATTEMPT_RECIPE_FIELDS)
-        .in("id", preferredIds)
-        .eq("user_id", userId)
+    ? await supabase.from("brew_attempts").select(PREFERRED_ATTEMPT_RECIPE_FIELDS).in("id", preferredIds)
     : { data: [] };
   const preferredById = new Map((preferredAttempts ?? []).map((a) => [a.id, a]));
 

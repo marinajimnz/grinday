@@ -102,7 +102,6 @@ export function BrewLiveScreen({ draftId }: { draftId: string }) {
       const result = await createAttemptAction({
         coffeeBagId: draft.coffeeBagId,
         parentAttemptId: draft.parentAttemptId,
-        clonedFromAttemptId: draft.clonedFromAttemptId,
         // The draft's own id doubles as the idempotency key: a retried save
         // (this listener, or the manual button) can never create a
         // duplicate attempt — see createAttemptAction.

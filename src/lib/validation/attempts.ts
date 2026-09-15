@@ -88,7 +88,6 @@ export const attemptFieldsSchema = z.object({
 export const createAttemptSchema = z.object({
   coffeeBagId: z.uuid(),
   parentAttemptId: z.uuid().optional(),
-  clonedFromAttemptId: z.uuid().optional(),
   // The brew draft's own draftId, reused as an idempotency key so retrying a
   // save (manual "Reintentar" or auto-retry on reconnect) can never insert
   // the same attempt twice.

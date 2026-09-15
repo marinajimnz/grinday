@@ -89,7 +89,6 @@ export type Database = {
           basket_wall: string | null
           bitterness: number | null
           body: number | null
-          cloned_from_attempt_id: string | null
           coffee_bag_id: string
           coffee_id: string
           created_at: string
@@ -144,7 +143,6 @@ export type Database = {
           basket_wall?: string | null
           bitterness?: number | null
           body?: number | null
-          cloned_from_attempt_id?: string | null
           coffee_bag_id: string
           coffee_id: string
           created_at?: string
@@ -199,7 +197,6 @@ export type Database = {
           basket_wall?: string | null
           bitterness?: number | null
           body?: number | null
-          cloned_from_attempt_id?: string | null
           coffee_bag_id?: string
           coffee_id?: string
           created_at?: string
@@ -247,13 +244,6 @@ export type Database = {
           would_brew_again?: boolean | null
         }
         Relationships: [
-          {
-            foreignKeyName: "brew_attempts_cloned_from_attempt_id_fkey"
-            columns: ["cloned_from_attempt_id"]
-            isOneToOne: false
-            referencedRelation: "brew_attempts"
-            referencedColumns: ["id"]
-          },
           {
             foreignKeyName: "brew_attempts_coffee_bag_id_fkey"
             columns: ["coffee_bag_id"]
@@ -475,24 +465,6 @@ export type Database = {
           },
         ]
       }
-      follows: {
-        Row: {
-          created_at: string
-          followee_id: string
-          follower_id: string
-        }
-        Insert: {
-          created_at?: string
-          followee_id: string
-          follower_id: string
-        }
-        Update: {
-          created_at?: string
-          followee_id?: string
-          follower_id?: string
-        }
-        Relationships: []
-      }
       inventory_events: {
         Row: {
           attempt_id: string | null
@@ -576,8 +548,6 @@ export type Database = {
       }
       profiles: {
         Row: {
-          avatar_url: string | null
-          bio: string | null
           created_at: string
           default_machine_id: string | null
           display_name: string | null
@@ -587,11 +557,9 @@ export type Database = {
           locale: string
           role: string
           updated_at: string
-          username: string
+          username: string | null
         }
         Insert: {
-          avatar_url?: string | null
-          bio?: string | null
           created_at?: string
           default_machine_id?: string | null
           display_name?: string | null
@@ -601,11 +569,9 @@ export type Database = {
           locale?: string
           role?: string
           updated_at?: string
-          username: string
+          username?: string | null
         }
         Update: {
-          avatar_url?: string | null
-          bio?: string | null
           created_at?: string
           default_machine_id?: string | null
           display_name?: string | null
@@ -615,7 +581,7 @@ export type Database = {
           locale?: string
           role?: string
           updated_at?: string
-          username?: string
+          username?: string | null
         }
         Relationships: [
           {

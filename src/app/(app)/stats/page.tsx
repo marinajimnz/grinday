@@ -1,5 +1,4 @@
 import { SquareChartGantt } from "lucide-react";
-import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { IconFavorita } from "@/components/icons/pencil-icons";
 import {
@@ -28,16 +27,12 @@ export default async function StatsPage({
   const range = { from, to };
 
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) notFound();
   const dict = getDictionary(await getLocale());
   const DIMENSION_CONFIG = getDimensionConfig(dict);
 
   const [totalRated, topCoffees, methodStats, dimensionResults, frequentNotes, extractionDist, grindDist] =
     await Promise.all([
-      getTotalRatedAttempts(supabase, user.id, range),
+      getTotalRatedAttempts(supabase, range),
       getTopCoffees(supabase, range),
       getStatsByMethod(supabase, range),
       Promise.all(DIMENSION_CONFIG.map((d) => getStatsByDimension(supabase, d.key, range))),

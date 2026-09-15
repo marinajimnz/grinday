@@ -23,13 +23,11 @@ export type CoffeeLibraryFilters = {
 
 export async function listCoffees(
   supabase: Client,
-  userId: string,
   filters: CoffeeLibraryFilters = {},
 ): Promise<CoffeeListItem[]> {
   let query = supabase
     .from("coffees")
     .select("*")
-    .eq("user_id", userId)
     .is("archived_at", null)
     .order("updated_at", { ascending: false });
 
@@ -111,12 +109,11 @@ export async function listCoffees(
   return items;
 }
 
-export async function getCoffeeWithBags(supabase: Client, coffeeId: string, userId: string) {
+export async function getCoffeeWithBags(supabase: Client, coffeeId: string) {
   const { data: coffee, error } = await supabase
     .from("coffees")
     .select("*")
     .eq("id", coffeeId)
-    .eq("user_id", userId)
     .maybeSingle();
   if (error) throw error;
   if (!coffee) return null;
@@ -159,12 +156,10 @@ export async function findSimilarCoffee(
   supabase: Client,
   name: string,
   roaster: string,
-  userId: string,
 ) {
   const { data, error } = await supabase
     .from("coffees")
     .select("id, name, roaster")
-    .eq("user_id", userId)
     .ilike("name", name.trim())
     .ilike("roaster", roaster.trim())
     .is("archived_at", null)

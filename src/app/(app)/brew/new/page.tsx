@@ -1,5 +1,4 @@
 import { Coffee } from "lucide-react";
-import { notFound } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { createClient } from "@/lib/supabase/server";
 import { listBrewableCoffees } from "@/features/attempts/queries";
@@ -13,15 +12,11 @@ import { getDictionary } from "@/lib/i18n/get-dictionary";
 
 export default async function BrewNewPage() {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) notFound();
   const dict = getDictionary(await getLocale());
 
   const [coffees, equipment] = await Promise.all([
-    listBrewableCoffees(supabase, user.id),
-    getUserBrewEquipment(supabase, user.id),
+    listBrewableCoffees(supabase),
+    getUserBrewEquipment(supabase),
   ]);
 
   const availableMethods: BrewMethod[] = BREW_METHODS.filter((method) =>

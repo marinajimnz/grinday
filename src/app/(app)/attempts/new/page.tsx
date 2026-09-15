@@ -16,10 +16,6 @@ export default async function NewAttemptPage({
   if (!coffeeBagId) notFound();
 
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) notFound();
   const dict = getDictionary(await getLocale());
 
   const { data: bag } = await supabase
@@ -29,7 +25,7 @@ export default async function NewAttemptPage({
     .maybeSingle();
   if (!bag) notFound();
 
-  const parentAttempt = duplicateFrom ? await getAttempt(supabase, duplicateFrom, user.id) : null;
+  const parentAttempt = duplicateFrom ? await getAttempt(supabase, duplicateFrom) : null;
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-8 md:px-8">

@@ -24,12 +24,7 @@ export default async function CoffeesPage({
     typeof params.bagStatus === "string" ? params.bagStatus : undefined;
 
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  const coffees = user
-    ? await listCoffees(supabase, user.id, { q, process, roastLevel, bagStatus })
-    : [];
+  const coffees = await listCoffees(supabase, { q, process, roastLevel, bagStatus });
   const hasFilters = Boolean(q || process || roastLevel || bagStatus);
   const dict = getDictionary(await getLocale());
 

@@ -75,7 +75,7 @@ export async function createAttemptAction(
   if (!parsed.success) {
     return { success: false, message: parsed.error.issues[0]?.message ?? "Datos inválidos" };
   }
-  const { coffeeBagId, parentAttemptId, clonedFromAttemptId, idempotencyKey, attempt } = parsed.data;
+  const { coffeeBagId, parentAttemptId, idempotencyKey, attempt } = parsed.data;
 
   const supabase = await createClient();
   const {
@@ -110,7 +110,7 @@ export async function createAttemptAction(
   // ever visiting Ajustes → Máquinas. When there is one, its capabilities and
   // current settings are snapshotted onto the attempt; without one the
   // snapshot just stays empty.
-  const machine = await getUserDefaultMachine(supabase, user.id);
+  const machine = await getUserDefaultMachine(supabase);
   const machineSnapshot: Json = machine
     ? {
         machine_model_slug: machine.machine_model?.slug ?? null,
@@ -135,7 +135,6 @@ export async function createAttemptAction(
       coffee_bag_id: bag.id,
       machine_id: machine?.id ?? null,
       parent_attempt_id: parentAttemptId ?? null,
-      cloned_from_attempt_id: clonedFromAttemptId ?? null,
       idempotency_key: idempotencyKey ?? null,
       machine_snapshot: machineSnapshot,
       equipment_snapshot: equipmentSnapshot,

@@ -11,7 +11,6 @@ import {
 } from "@/components/ui/BottomNavVisibility";
 import {
   IconAjustes,
-  IconBuscar,
   IconCafe,
   IconEstadisticas,
   IconInicio,
@@ -22,7 +21,6 @@ function navItems(dict: Dictionary) {
   return [
     { href: "/", label: dict.nav.home, icon: IconInicio },
     { href: "/coffees", label: dict.nav.coffees, icon: IconCafe },
-    { href: "/search", label: dict.nav.search, icon: IconBuscar },
     { href: "/brew/new", label: dict.nav.brew, icon: IconPreparar },
     { href: "/stats", label: dict.nav.stats, icon: IconEstadisticas },
     { href: "/settings", label: dict.nav.settings, icon: IconAjustes },

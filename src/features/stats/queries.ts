@@ -15,11 +15,10 @@ export type BucketStatRow = { bucket: number; count: number };
 
 export type StatsDimension = "country" | "process" | "roast_level" | "roaster";
 
-export async function getTotalRatedAttempts(supabase: Client, userId: string, range: StatsDateRange) {
+export async function getTotalRatedAttempts(supabase: Client, range: StatsDateRange) {
   let query = supabase
     .from("brew_attempts")
     .select("id", { count: "exact", head: true })
-    .eq("user_id", userId)
     .not("overall_rating", "is", null);
   if (range.from) query = query.gte("created_at", range.from);
   if (range.to) query = query.lte("created_at", range.to);
