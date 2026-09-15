@@ -6,12 +6,9 @@ export default defineConfig({
   retries: process.env.CI ? 2 : 0,
   reporter: "html",
   globalSetup: "./tests/e2e/global-setup.ts",
-  // `next dev` compiles each route on its first request — the first test to
-  // hit a heavy, not-yet-compiled route (e.g. the coffee detail page, whose
-  // import graph pulls in most of the coffees/attempts UI) can take longer
-  // than the 5s default to respond. Later tests hit the same route already
-  // compiled and are fast; only the very first request per route pays this
-  // cost, and it doesn't exist at all against a production build.
+  // Generous, but the suite runs against a production build now (see
+  // webServer) so nothing should actually need it — it's headroom for a slow
+  // machine, not for a server still compiling the page under test.
   expect: { timeout: 15_000 },
   use: {
     baseURL: "http://localhost:3000",
@@ -27,10 +24,22 @@ export default defineConfig({
       use: { ...devices["Desktop Chrome"], viewport: { width: 1440, height: 900 } },
     },
   ],
+  // Built and served for real, not `next dev`. Under dev, Next compiles each
+  // route lazily on its first request and hydrates far more slowly, and the
+  // suite paid for both: routes timing out mid-compile, the server dropping
+  // requests outright under parallel load (net::ERR_ABORTED, "destination
+  // stream closed early"), and clicks landing on markup that looked
+  // interactive but had no React handler attached yet. The same 34 tests went
+  // from 12 failures in 6.7 min against `next dev` to green in 42 s here, on
+  // an 18-second build.
+  //
+  // reuseExistingServer means a `next dev` you already have running is used
+  // instead — convenient while writing a spec, but that's the flaky
+  // configuration, so judge a run by a clean one.
   webServer: {
-    command: "npm run dev",
+    command: "npm run build && npm run start",
     url: "http://localhost:3000",
     reuseExistingServer: !process.env.CI,
-    timeout: 60_000,
+    timeout: 180_000,
   },
 });

@@ -24,7 +24,11 @@ test("navigates to settings and machines", async ({ page, testUser }) => {
   await page.goto("/settings");
   await page.getByRole("link", { name: "Máquinas" }).click();
   await expect(page).toHaveURL(/\/settings\/machines/);
-  await expect(
-    page.getByText("Barista Express Impress"),
-  ).toBeVisible();
+
+  // A brand-new account owns no equipment, so what proves the page rendered
+  // is its empty state, not a model name. It used to assert "Barista Express
+  // Impress" — a row from the machine catalogue that page listed before the
+  // 0020 equipment rework replaced it with the grinder and method cards.
+  await expect(page.getByText("Molinillo", { exact: true })).toBeVisible();
+  await expect(page.getByText("Aún no has añadido ninguna máquina")).toBeVisible();
 });

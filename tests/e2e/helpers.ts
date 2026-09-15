@@ -1,24 +1,38 @@
-import { expect, type Page } from "@playwright/test";
+import { expect, type Locator, type Page } from "@playwright/test";
 
 // The "new coffee" page is a multi-step wizard: pick Básico/Completo, then
 // step through "El café" and "La bolsa". These helpers drive it the same
 // way a user would, so specs don't each re-encode the step sequence.
 
-// Picking a mode is the first click after a fresh navigation, and it lands
-// on a button whose only behaviour is a React onClick. Under `next dev` the
-// markup is interactive-looking well before hydration attaches that
-// handler, so a click that passes every actionability check can still do
-// nothing at all — and since the page never changes, the next step's field
-// times out instead of the click reporting a failure. Warming the route
-// (see global-setup) fixes the compile cost, not this.
+// The first click after a fresh navigation lands on a button whose only
+// behaviour is a React onClick. Under `next dev` the markup is
+// interactive-looking well before hydration attaches that handler, so a
+// click that passes every actionability check can still do nothing at all —
+// and since nothing on the page changes, it's the *next* step that times
+// out, with the click itself reporting success. Warming the route (see
+// global-setup) fixes the compile cost, not this.
 //
-// Retrying the whole click-then-confirm pair rides it out: once hydrated,
-// the first attempt sticks. Same approach as the login retry in fixtures.ts.
-async function selectWizardMode(page: Page, mode: "Básico" | "Completo") {
+// Retrying the click-then-confirm pair rides it out: once hydrated, an
+// attempt sticks. `confirm` has to describe what the click should have
+// achieved, since that's the only evidence the handler ran. Same approach as
+// the login retry in fixtures.ts.
+//
+// The isEnabled guard is what makes a retry safe on a button that disables
+// itself while working: without it, a second attempt would sit waiting on a
+// disabled button for an action that had in fact landed.
+export async function clickUntilHydrated(target: Locator, confirm: () => Promise<void>) {
   await expect(async () => {
-    await page.getByRole("button", { name: mode }).click();
-    await expect(page.getByLabel("Nombre")).toBeVisible({ timeout: 2000 });
+    if (await target.isEnabled().catch(() => false)) {
+      await target.click({ timeout: 2000 });
+    }
+    await confirm();
   }).toPass({ intervals: [500, 1000, 2000], timeout: 30000 });
+}
+
+async function selectWizardMode(page: Page, mode: "Básico" | "Completo") {
+  await clickUntilHydrated(page.getByRole("button", { name: mode }), async () => {
+    await expect(page.getByLabel("Nombre")).toBeVisible({ timeout: 2000 });
+  });
 }
 
 export async function createCoffeeBasic(
