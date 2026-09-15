@@ -1,11 +1,12 @@
 import { useDictionary } from "@/components/i18n/LocaleProvider";
 
 // Shared step header for the whole "Preparar" journey — method + coffee
-// pick in /brew/new, then recipe/timer/result in /brew/live/[draftId] — so
-// the progress bar reads as one continuous 5-step flow across both routes.
+// pick in /brew/new, then recipe/timer/photo/result in /brew/live/[draftId]
+// — so the progress bar reads as one continuous 6-step flow across both
+// routes.
 export function BrewStepHeader({
   step,
-  total = 5,
+  total = 6,
   title,
 }: {
   step: number;

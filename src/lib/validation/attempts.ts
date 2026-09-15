@@ -93,6 +93,17 @@ export const createAttemptSchema = z.object({
   // the same attempt twice.
   idempotencyKey: z.uuid().optional(),
   attempt: attemptFieldsSchema,
+  // Photos taken at the photo step, before the coffee was tasted: already
+  // uploaded to Storage under the draft's folder, waiting for an attempt id
+  // to belong to. Registered as attempt_media by createAttemptAction.
+  media: z
+    .array(
+      z.object({
+        kind: z.enum(ATTEMPT_MEDIA_KINDS).default("espresso"),
+        storagePath: z.string().min(1),
+      }),
+    )
+    .optional(),
 });
 
 export const updateAttemptSchema = z.object({

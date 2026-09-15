@@ -4,6 +4,7 @@
 // lost" true — nothing here ever depends on a network round trip.
 
 import type { BrewMethod } from "@/features/equipment/constants";
+import type { AttemptMediaKind } from "@/features/attempts/constants";
 import { getRecipeFieldConfig } from "@/features/brew/recipeFieldConfig";
 
 export type BrewDraftRecipe = {
@@ -60,6 +61,15 @@ export type BrewDraftPostShot = {
   outputVolumeMl?: number;
 };
 
+// A photo taken during the photo step — already uploaded to Storage (under
+// the draft's own folder, since there's no attempt id to file it under yet),
+// so only the path travels in the draft. It becomes an attempt_media row the
+// moment the attempt is created.
+export type BrewDraftPhoto = {
+  kind: AttemptMediaKind;
+  storagePath: string;
+};
+
 export type BrewDraft = {
   draftId: string;
   // Who this draft belongs to — lets the dashboard's resume banner ignore
@@ -76,6 +86,15 @@ export type BrewDraft = {
   startedAtEpochMs: number | null;
   stoppedAtEpochMs: number | null;
   extractionMs: number | null;
+  // Photos of the coffee, taken right after the timer stops and before it's
+  // tasted — that's the only moment the crema/pour still looks like it did
+  // when it came out of the machine, so the photo step comes before the
+  // result step, not after it.
+  photos?: BrewDraftPhoto[];
+  // Whether the photo step has been passed (with or without a photo). The
+  // result step is only reachable once it has, so a reload mid-brew comes
+  // back to the same step instead of skipping straight to the rating.
+  photoStepDone?: boolean;
   postShot: BrewDraftPostShot;
   createdAt: number;
   // How many times the user has re-entered this draft after already reaching
@@ -91,9 +110,10 @@ function key(draftId: string) {
   return `${KEY_PREFIX}${draftId}`;
 }
 
-// Only a draft left behind AT the result step (stoppedAtEpochMs set) counts
-// as resumable — leaving mid-recipe or mid-timer means the shot never
-// actually happened, so there's nothing worth offering to continue.
+// Only a draft left behind after the timer stopped (stoppedAtEpochMs set —
+// i.e. at the photo or the result step) counts as resumable; leaving
+// mid-recipe or mid-timer means the shot never actually happened, so
+// there's nothing worth offering to continue.
 // Autosaved on every change either way, but this filter is what keeps a
 // still-in-progress recipe/timer draft from ever surfacing on the
 // dashboard. Scoped to the current user — localStorage is shared by the
@@ -239,6 +259,8 @@ export function buildDraftFromRecipe(params: {
     startedAtEpochMs: null,
     stoppedAtEpochMs: null,
     extractionMs: null,
+    photos: [],
+    photoStepDone: false,
     postShot: {},
     createdAt: Date.now(),
   };

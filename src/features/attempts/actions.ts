@@ -68,6 +68,48 @@ function toAttemptRow(
   };
 }
 
+// Attaches the brew-time photos (already uploaded to Storage during the
+// photo step) to the attempt they were taken for. Skips any storage path
+// that's already registered, so a retried save — which lands on the
+// idempotent-replay path below and finds the attempt already there —
+// neither loses the photos nor duplicates them.
+async function attachBrewPhotos(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  userId: string,
+  attemptId: string,
+  media: NonNullable<z.infer<typeof createAttemptSchema>["media"]>,
+) {
+  if (!media.length) return;
+
+  const { data: existing, error: readError } = await supabase
+    .from("attempt_media")
+    .select("storage_path")
+    .eq("attempt_id", attemptId);
+  if (readError) {
+    console.error("[attempt-media] failed to read existing photos:", readError.message);
+    return;
+  }
+
+  const alreadyRegistered = new Set((existing ?? []).map((m) => m.storage_path));
+  const rows = media
+    .filter((m) => !alreadyRegistered.has(m.storagePath))
+    .map((m) => ({
+      attempt_id: attemptId,
+      user_id: userId,
+      kind: m.kind,
+      storage_path: m.storagePath,
+    }));
+  if (!rows.length) return;
+
+  // A photo that fails to register isn't worth failing the save over — the
+  // shot itself is the thing the user can't recreate, and the file is still
+  // in Storage. Same reasoning as the inventory event below.
+  const { error } = await supabase.from("attempt_media").insert(rows);
+  if (error) {
+    console.error("[attempt-media] failed to attach brew photos:", error.message);
+  }
+}
+
 export async function createAttemptAction(
   rawInput: unknown,
 ): Promise<ActionResult<{ attemptId: string }>> {
@@ -75,7 +117,7 @@ export async function createAttemptAction(
   if (!parsed.success) {
     return { success: false, message: parsed.error.issues[0]?.message ?? "Datos inválidos" };
   }
-  const { coffeeBagId, parentAttemptId, idempotencyKey, attempt } = parsed.data;
+  const { coffeeBagId, parentAttemptId, idempotencyKey, attempt, media } = parsed.data;
 
   const supabase = await createClient();
   const {
@@ -95,7 +137,10 @@ export async function createAttemptAction(
       .eq("user_id", user.id)
       .eq("idempotency_key", idempotencyKey)
       .maybeSingle();
-    if (existing) return { success: true, data: { attemptId: existing.id } };
+    if (existing) {
+      await attachBrewPhotos(supabase, user.id, existing.id, media ?? []);
+      return { success: true, data: { attemptId: existing.id } };
+    }
   }
 
   const { data: bag, error: bagError } = await supabase
@@ -151,10 +196,15 @@ export async function createAttemptAction(
         .eq("user_id", user.id)
         .eq("idempotency_key", idempotencyKey)
         .maybeSingle();
-      if (existing) return { success: true, data: { attemptId: existing.id } };
+      if (existing) {
+        await attachBrewPhotos(supabase, user.id, existing.id, media ?? []);
+        return { success: true, data: { attemptId: existing.id } };
+      }
     }
     return { success: false, message: error.message };
   }
+
+  await attachBrewPhotos(supabase, user.id, inserted.id, media ?? []);
 
   // Fase 5: consumo estimado al guardar el intento, cuando aplica —
   // aproximado por shots siempre resta una dosis estimada; en modo gramos

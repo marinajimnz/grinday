@@ -14,12 +14,18 @@ export function PhotoUploader<K extends string>({
   defaultKind,
   buildPath,
   onRegister,
+  // The brew flow's photo step keeps its uploaded photos in the local draft
+  // rather than in a server-rendered list, so there's nothing on the server
+  // to re-fetch after an upload — only callers backed by a Server Component
+  // gallery need the refresh.
+  refreshOnUpload = true,
 }: {
   kinds: readonly K[];
   kindLabels: Record<K, string>;
   defaultKind: K;
   buildPath: (userId: string) => string;
   onRegister: (kind: K, storagePath: string) => Promise<{ success: boolean; message?: string }>;
+  refreshOnUpload?: boolean;
 }) {
   const router = useRouter();
   const dict = useDictionary();
@@ -49,7 +55,7 @@ export function PhotoUploader<K extends string>({
       const result = await onRegister(kind, path);
       if (!result.success) throw new Error(result.message);
 
-      router.refresh();
+      if (refreshOnUpload) router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : dict.ui.uploadFailed);
     } finally {

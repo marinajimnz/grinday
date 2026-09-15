@@ -7,12 +7,14 @@ import { IconFavorita } from "@/components/icons/pencil-icons";
 import { BrewStepHeader } from "./BrewStepHeader";
 import { TimerStage } from "./TimerStage";
 import { RecipeFields } from "./RecipeFields";
+import { BrewPhotoStage } from "./BrewPhotoStage";
 import { BrewResultFields } from "./BrewResultFields";
 import {
   clearDraft,
   loadDraft,
   saveDraft,
   type BrewDraft,
+  type BrewDraftPhoto,
   type BrewDraftPostShot,
   type BrewDraftRecipe,
 } from "@/features/brew/draft";
@@ -35,8 +37,9 @@ export function BrewLiveScreen({ draftId }: { draftId: string }) {
   const [pendingSync, setPendingSync] = useState(false);
 
   // Only the timer step risks losing something on an accidental exit — the
-  // recipe step has nothing running yet, and the result step already has
-  // its own leave-and-decide-later flow (see the dashboard's draft banner).
+  // recipe step has nothing running yet, and the photo and result steps
+  // already have their own leave-and-decide-later flow (see the dashboard's
+  // draft banner).
   const isTimerStep = showTimer && draft != null && draft.stoppedAtEpochMs === null;
   const leaveGuard = useConfirmBeforeLeaving(isTimerStep);
 
@@ -44,12 +47,20 @@ export function BrewLiveScreen({ draftId }: { draftId: string }) {
     // localStorage doesn't exist during SSR, so this can only run client-side
     // after mount — there's no way to derive this as render-time state.
     let loaded = loadDraft(draftId);
-    // Finding the result step already reached on a fresh mount means the
-    // user is re-entering it — via the dashboard's "Continuar", a direct
-    // link, or a reload — rather than arriving at it for the first time in
-    // this session. Bump resumeCount so that if it's left again, the
-    // dashboard prompts to keep-or-discard instead of just offering to
-    // resume silently a second time.
+    // A draft written before the photo step existed has no `photos` key at
+    // all. If it's already past the timer, its coffee was brewed (and by now
+    // drunk) long before there was anything to photograph — send it straight
+    // to the result step instead of asking for a photo that can't be taken
+    // anymore.
+    if (loaded && loaded.photos === undefined && loaded.stoppedAtEpochMs !== null) {
+      loaded = { ...loaded, photos: [], photoStepDone: true };
+    }
+    // Finding the timer already stopped on a fresh mount means the user is
+    // re-entering the photo or result step — via the dashboard's
+    // "Continuar", a direct link, or a reload — rather than arriving there
+    // for the first time in this session. Bump resumeCount so that if it's
+    // left again, the dashboard prompts to keep-or-discard instead of just
+    // offering to resume silently a second time.
     if (loaded && loaded.stoppedAtEpochMs !== null) {
       loaded = { ...loaded, resumeCount: (loaded.resumeCount ?? 0) + 1 };
       saveDraft(loaded);
@@ -74,6 +85,11 @@ export function BrewLiveScreen({ draftId }: { draftId: string }) {
   function updatePostShot(postShot: BrewDraftPostShot) {
     if (!draft) return;
     persist({ ...draft, postShot });
+  }
+
+  function updatePhotos(photos: BrewDraftPhoto[]) {
+    if (!draft) return;
+    persist({ ...draft, photos });
   }
 
   function handleStart() {
@@ -106,6 +122,10 @@ export function BrewLiveScreen({ draftId }: { draftId: string }) {
         // (this listener, or the manual button) can never create a
         // duplicate attempt — see createAttemptAction.
         idempotencyKey: draft.draftId,
+        // Photos from the photo step: uploaded while the coffee still looked
+        // good, waiting for this attempt to exist so they can be attached to
+        // it.
+        media: draft.photos ?? [],
         attempt: {
           method: draft.recipe.method,
           doseG: draft.recipe.doseG,
@@ -196,7 +216,12 @@ export function BrewLiveScreen({ draftId }: { draftId: string }) {
   }
 
   const method: BrewMethod = (draft.recipe.method as BrewMethod) ?? "espresso";
-  const isReview = draft.stoppedAtEpochMs !== null;
+  // Once the timer stops the coffee is made but not tasted yet, so the photo
+  // step comes first; the result step only opens after it's been passed.
+  const brewFinished = draft.stoppedAtEpochMs !== null;
+  const isPhotoStep = brewFinished && !draft.photoStepDone;
+  const isReview = brewFinished && draft.photoStepDone === true;
+  const photos = draft.photos ?? [];
 
   return (
     <div>
@@ -216,7 +241,7 @@ export function BrewLiveScreen({ draftId }: { draftId: string }) {
         </p>
       )}
 
-      {!isReview && !showTimer && (
+      {!brewFinished && !showTimer && (
         <div className="mt-6">
           <BrewStepHeader step={3} title={dict.brew.stepRecipeTitle} />
           <p className="mt-1 text-sm text-ink-muted">{dict.brew.recipeRememberedNote}</p>
@@ -229,7 +254,7 @@ export function BrewLiveScreen({ draftId }: { draftId: string }) {
         </div>
       )}
 
-      {!isReview && showTimer && (
+      {!brewFinished && showTimer && (
         <div className="mt-6 space-y-6">
           <BrewStepHeader step={4} title={dict.brew.stepTimerTitle} />
           {draft.startedAtEpochMs === null && (
@@ -255,9 +280,33 @@ export function BrewLiveScreen({ draftId }: { draftId: string }) {
         </div>
       )}
 
+      {isPhotoStep && (
+        <div className="mt-6 space-y-6">
+          <BrewStepHeader step={5} title={dict.brew.stepPhotoTitle} />
+
+          <BrewPhotoStage draftId={draft.draftId} photos={photos} onChange={updatePhotos} />
+
+          <Button
+            type="button"
+            onClick={() => persist({ ...draft, photoStepDone: true })}
+            fullWidth
+          >
+            {photos.length > 0 ? dict.common.next : dict.brew.continueWithoutPhoto}
+          </Button>
+        </div>
+      )}
+
       {isReview && (
         <div className="mt-6 space-y-6">
-          <BrewStepHeader step={5} title={dict.brew.stepResultTitle} />
+          <BrewStepHeader step={6} title={dict.brew.stepResultTitle} />
+
+          <Button
+            type="button"
+            variant="secondary"
+            onClick={() => persist({ ...draft, photoStepDone: false })}
+          >
+            {dict.brew.backToPhoto}
+          </Button>
 
           <BrewResultFields
             recipe={draft.recipe}
