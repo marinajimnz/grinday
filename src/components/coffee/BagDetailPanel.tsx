@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Pencil } from "lucide-react";
 import { EditBagForm } from "./EditBagForm";
@@ -10,7 +10,8 @@ import { Button } from "@/components/ui/Button";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { IconEliminar } from "@/components/icons/pencil-icons";
 import { formatRemaining } from "@/features/inventory/format";
-import { deleteBagAction } from "@/features/coffees/actions";
+import { deleteBagAction, getBagDeletionImpactAction } from "@/features/coffees/actions";
+import { formatDeletionImpact, type DeletionImpact } from "@/features/coffees/deletionImpact";
 import type { CoffeeBagRow } from "@/features/coffees/queries";
 import { useDictionary, useLocale } from "@/components/i18n/LocaleProvider";
 import { formatDate } from "@/lib/i18n/format-date";
@@ -23,6 +24,20 @@ export function BagDetailPanel({ bag }: { bag: CoffeeBagRow }) {
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
   const [isDeleting, startDelete] = useTransition();
+  const [impact, setImpact] = useState<DeletionImpact | null>(null);
+
+  // Deleting a bag takes the attempts brewed from it with it, so the
+  // confirmation says how many rather than leaving the user to find out.
+  useEffect(() => {
+    if (!confirmDeleteOpen) return;
+    let active = true;
+    void getBagDeletionImpactAction(bag.id).then((result) => {
+      if (active && result.success) setImpact(result.data);
+    });
+    return () => {
+      active = false;
+    };
+  }, [confirmDeleteOpen, bag.id]);
 
   function fmt(value: string | null) {
     return value ? formatDate(value, locale) : dict.coffees.noDate;
@@ -72,6 +87,7 @@ export function BagDetailPanel({ bag }: { bag: CoffeeBagRow }) {
             disabled={isDeleting}
             onClick={() => {
               setDeleteError(null);
+              setImpact(null);
               setConfirmDeleteOpen(true);
             }}
           >
@@ -89,7 +105,7 @@ export function BagDetailPanel({ bag }: { bag: CoffeeBagRow }) {
 
       <ConfirmDialog
         open={confirmDeleteOpen}
-        message={dict.coffees.deleteBagConfirm}
+        message={`${dict.coffees.deleteBagConfirm} ${impact ? formatDeletionImpact(dict, impact) : ""}`.trim()}
         onConfirm={handleDelete}
         onCancel={() => setConfirmDeleteOpen(false)}
       />
