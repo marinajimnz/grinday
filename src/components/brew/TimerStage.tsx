@@ -7,6 +7,30 @@ import type { BrewMethod } from "@/features/equipment/constants";
 import { useDictionary } from "@/components/i18n/LocaleProvider";
 
 /**
+ * Bagel Fat One has no tabular figures, so `tabular-nums` on the timer was
+ * inert: a "1" measures 28.1px where a "4" measures 41.6px at 60px, and the
+ * centred string swung between 197px and 239px — visibly breathing outwards
+ * ten times a second as the tenths ticked. Giving every digit the width of
+ * the widest one holds the line still without giving up the display face.
+ * Separators keep their own width; they never change.
+ */
+function SteadyDigits({ value }: { value: string }) {
+  return (
+    <>
+      {[...value].map((char, i) =>
+        char >= "0" && char <= "9" ? (
+          <span key={i} className="inline-block w-[0.7em] text-center">
+            {char}
+          </span>
+        ) : (
+          <span key={i}>{char}</span>
+        ),
+      )}
+    </>
+  );
+}
+
+/**
  * Timestamp-anchored timer: the displayed value is always
  * `now - startedAtEpochMs`, where `now` is refreshed from Date.now() inside
  * effects/intervals (never read directly in the render body, to keep render
@@ -102,8 +126,8 @@ export function TimerStage({
       </div>
 
       <div className="mt-6 flex flex-col items-center gap-1.5">
-        <span className="font-display text-6xl tabular-nums text-ink" role="timer" aria-live="off">
-          {formatElapsed(elapsedMs)}
+        <span className="font-display text-6xl text-ink" role="timer" aria-live="off">
+          <SteadyDigits value={formatElapsed(elapsedMs)} />
         </span>
         {targetTimeMs !== undefined && (
           <p
@@ -117,11 +141,13 @@ export function TimerStage({
         )}
       </div>
 
-      {/* Whichever control is live gets the wide pill, the other gets the
-          circle. Starting is the precision-timed action — you press it as
-          you press the machine — and it used to be the 56px target while
-          the relaxed one (you've already watched the cup fill) was four
-          times its size. */}
+      {/* Whichever control is live gets the wide filled pill, the other
+          shrinks to its own label. Starting is the precision-timed action —
+          you press it as you press the machine — and it used to be a 56px
+          circle while the relaxed one (you've already watched the cup fill)
+          was four times its size. The idle control can't be a circle now
+          that both labels pass through it: "Play" fitted 56px, "Empezar"
+          doesn't. */}
       <div className="mt-6 flex items-center justify-center gap-3 px-6">
         <button
           type="button"
@@ -131,10 +157,10 @@ export function TimerStage({
             onStart();
           }}
           className={cn(
-            "rounded-full font-semibold",
+            "min-h-14 rounded-full font-semibold",
             isRunning
-              ? "flex size-14 shrink-0 items-center justify-center border border-border text-sm text-ink-muted"
-              : "min-h-14 max-w-56 flex-1 bg-ink text-base text-surface",
+              ? "shrink-0 border border-border px-5 text-sm text-ink-muted"
+              : "max-w-56 flex-1 bg-ink text-base text-surface",
           )}
         >
           {dict.brew.go}
@@ -144,10 +170,10 @@ export function TimerStage({
           disabled={!isRunning}
           onClick={() => onStop(Date.now() - startedAtEpochMs!)}
           className={cn(
-            "rounded-full font-medium",
+            "min-h-14 rounded-full font-medium",
             isRunning
-              ? "min-h-14 max-w-56 flex-1 bg-ink text-base text-surface"
-              : "flex size-14 shrink-0 items-center justify-center border border-border text-sm text-ink-muted",
+              ? "max-w-56 flex-1 bg-ink text-base text-surface"
+              : "shrink-0 border border-border px-5 text-sm text-ink-muted",
           )}
         >
           {dict.brew.stop}
