@@ -493,6 +493,7 @@ const en: Dictionary = {
     go: "Start",
     targetReached: "On target",
     saveRecipe: "Save recipe",
+    recipeSectionTitle: "The recipe",
   },
   attempts: {
     newTitle: "New attempt",

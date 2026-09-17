@@ -491,6 +491,7 @@ const es = {
     go: "Empezar",
     targetReached: "En objetivo",
     saveRecipe: "Guardar receta",
+    recipeSectionTitle: "La receta",
   },
   attempts: {
     newTitle: "Nuevo intento",

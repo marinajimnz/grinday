@@ -10,6 +10,14 @@ import { computeRatios, getRecipeFieldConfig, formatRatio } from "@/features/bre
 import type { BrewDraftRecipe, BrewDraftPostShot } from "@/features/brew/draft";
 import { useDictionary } from "@/components/i18n/LocaleProvider";
 
+function SectionHeading({ children }: { children: React.ReactNode }) {
+  return (
+    <p className="border-t border-border pt-4 text-xs font-medium uppercase tracking-wide text-ink-muted">
+      {children}
+    </p>
+  );
+}
+
 export function BrewResultFields({
   recipe,
   onRecipeChange,
@@ -143,8 +151,15 @@ export function BrewResultFields({
   ];
   const hasGrinderConfig = recipe.grinderUpperBurr != null || recipe.grinderLowerBurr != null;
 
+  // Nine field groups used to stack here as equal siblings with nothing
+  // naming them, so the last step of a brew read as one undifferentiated
+  // wall and gave no clue which half was correcting the recipe you'd just
+  // brewed and which half was recording how it tasted. Same fields, same
+  // order — told apart.
   return (
     <div className="space-y-6">
+      <SectionHeading>{dict.brew.recipeSectionTitle}</SectionHeading>
+
       <p className="text-xs text-ink-muted">{dict.brew.resultEditableNote}</p>
 
       <SteppableFieldGrid fields={fields} />
@@ -168,6 +183,8 @@ export function BrewResultFields({
           </p>
         )}
       </div>
+
+      <SectionHeading>{dict.attempts.tasting}</SectionHeading>
 
       <TasteScale
         id="postshot.overallRating"

@@ -1,9 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import Image from "next/image";
-import { X } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import { PhotoTile } from "@/components/ui/PhotoTile";
 import { PhotoUploader } from "@/components/ui/PhotoUploader";
 import { ATTEMPT_MEDIA_KINDS, type AttemptMediaKind } from "@/features/attempts/constants";
 import type { BrewDraftPhoto } from "@/features/brew/draft";
@@ -92,29 +91,12 @@ export function BrewPhotoStage({
       {photos.length > 0 && (
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
           {photos.map((photo) => (
-            <div
+            <PhotoTile
               key={photo.storagePath}
-              className="group relative aspect-square overflow-hidden rounded-input bg-canvas"
-            >
-              {urls[photo.storagePath] && (
-                <Image
-                  src={urls[photo.storagePath]}
-                  alt={dict.enums.attemptMediaKind[photo.kind]}
-                  fill
-                  sizes="(max-width: 640px) 50vw, 33vw"
-                  className="object-cover"
-                  unoptimized
-                />
-              )}
-              <button
-                type="button"
-                onClick={() => handleRemove(photo.storagePath)}
-                aria-label={dict.ui.deletePhoto}
-                className="absolute right-1.5 top-1.5 flex size-7 items-center justify-center rounded-full bg-ink/70 text-surface opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100"
-              >
-                <X className="size-3.5" aria-hidden />
-              </button>
-            </div>
+              src={urls[photo.storagePath] ?? null}
+              alt={dict.enums.attemptMediaKind[photo.kind]}
+              onRemove={() => handleRemove(photo.storagePath)}
+            />
           ))}
         </div>
       )}

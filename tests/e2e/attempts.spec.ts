@@ -68,6 +68,17 @@ test("logs an attempt manually, marks it preferred, duplicates it, and compares 
   await expect(page.getByRole("link", { name: "Ver intento #1" })).toBeVisible();
   await expect(page.getByRole("button", { name: "Preparar con esta receta" })).toBeVisible();
 
+  // Preparar / quitar del inicio / eliminar used to need a held finger and
+  // carried no mark saying so, which left them unreachable from a keyboard
+  // and undiscoverable by eye. The row now carries the control.
+  await page.getByRole("button", { name: "Acciones de la preparación" }).first().click();
+  const menu = page.getByRole("menu", { name: "Acciones de la preparación" });
+  await expect(menu).toBeVisible();
+  await expect(menu.getByRole("menuitem", { name: "Preparar" })).toBeVisible();
+  await expect(menu.getByRole("menuitem", { name: "Quitar del inicio" })).toBeVisible();
+  await page.keyboard.press("Escape");
+  await expect(menu).toHaveCount(0);
+
   await page.goto(coffeeHref);
   await expect(page.getByText("Receta preferida")).toBeVisible();
 

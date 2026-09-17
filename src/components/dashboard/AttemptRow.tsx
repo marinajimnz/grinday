@@ -3,6 +3,7 @@
 import { useEffect, useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { MoreVertical } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { METHOD_ICONS } from "@/features/equipment/methodIcons";
 import {
@@ -32,15 +33,19 @@ function formatDuration(extractionMs: number | null) {
   return `${minutes}:${String(seconds).padStart(2, "0")}`;
 }
 
+// The ratio used to be printed here too, between the two weights it's
+// computed from and the coffee's name. It cost about fifty pixels on a line
+// that was already twenty short of fitting, and it said nothing the "18 g →
+// 36 g" beside it didn't: the name is what got cut instead. It also printed
+// "1:2.0" where every other ratio in the app reads "1:2" — one fewer place
+// to keep in step.
 function formatSummary(attempt: RecentAttempt, noRecipeData: string) {
   const parts: string[] = [];
   if (attempt.dose_g != null) {
     const weight = attempt.output_weight_g ?? attempt.target_weight_g ?? attempt.water_g;
-    if (weight != null && weight > 0) {
-      parts.push(`${attempt.dose_g} g → ${weight} g · 1:${(weight / attempt.dose_g).toFixed(1)}`);
-    } else {
-      parts.push(`${attempt.dose_g} g`);
-    }
+    parts.push(
+      weight != null && weight > 0 ? `${attempt.dose_g} g → ${weight} g` : `${attempt.dose_g} g`,
+    );
   }
   if (attempt.coffee?.name) parts.push(attempt.coffee.name);
   return parts.length ? parts.join(" · ") : noRecipeData;
@@ -145,35 +150,52 @@ export function AttemptRow({ attempt }: { attempt: RecentAttempt }) {
 
   return (
     <>
-      <Link
-        href={`/attempts/${attempt.id}`}
-        {...longPress}
-        className="flex items-center gap-3 rounded-card border border-border bg-surface p-4 select-none"
-      >
-        <span className="flex size-11 shrink-0 items-center justify-center rounded-full bg-canvas text-ink">
-          <Icon aria-hidden className="size-5" />
-        </span>
-        <div className="min-w-0 flex-1">
-          <div className="flex items-baseline gap-2">
-            <span className="font-semibold text-ink">
-              {dict.equipment.methodLabels[method] ?? attempt.method}
-            </span>
-            <span className="text-xs text-ink-muted">
-              {formatRelativeDay(attempt.created_at, locale, {
-                today: dict.dashboard.today,
-                yesterday: dict.dashboard.yesterday,
-              })}
-            </span>
+      {/* Preparar / archivar / eliminar used to live behind a long press and
+          nothing else: no mark on the row said so, and a keyboard couldn't
+          perform the gesture at all, so for anyone not holding a finger down
+          those three actions did not exist. The hold still works — this is
+          the way you can see. */}
+      <div className="flex items-stretch rounded-card border border-border bg-surface">
+        <Link
+          href={`/attempts/${attempt.id}`}
+          {...longPress}
+          className="flex min-w-0 flex-1 items-center gap-2.5 rounded-card py-4 pl-4 select-none"
+        >
+          <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-canvas text-ink">
+            <Icon aria-hidden className="size-5" />
+          </span>
+          <div className="min-w-0 flex-1">
+            <div className="flex items-baseline gap-2">
+              <span className="font-semibold text-ink">
+                {dict.equipment.methodLabels[method] ?? attempt.method}
+              </span>
+              <span className="text-xs text-ink-muted">
+                {formatRelativeDay(attempt.created_at, locale, {
+                  today: dict.dashboard.today,
+                  yesterday: dict.dashboard.yesterday,
+                })}
+              </span>
+            </div>
+            <p className="mt-0.5 truncate text-sm text-ink-muted">
+              {formatSummary(attempt, dict.dashboard.noRecipeData)}
+            </p>
           </div>
-          <p className="mt-0.5 truncate text-sm text-ink-muted">
-            {formatSummary(attempt, dict.dashboard.noRecipeData)}
-          </p>
-        </div>
-        <div className="shrink-0 text-right">
-          <StarRow rating={attempt.overall_rating} />
-          {duration && <p className="mt-0.5 text-xs text-ink-muted">{duration}</p>}
-        </div>
-      </Link>
+          <div className="shrink-0 text-right">
+            <StarRow rating={attempt.overall_rating} />
+            {duration && <p className="mt-0.5 text-xs text-ink-muted">{duration}</p>}
+          </div>
+        </Link>
+        <button
+          type="button"
+          onClick={openMenu}
+          aria-label={dict.dashboard.attemptMenuLabel}
+          aria-haspopup="menu"
+          aria-expanded={menuOpen}
+          className="flex w-11 shrink-0 items-center justify-center rounded-r-card text-ink-muted outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ink"
+        >
+          <MoreVertical aria-hidden className="size-5" />
+        </button>
+      </div>
 
       {menuOpen && (
         <div
