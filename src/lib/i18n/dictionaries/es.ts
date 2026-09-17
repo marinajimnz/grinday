@@ -487,8 +487,6 @@ const es = {
     newTitle: "Nuevo intento",
     newSubtitle:
       "El temporizador integrado llega en una fase posterior; de momento registra el tiempo de extracción a mano si lo conoces.",
-    basedOnAttempt: "Partiendo del intento",
-    basedOnAttemptSuffix: ". Ajusta lo que quieras cambiar.",
     saveAttempt: "Guardar intento",
     grinding: "Molienda",
     grindSeconds: "Segundos de molienda",

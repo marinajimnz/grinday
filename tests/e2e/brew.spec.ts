@@ -109,4 +109,16 @@ test("guided brew: recipe, timer, photo step, and result", async ({ page, testUs
   await expect(page).toHaveURL(/\/attempts\/[0-9a-f-]+$/);
   await expect(page.getByRole("heading", { name: "Intento #1" })).toBeVisible();
   await expect(page.getByRole("heading", { name: "Fotos del espresso" })).toBeVisible();
+
+  // "Duplicar y ajustar" is a preparation like any other, so it has to land
+  // on the same live brew flow — step 3/6, recipe card grid — seeded from
+  // this attempt, not on the plain manual form at /attempts/new.
+  await page.getByRole("button", { name: "Duplicar y ajustar" }).click();
+  await expect(page).toHaveURL(/\/brew\/live\/[0-9a-f-]+$/);
+  await expect(page.getByText("Paso 3 de 6")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Configura tu receta" })).toBeVisible();
+  await expect(page.getByText("Basado en intento #1")).toBeVisible();
+  // Seeded from intento #1, not from the first-time defaults (20 g / 40 g).
+  await expect(page.getByRole("button", { name: /^Café/ })).toContainText("21g");
+  await expect(page.getByRole("button", { name: /^Peso de bebida/ })).toContainText("42g");
 });
