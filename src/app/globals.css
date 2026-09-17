@@ -5,8 +5,15 @@
   --color-surface: #ffffff;
   --color-ink: #1b2a6e;
   --color-ink-muted: #5b6485;
-  --color-coffee: #1b2a6e;
+  /* The accent: a roast brown against the navy. It was an alias for
+     --color-ink in every theme, so text-coffee and border-coffee rendered
+     as ordinary body ink and a 5-star brew looked like a 2-star one. */
+  --color-coffee: #8a4b2a;
   --color-border: #d9d3c2;
+  /* Error text. The app used Tailwind's red-700 straight, which sits
+     outside the token system and never adapted: 2.56:1 on the dark surface,
+     on the sentence telling you a brew didn't save. */
+  --color-danger: #c10007;
 
   --radius-card: 20px;
   --radius-input: 14px;
@@ -20,8 +27,11 @@
     --color-surface: #171d3d;
     --color-ink: #f3eedd;
     --color-ink-muted: #a6acc9;
-    --color-coffee: #f3eedd;
+    --color-coffee: #e0a06a;
     --color-border: #2a3157;
+    /* The coral the destructive buttons already use — it fails as text on
+       light but reads at 5.83:1 here. */
+    --color-danger: #f47174;
 
     --shadow-soft: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 24px rgba(0, 0, 0, 0.4);
   }
@@ -32,8 +42,9 @@
   --color-surface: #171d3d;
   --color-ink: #f3eedd;
   --color-ink-muted: #a6acc9;
-  --color-coffee: #f3eedd;
+  --color-coffee: #e0a06a;
   --color-border: #2a3157;
+  --color-danger: #f47174;
 
   --shadow-soft: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 24px rgba(0, 0, 0, 0.4);
 }
@@ -45,6 +56,7 @@
   --color-ink-muted: var(--color-ink-muted);
   --color-coffee: var(--color-coffee);
   --color-border: var(--color-border);
+  --color-danger: var(--color-danger);
 
   --radius-card: var(--radius-card);
   --radius-input: var(--radius-input);
@@ -59,18 +71,20 @@ body {
   background: var(--color-canvas);
   color: var(--color-ink);
   font-family: var(--font-inter);
-  -webkit-user-select: none;
-  user-select: none;
   -webkit-touch-callout: none;
 }
 
-/* The app-wide "no selection" rule above would otherwise block editing your
-   own typed text — form controls always need to stay selectable. */
-input,
-textarea,
-[contenteditable="true"] {
-  -webkit-user-select: text;
-  user-select: text;
+/* Suppressing selection is for the parts you drag, hold or tap through — the
+   long-press rows, the stepper cards, the nav. It used to be the whole body,
+   which in a journal meant you couldn't copy a coffee's name, a roaster or
+   your own tasting notes out of the app that stores them. */
+[data-no-select],
+button,
+[role="button"],
+nav,
+label {
+  -webkit-user-select: none;
+  user-select: none;
 }
 
 /* Browsers don't give <button> a pointer cursor by default (unlike <a>),
@@ -98,6 +112,24 @@ button:not(:disabled),
 .animate-bean-spin {
   animation: bean-spin 1.3s cubic-bezier(0.65, 0, 0.35, 1) infinite;
   transform-origin: 50% 50%;
+}
+
+/* The bean spins on every route transition and never stops on its own, which
+   is exactly the kind of motion that triggers vestibular symptoms. Keep the
+   icon, drop the movement. */
+@media (prefers-reduced-motion: reduce) {
+  .animate-bean-spin {
+    animation: none;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
 
 .tabular-nums {

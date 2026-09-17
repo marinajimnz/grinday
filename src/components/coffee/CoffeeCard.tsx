@@ -155,7 +155,7 @@ export function CoffeeCard({ coffee, dict }: { coffee: CoffeeListItem; dict: Dic
             onClick={(e) => e.stopPropagation()}
           >
             {error && (
-              <p role="alert" className="px-3 pb-1 pt-2 text-sm text-red-700">
+              <p role="alert" className="px-3 pb-1 pt-2 text-sm text-danger">
                 {error}
               </p>
             )}
@@ -188,7 +188,7 @@ export function CoffeeCard({ coffee, dict }: { coffee: CoffeeListItem; dict: Dic
                     setImpact(null);
                     setDeleteOpen(true);
                   }}
-                  className="flex w-full items-center gap-3 rounded-input px-3 py-3 text-left text-sm font-medium text-red-700 disabled:opacity-60"
+                  className="flex w-full items-center gap-3 rounded-input px-3 py-3 text-left text-sm font-medium text-danger disabled:opacity-60"
                 >
                   <IconEliminar aria-hidden className="size-5" />
                   {dict.common.delete}

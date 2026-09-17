@@ -68,7 +68,7 @@ export function EditCoffeeForm({
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 rounded-card border border-border bg-surface p-5">
       <CoffeeFieldsFieldset register={register} control={control} errors={errors.coffee} />
       {formError && (
-        <p role="alert" className="text-sm text-red-700">
+        <p role="alert" className="text-sm text-danger">
           {formError}
         </p>
       )}

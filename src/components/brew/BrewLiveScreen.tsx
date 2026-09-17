@@ -192,7 +192,7 @@ export function BrewLiveScreen({ draftId }: { draftId: string }) {
     </p>
   ) : (
     saveError && (
-      <p role="alert" className="text-sm text-red-700">
+      <p role="alert" className="text-sm text-danger">
         {saveError} {dict.brew.savedLocallyRetry}
       </p>
     )

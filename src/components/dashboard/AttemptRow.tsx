@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/cn";
@@ -65,6 +65,18 @@ export function AttemptRow({ attempt }: { attempt: RecentAttempt }) {
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
+
+  // ConfirmDialog — which this menu opens one tap later — closes on Escape,
+  // so the menu behaving differently made the same gesture mean two things in
+  // the same flow. Backdrop-tap was the only way out before.
+  useEffect(() => {
+    if (!menuOpen) return;
+    function onKeyDown(e: KeyboardEvent) {
+      if (e.key === "Escape") setMenuOpen(false);
+    }
+    document.addEventListener("keydown", onKeyDown);
+    return () => document.removeEventListener("keydown", onKeyDown);
+  }, [menuOpen]);
 
   const method = (attempt.method as BrewMethod) ?? "espresso";
   const Icon = METHOD_ICONS[method] ?? IconCafe;
@@ -175,12 +187,13 @@ export function AttemptRow({ attempt }: { attempt: RecentAttempt }) {
             onClick={(e) => e.stopPropagation()}
           >
             {error && (
-              <p role="alert" className="px-3 pb-1 pt-2 text-sm text-red-700">
+              <p role="alert" className="px-3 pb-1 pt-2 text-sm text-danger">
                 {error}
               </p>
             )}
             <button
               type="button"
+              role="menuitem"
               disabled={isPending}
               onClick={handlePrepare}
               className="flex w-full items-center gap-3 rounded-input px-3 py-3 text-left text-sm font-medium text-ink disabled:opacity-60"
@@ -190,6 +203,7 @@ export function AttemptRow({ attempt }: { attempt: RecentAttempt }) {
             </button>
             <button
               type="button"
+              role="menuitem"
               disabled={isPending}
               onClick={handleToggleDashboardVisibility}
               className="flex w-full items-center gap-3 rounded-input px-3 py-3 text-left text-sm font-medium text-ink disabled:opacity-60"
@@ -205,12 +219,13 @@ export function AttemptRow({ attempt }: { attempt: RecentAttempt }) {
             </button>
             <button
               type="button"
+              role="menuitem"
               disabled={isPending}
               onClick={() => {
                 setMenuOpen(false);
                 setConfirmDeleteOpen(true);
               }}
-              className="flex w-full items-center gap-3 rounded-input px-3 py-3 text-left text-sm font-medium text-red-700 disabled:opacity-60"
+              className="flex w-full items-center gap-3 rounded-input px-3 py-3 text-left text-sm font-medium text-danger disabled:opacity-60"
             >
               <IconEliminar aria-hidden className="size-5" />
               {dict.common.delete}

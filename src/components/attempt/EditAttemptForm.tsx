@@ -83,7 +83,7 @@ export function EditAttemptForm({
       </p>
       <AttemptFieldsFieldset register={register} control={control} errors={errors.attempt} />
       {formError && (
-        <p role="alert" className="text-sm text-red-700">
+        <p role="alert" className="text-sm text-danger">
           {formError}
         </p>
       )}
