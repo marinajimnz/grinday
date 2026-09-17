@@ -74,6 +74,10 @@ const es = {
   language: {
     label: "Idioma",
   },
+  errors: {
+    title: "Algo ha fallado por aquí",
+    description: "No hemos podido cargar esta pantalla. Vuelve a intentarlo; si sigue igual, tus datos están a salvo.",
+  },
   dashboard: {
     title: "Inicio",
     subtitle: "Tu café activo, último intento y accesos rápidos.",

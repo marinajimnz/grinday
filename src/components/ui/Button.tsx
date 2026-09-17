@@ -15,8 +15,12 @@ export type Variant = keyof typeof VARIANT_CLASSES;
 // recipe by hand — this is the one place it's defined. Doesn't cover
 // selectable/toggle buttons (Sí/No, mode pickers), which vary their own
 // selected-state classes per option and don't fit a single variant.
+// The focus ring is the browser's until a design system claims it: without
+// this, every button in the app fell back to the UA default (a 1px orange
+// outline in Chrome), which belongs to no palette and sits oddly on the
+// ink-filled variants.
 const baseClassName =
-  "inline-flex min-h-11 items-center justify-center gap-1.5 rounded-input px-4 text-center text-sm font-medium disabled:opacity-60";
+  "inline-flex min-h-11 items-center justify-center gap-1.5 rounded-input px-4 text-center text-sm font-medium outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-2 focus-visible:ring-offset-canvas disabled:opacity-60";
 
 // Exposed for the rare spot that needs the exact same look on an element
 // Button itself can't render — e.g. a raw <button ref> for autofocus,

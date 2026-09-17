@@ -76,6 +76,10 @@ const en: Dictionary = {
   language: {
     label: "Language",
   },
+  errors: {
+    title: "Something went wrong here",
+    description: "We couldn't load this screen. Try again — and if it keeps failing, your data is safe.",
+  },
   dashboard: {
     title: "Home",
     subtitle: "Your active coffee, last attempt, and quick actions.",
