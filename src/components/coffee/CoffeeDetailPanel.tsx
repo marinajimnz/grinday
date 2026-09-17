@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import {
   IconArchivar,
@@ -12,7 +12,13 @@ import { EditCoffeeForm } from "./EditCoffeeForm";
 import { Field, inputClassName } from "@/components/ui/Field";
 import { Button } from "@/components/ui/Button";
 import { type ROAST_LEVELS } from "@/features/coffees/constants";
-import { archiveCoffeeAction, deleteCoffeeAction } from "@/features/coffees/actions";
+import {
+  archiveCoffeeAction,
+  deleteCoffeeAction,
+  getCoffeeDeletionImpactAction,
+  unarchiveCoffeeAction,
+} from "@/features/coffees/actions";
+import { formatDeletionImpact, type DeletionImpact } from "@/features/coffees/deletionImpact";
 import type { CoffeeRow } from "@/features/coffees/queries";
 import { useDictionary } from "@/components/i18n/LocaleProvider";
 
@@ -25,6 +31,22 @@ export function CoffeeDetailPanel({ coffee }: { coffee: CoffeeRow }) {
   const [deleteConfirmName, setDeleteConfirmName] = useState("");
   const [deleteError, setDeleteError] = useState<string | null>(null);
   const [isDeleting, startDelete] = useTransition();
+  const [impact, setImpact] = useState<DeletionImpact | null>(null);
+
+  const isArchived = coffee.archived_at !== null;
+
+  // Only counted when the delete pane opens — see the same effect in
+  // CoffeeCard.
+  useEffect(() => {
+    if (!isDeletingOpen) return;
+    let active = true;
+    void getCoffeeDeletionImpactAction(coffee.id).then((result) => {
+      if (active && result.success) setImpact(result.data);
+    });
+    return () => {
+      active = false;
+    };
+  }, [isDeletingOpen, coffee.id]);
 
   if (editing) {
     return (
@@ -139,16 +161,32 @@ export function CoffeeDetailPanel({ coffee }: { coffee: CoffeeRow }) {
           className="px-3"
           disabled={isArchiving}
           onClick={() => {
-            if (!confirm(`${dict.coffees.archiveConfirm} "${coffee.name}"${dict.coffees.archiveConfirmSuffix}`))
-              return;
+            const message = isArchived
+              ? `${dict.coffees.unarchiveConfirm} "${coffee.name}"${dict.coffees.unarchiveConfirmSuffix}`
+              : `${dict.coffees.archiveConfirm} "${coffee.name}"${dict.coffees.archiveConfirmSuffix}`;
+            if (!confirm(message)) return;
             startArchive(async () => {
-              await archiveCoffeeAction(coffee.id);
-              router.push("/coffees");
+              // Unarchiving puts the coffee back in the library, so staying
+              // on its page is the useful outcome; archiving takes it out of
+              // there, and lingering on a page that's no longer listed isn't.
+              if (isArchived) {
+                await unarchiveCoffeeAction(coffee.id);
+                router.refresh();
+              } else {
+                await archiveCoffeeAction(coffee.id);
+                router.push("/coffees");
+              }
             });
           }}
         >
           <IconArchivar aria-hidden className="size-4" />
-          {isArchiving ? dict.coffees.archiving : dict.coffees.archiveCoffee}
+          {isArchiving
+            ? isArchived
+              ? dict.coffees.unarchiving
+              : dict.coffees.archiving
+            : isArchived
+              ? dict.coffees.unarchive
+              : dict.coffees.archiveCoffee}
         </Button>
 
         {!isDeletingOpen && (
@@ -159,6 +197,7 @@ export function CoffeeDetailPanel({ coffee }: { coffee: CoffeeRow }) {
               setIsDeletingOpen(true);
               setDeleteError(null);
               setDeleteConfirmName("");
+              setImpact(null);
             }}
           >
             <IconEliminar aria-hidden className="size-4" />
@@ -170,6 +209,11 @@ export function CoffeeDetailPanel({ coffee }: { coffee: CoffeeRow }) {
       {isDeletingOpen && (
         <div className="mt-4 rounded-input border border-[#F47174]/40 bg-canvas p-4">
           <p className="text-xs text-ink">{dict.coffees.deleteConfirmPrompt}</p>
+          {impact && (
+            <p className="mt-1 text-xs text-ink-muted">
+              {formatDeletionImpact(dict, impact)} {dict.coffees.deleteArchiveHint}
+            </p>
+          )}
           <div className="mt-2">
             <Field label={coffee.name} htmlFor="delete-confirm-name">
               <input

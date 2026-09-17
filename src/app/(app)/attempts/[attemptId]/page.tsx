@@ -15,7 +15,11 @@ export default async function AttemptDetailPage({
 }) {
   const { attemptId } = await params;
   const supabase = await createClient();
-  const attempt = await getAttempt(supabase, attemptId);
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) notFound();
+  const attempt = await getAttempt(supabase, attemptId, user.id);
 
   if (!attempt) notFound();
 

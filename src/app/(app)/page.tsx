@@ -23,14 +23,15 @@ export default async function DashboardPage() {
     ? await supabase.from("profiles").select("display_name").eq("id", user.id).single()
     : { data: null };
 
-  const hasCoffee = await hasAnyCoffee(supabase);
+  const hasCoffee = user ? await hasAnyCoffee(supabase, user.id) : false;
 
-  const [overview, recentAttempts] = hasCoffee
-    ? await Promise.all([
-        getDashboardOverview(supabase),
-        getRecentAttempts(supabase, 4, { excludeHiddenFromDashboard: true }),
-      ])
-    : [null, []];
+  const [overview, recentAttempts] =
+    hasCoffee && user
+      ? await Promise.all([
+          getDashboardOverview(supabase),
+          getRecentAttempts(supabase, user.id, 4, { excludeHiddenFromDashboard: true }),
+        ])
+      : [null, []];
 
   const lastAttempt = recentAttempts[0];
 

@@ -80,6 +80,12 @@ vez que se visita el dashboard. Sin conexión, la navegación cae en
 `/offline`, que muestra ese resumen y avisa de cualquier intento de brew
 guardado localmente (`grinday:brew-draft:*`) pendiente de sincronizar.
 
+La foto del intento se hace en su propio paso (5 de 6), entre el cronómetro
+y la puntuación: al probar el café ya no está como salió. Es el único paso
+del flujo que necesita conexión — la foto se sube a Storage en el momento,
+bajo la carpeta del borrador, y se engancha al intento al guardarlo. Sin red
+el paso se puede saltar, y descartar un borrador borra también sus fotos.
+
 Los intentos creados sin red se guardan como borrador local con una
 `idempotencyKey` propia; en cuanto vuelve la conexión (evento `online`), el
 guardado se reintenta solo — no hace falta que la usuaria haga nada, y

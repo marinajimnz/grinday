@@ -1,3 +1,4 @@
+import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { ProfileForm } from "@/components/settings/ProfileForm";
 import { ProfileLanguageToggle } from "@/components/settings/ProfileLanguageToggle";
@@ -9,12 +10,17 @@ export default async function ProfilePage() {
   const {
     data: { user },
   } = await supabase.auth.getUser();
+  // Every other authed page guards instead of asserting. Without it a
+  // session that's gone by the time this renders — expired, signed out in
+  // another tab, or the account itself deleted — turns the proxy's clean
+  // redirect to /login into a 500 on `user!.id`.
+  if (!user) notFound();
   const dict = getDictionary(await getLocale());
 
   const { data: profile } = await supabase
     .from("profiles")
     .select("display_name, role, username")
-    .eq("id", user!.id)
+    .eq("id", user.id)
     .single();
 
   return (

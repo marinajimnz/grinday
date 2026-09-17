@@ -15,8 +15,8 @@ import {
   updateCoffeeSchema,
 } from "@/lib/validation/coffees";
 import type { Database } from "@/types/database";
-import { getLocale } from "@/lib/i18n/locale";
-import { getDictionary } from "@/lib/i18n/get-dictionary";
+
+type Client = SupabaseClient<Database>;
 
 type ActionResult<T = undefined> =
   | { success: true; data: T }
@@ -86,9 +86,15 @@ export async function findSimilarCoffeeAction(input: { name: string; roaster: st
   if (!parsed.success) return null;
 
   const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return null;
+
   const { data } = await supabase
     .from("coffees")
     .select("id, name, roaster")
+    .eq("user_id", user.id)
     .ilike("name", parsed.data.name)
     .ilike("roaster", parsed.data.roaster)
     .is("archived_at", null)
@@ -222,47 +228,145 @@ export async function archiveCoffeeAction(coffeeId: string): Promise<ActionResul
   return { success: true, data: undefined };
 }
 
-// Unlike archiving, this is permanent — only allowed when the coffee has no
-// bags or attempts yet (a genuine mistake, not real history). Anything with
-// data has to be archived instead, never deleted.
-export async function deleteCoffeeAction(coffeeId: string): Promise<ActionResult> {
+// A bag lands in Inventario > Archivadas for either of two independent
+// reasons (see listBagsGrouped), so undoing it has to clear both or the row
+// wouldn't move: the coffee's archived_at, and the bag's own "archived"
+// status if someone set it by hand on the edit form. Those bags get their
+// status recomputed from their dates rather than guessed — the same
+// finished/open/sealed ladder the bag form derives.
+export async function unarchiveCoffeeAction(coffeeId: string): Promise<ActionResult> {
   const supabase = await createClient();
-  const dict = getDictionary(await getLocale());
+  const { error } = await supabase
+    .from("coffees")
+    .update({ archived_at: null })
+    .eq("id", coffeeId);
+  if (error) return { success: false, message: error.message };
 
-  const [{ count: bagCount }, { count: attemptCount }] = await Promise.all([
+  const { data: archivedBags } = await supabase
+    .from("coffee_bags")
+    .select("id, opened_at, finished_at")
+    .eq("coffee_id", coffeeId)
+    .eq("status", "archived");
+
+  for (const bag of archivedBags ?? []) {
+    const status = bag.finished_at ? "finished" : bag.opened_at ? "open" : "sealed";
+    // Best-effort: the coffee is already out of the archive, and a bag stuck
+    // on "archived" is a wrong badge, not lost data.
+    const { error: bagError } = await supabase
+      .from("coffee_bags")
+      .update({ status })
+      .eq("id", bag.id);
+    if (bagError) console.error("[coffees] failed to unarchive bag:", bagError.message);
+  }
+
+  revalidatePath("/coffees");
+  revalidatePath("/");
+  revalidatePath("/inventory");
+  revalidatePath(`/coffees/${coffeeId}`);
+  return { success: true, data: undefined };
+}
+
+// How much history a delete would take with it, so the confirmation can name
+// it instead of saying a vague "esto no se puede deshacer".
+export async function getCoffeeDeletionImpactAction(
+  coffeeId: string,
+): Promise<ActionResult<{ bags: number; attempts: number }>> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { success: false, message: "No autenticado" };
+
+  const [{ count: bags }, { count: attempts }] = await Promise.all([
     supabase.from("coffee_bags").select("id", { count: "exact", head: true }).eq("coffee_id", coffeeId),
-    supabase.from("brew_attempts").select("id", { count: "exact", head: true }).eq("coffee_id", coffeeId),
+    supabase
+      .from("brew_attempts")
+      .select("id", { count: "exact", head: true })
+      .eq("coffee_id", coffeeId)
+      .eq("user_id", user.id),
   ]);
 
-  if ((bagCount ?? 0) > 0 || (attemptCount ?? 0) > 0) {
-    return { success: false, message: dict.coffees.deleteBlocked };
-  }
+  return { success: true, data: { bags: bags ?? 0, attempts: attempts ?? 0 } };
+}
+
+// Every row hanging off a coffee goes with it through ON DELETE CASCADE
+// (coffee_bags -> coffee_media/inventory_events, brew_attempts ->
+// attempt_media). Storage is the one thing no cascade reaches, so the photo
+// paths have to be read and removed while the rows that name them still
+// exist — afterwards nothing would know those files were ever referenced.
+async function removeCoffeePhotos(supabase: Client, coffeeId: string, userId: string) {
+  const { data: bags } = await supabase
+    .from("coffee_bags")
+    .select("id")
+    .eq("coffee_id", coffeeId);
+  const bagIds = (bags ?? []).map((b) => b.id);
+
+  const { data: attempts } = await supabase
+    .from("brew_attempts")
+    .select("id")
+    .eq("coffee_id", coffeeId)
+    .eq("user_id", userId);
+  const attemptIds = (attempts ?? []).map((a) => a.id);
+
+  const [coffeeMedia, attemptMedia] = await Promise.all([
+    bagIds.length
+      ? supabase.from("coffee_media").select("storage_path").in("coffee_bag_id", bagIds)
+      : Promise.resolve({ data: [] as { storage_path: string }[] }),
+    attemptIds.length
+      ? supabase.from("attempt_media").select("storage_path").in("attempt_id", attemptIds)
+      : Promise.resolve({ data: [] as { storage_path: string }[] }),
+  ]);
+
+  const paths = [...(coffeeMedia.data ?? []), ...(attemptMedia.data ?? [])].map(
+    (m) => m.storage_path,
+  );
+  if (!paths.length) return;
+
+  // Best-effort: a file we couldn't remove is already unreachable from the
+  // app, and shouldn't keep the user from deleting the coffee itself.
+  const { error } = await supabase.storage.from("coffee-photos").remove(paths);
+  if (error) console.error("[coffees] failed to delete coffee photos:", error.message);
+}
+
+// Permanent, and it takes the coffee's whole history with it: every bag,
+// every attempt logged against it, and their photos. It used to refuse
+// whenever any of that existed, which left no way at all to get rid of a
+// coffee once it had been brewed — the user had to delete each attempt by
+// hand and still couldn't finish the job. Archiving remains the
+// non-destructive option; this one is for actually throwing a coffee away,
+// so the caller is expected to confirm first (both callers make the user
+// retype the coffee's name).
+export async function deleteCoffeeAction(coffeeId: string): Promise<ActionResult> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { success: false, message: "No autenticado" };
+
+  await removeCoffeePhotos(supabase, coffeeId, user.id);
 
   const { error } = await supabase.from("coffees").delete().eq("id", coffeeId);
   if (error) return { success: false, message: error.message };
 
   revalidatePath("/coffees");
   revalidatePath("/");
+  revalidatePath("/inventory");
+  revalidatePath("/attempts");
   return { success: true, data: undefined };
 }
 
-// Same "permanent, but never at the cost of real history" rule as
-// deleteCoffeeAction — coffee_bags -> brew_attempts is an ON DELETE CASCADE
-// FK, so without this guard deleting a bag would silently wipe every
-// attempt logged against it instead of asking the user to deal with that
-// history first (delete it or archive the coffee instead).
+// Same rule as deleteCoffeeAction, one level down: coffee_bags ->
+// brew_attempts is an ON DELETE CASCADE FK, so this deliberately takes the
+// attempts brewed from this bag with it rather than refusing while any
+// exist. Callers confirm first.
 export async function deleteBagAction(bagId: string): Promise<ActionResult> {
   const supabase = await createClient();
-  const dict = getDictionary(await getLocale());
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { success: false, message: "No autenticado" };
 
-  const { count: attemptCount } = await supabase
-    .from("brew_attempts")
-    .select("id", { count: "exact", head: true })
-    .eq("coffee_bag_id", bagId);
-
-  if ((attemptCount ?? 0) > 0) {
-    return { success: false, message: dict.coffees.deleteBagBlocked };
-  }
+  await removeBagPhotos(supabase, bagId, user.id);
 
   const { data: deleted, error } = await supabase
     .from("coffee_bags")
@@ -275,7 +379,53 @@ export async function deleteBagAction(bagId: string): Promise<ActionResult> {
   if (deleted) revalidatePath(`/coffees/${deleted.coffee_id}`);
   revalidatePath("/coffees");
   revalidatePath("/inventory");
+  revalidatePath("/attempts");
+  revalidatePath("/");
   return { success: true, data: undefined };
+}
+
+// See removeCoffeePhotos — same reason, scoped to one bag.
+async function removeBagPhotos(supabase: Client, bagId: string, userId: string) {
+  const { data: attempts } = await supabase
+    .from("brew_attempts")
+    .select("id")
+    .eq("coffee_bag_id", bagId)
+    .eq("user_id", userId);
+  const attemptIds = (attempts ?? []).map((a) => a.id);
+
+  const [bagMedia, attemptMedia] = await Promise.all([
+    supabase.from("coffee_media").select("storage_path").eq("coffee_bag_id", bagId),
+    attemptIds.length
+      ? supabase.from("attempt_media").select("storage_path").in("attempt_id", attemptIds)
+      : Promise.resolve({ data: [] as { storage_path: string }[] }),
+  ]);
+
+  const paths = [...(bagMedia.data ?? []), ...(attemptMedia.data ?? [])].map(
+    (m) => m.storage_path,
+  );
+  if (!paths.length) return;
+
+  const { error } = await supabase.storage.from("coffee-photos").remove(paths);
+  if (error) console.error("[coffees] failed to delete bag photos:", error.message);
+}
+
+// How much history deleting one bag would take with it.
+export async function getBagDeletionImpactAction(
+  bagId: string,
+): Promise<ActionResult<{ attempts: number }>> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { success: false, message: "No autenticado" };
+
+  const { count } = await supabase
+    .from("brew_attempts")
+    .select("id", { count: "exact", head: true })
+    .eq("coffee_bag_id", bagId)
+    .eq("user_id", user.id);
+
+  return { success: true, data: { attempts: count ?? 0 } };
 }
 
 export async function registerCoffeeMediaAction(

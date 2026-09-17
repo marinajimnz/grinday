@@ -21,16 +21,21 @@ export default async function ComparePage({
     .slice(0, MAX_COMPARE_ATTEMPTS);
 
   const supabase = await createClient();
-  const attempts = ids.length >= MIN_COMPARE_ATTEMPTS ? await getAttemptsByIds(supabase, ids) : [];
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  const attempts =
+    user && ids.length >= MIN_COMPARE_ATTEMPTS ? await getAttemptsByIds(supabase, ids, user.id) : [];
   const locale = await getLocale();
   const dict = getDictionary(locale);
 
   let preferredAttemptId: string | null = null;
-  if (attempts.length) {
+  if (attempts.length && user) {
     const { data: coffee } = await supabase
       .from("coffees")
       .select("preferred_attempt_id")
       .eq("id", attempts[0].coffee_id)
+      .eq("user_id", user.id)
       .maybeSingle();
     preferredAttemptId = coffee?.preferred_attempt_id ?? null;
   }

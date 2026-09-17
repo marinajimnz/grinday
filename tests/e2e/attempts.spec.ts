@@ -1,17 +1,19 @@
 import { test, expect } from "./fixtures";
 import { createCoffeeBasic } from "./helpers";
 
-test("logs an attempt, marks it preferred, duplicates it, and compares both", async ({
+test("logs an attempt manually, marks it preferred, duplicates it, and compares both", async ({
   page,
   testUser,
 }) => {
   void testUser;
   const name = `Attempt Coffee ${Date.now()}`;
 
-  // Fresh guest session: pick a default machine first (Fase 0 onboarding step).
-  await page.goto("/settings/machines");
-  await page.getByRole("button", { name: "Usar como predeterminada" }).click();
-  await expect(page.getByText("Predeterminada")).toBeVisible();
+  // No equipment setup here on purpose: /attempts/new asks for a bag, not a
+  // machine (brew_attempts.machine_id became optional in 0019), so a brand-new
+  // account can log one straight away. This used to open with a "pick a
+  // default machine" step against a /settings/machines that offered a
+  // catalogue of models; the 0020 equipment rework replaced that page with
+  // grinder/method cards, and the step had been failing ever since.
 
   await createCoffeeBasic(page, { name });
   await expect(page).toHaveURL(/\/coffees\/[0-9a-f-]+$/);
@@ -32,13 +34,19 @@ test("logs an attempt, marks it preferred, duplicates it, and compares both", as
   await page.getByRole("button", { name: "Marcar como preferido" }).click();
   await expect(page.getByRole("button", { name: "Quitar de preferido" })).toBeVisible();
 
-  await page.getByRole("link", { name: "Duplicar y ajustar" }).click();
-  await expect(page).toHaveURL(/\/attempts\/new/);
-  await expect(page.getByText("Partiendo del intento #1", { exact: false })).toBeVisible();
-  await expect(page.getByLabel("Molido")).toHaveValue("12");
+  // Duplicating is a preparation, not a second manual log: it opens the same
+  // live brew flow as "Preparar", already seeded from this attempt.
+  await page.getByRole("button", { name: "Duplicar y ajustar" }).click();
+  await expect(page).toHaveURL(/\/brew\/live\/[0-9a-f-]+$/);
+  await expect(page.getByText("Paso 3 de 6")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Configura tu receta" })).toBeVisible();
+  await expect(page.getByText("Basado en intento #1")).toBeVisible();
 
-  await page.getByLabel("Segundos de molienda").fill("15.2");
-  await page.getByRole("button", { name: "Guardar intento" }).click();
+  // brew.spec.ts drives the six steps in full; here it only has to reach a
+  // second saved attempt, so the shot goes in without timing it.
+  await page.getByRole("button", { name: "Siguiente" }).click();
+  await expect(page.getByText("Paso 4 de 6")).toBeVisible();
+  await page.getByRole("button", { name: "Guardar sin cronometrar" }).click();
   await expect(page).toHaveURL(/\/attempts\/[0-9a-f-]+$/);
   await expect(page.getByRole("heading", { name: "Intento #2" })).toBeVisible();
 
@@ -54,4 +62,10 @@ test("logs an attempt, marks it preferred, duplicates it, and compares both", as
   await expect(page).toHaveURL(/\/compare\?ids=/);
   await expect(page.getByText("#1")).toBeVisible();
   await expect(page.getByText("#2")).toBeVisible();
+
+  // "Usar como base" is the same duplicate action as on the attempt page, so
+  // it lands on the live brew flow too — one column per attempt.
+  await page.getByRole("button", { name: "Usar como base" }).first().click();
+  await expect(page).toHaveURL(/\/brew\/live\/[0-9a-f-]+$/);
+  await expect(page.getByRole("heading", { name: "Configura tu receta" })).toBeVisible();
 });

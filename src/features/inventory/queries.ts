@@ -5,7 +5,9 @@ import type { Database } from "@/types/database";
 type Client = SupabaseClient<Database>;
 
 export type InventoryBagRow = Database["public"]["Tables"]["coffee_bags"]["Row"] & {
-  coffee: { id: string; name: string; roaster: string };
+  // archived_at rides along because the row's menu needs to know whether it's
+  // offering "Archivar" or "Desarchivar" — see BagInventoryRow.
+  coffee: { id: string; name: string; roaster: string; archived_at: string | null };
 };
 
 export type GroupedInventoryBags = {

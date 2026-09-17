@@ -11,6 +11,14 @@ import {
 } from "@/features/coffees/constants";
 import { useDictionary } from "@/components/i18n/LocaleProvider";
 
+// "Archivada" is deliberately not offered here. Archiving is a coffee-level
+// action (it stamps coffees.archived_at), and listCoffees hides archived
+// coffees outright — so the option could only ever match a bag someone set
+// to "archived" by hand on the edit form, and never an actually archived
+// coffee. It looked like a broken filter because it always came back empty.
+// Archived coffees live in Inventario > Archivadas instead.
+const FILTERABLE_BAG_STATUSES = BAG_STATUSES.filter((status) => status !== "archived");
+
 export function CoffeeFilters() {
   const router = useRouter();
   const pathname = usePathname();
@@ -88,7 +96,7 @@ export function CoffeeFilters() {
           onChange={(e) => updateParam("bagStatus", e.target.value)}
         >
           <option value="">{dict.coffees.anyBagStatus}</option>
-          {BAG_STATUSES.map((status) => (
+          {FILTERABLE_BAG_STATUSES.map((status) => (
             <option key={status} value={status}>
               {dict.enums.bagStatus[status]}
             </option>

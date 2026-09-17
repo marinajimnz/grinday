@@ -1,4 +1,5 @@
 import { test, expect } from "./fixtures";
+import { clickUntilHydrated } from "./helpers";
 
 test("offline page shows the saved dashboard snapshot and pending draft notice", async ({
   page,
@@ -63,8 +64,14 @@ test("account settings shows the linked email and a sign-out button", async ({
 test("signing out redirects to login and blocks the app again", async ({ page, testUser }) => {
   void testUser;
   await page.goto("/settings/account");
-  await page.getByRole("button", { name: "Cerrar sesión" }).click();
-  await expect(page).toHaveURL(/\/login$/);
+
+  // The sign-out button disables itself and then navigates, so a click that
+  // lands before hydration leaves the page exactly as it was — the button
+  // still reading "Cerrar sesión", nothing in flight, and no error until the
+  // URL assertion below gives up. See clickUntilHydrated.
+  await clickUntilHydrated(page.getByRole("button", { name: "Cerrar sesión" }), async () => {
+    await expect(page).toHaveURL(/\/login$/, { timeout: 3000 });
+  });
 
   await page.goto("/");
   await expect(page).toHaveURL(/\/login$/);
