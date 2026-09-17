@@ -8,7 +8,7 @@ const VARIANT_CLASSES = {
   destructive: "bg-[#F47174] text-[#1b2a6e]",
 } as const;
 
-type Variant = keyof typeof VARIANT_CLASSES;
+export type Variant = keyof typeof VARIANT_CLASSES;
 
 // Every plain action button/link in the app (save, cancel, delete,
 // archive, "usar como base"...) used this same min-h-11/rounded-input
