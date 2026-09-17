@@ -1,5 +1,7 @@
 import "server-only";
 import type { SupabaseClient } from "@supabase/supabase-js";
+import type { RecipeCardAttempt } from "@/components/attempt/RecipeCard";
+import { RECIPE_SOURCE_ATTEMPT_FIELDS } from "@/features/attempts/queries";
 import type { Database } from "@/types/database";
 
 type Client = SupabaseClient<Database>;
@@ -46,13 +48,76 @@ export async function getRecentAttempts(
   return data ?? [];
 }
 
-export async function getDashboardOverview(supabase: Client) {
-  const { data, error } = await supabase.rpc("dashboard_overview").maybeSingle();
+export type DashboardRecipe = {
+  attempt: RecipeCardAttempt;
+  coffeeId: string;
+  coffeeName: string;
+  roaster: string;
+  targetBagId: string;
+  // Whether the recipe shown is the coffee's pinned "receta preferida" or
+  // just the last thing brewed — the card labels itself from this.
+  isPreferred: boolean;
+};
+
+const RECIPE_CARD_FIELDS = `${RECIPE_SOURCE_ATTEMPT_FIELDS}, grind_seconds, extraction_ms, output_weight_g`;
+
+// What the dashboard puts in its prime slot: the recipe for the coffee
+// you're currently drinking. The coffee's pinned preferred recipe wins when
+// there is one — repeating the brew that worked is the point — and the last
+// attempt stands in otherwise. "Quitar del inicio" is respected when picking
+// which coffee that is, the same way the recent list does it; a pinned
+// preferred recipe still shows, because hiding one attempt from a list isn't
+// the same as unpinning the coffee's recipe.
+export async function getDashboardRecipe(
+  supabase: Client,
+  userId: string,
+): Promise<DashboardRecipe | null> {
+  const { data: recent, error } = await supabase
+    .from("brew_attempts")
+    .select(
+      `${RECIPE_CARD_FIELDS}, coffee_id, coffee_bag_id, coffee:coffees!brew_attempts_coffee_id_fkey(id, name, roaster, preferred_attempt_id)`,
+    )
+    .eq("user_id", userId)
+    .eq("hidden_from_dashboard", false)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
   if (error) throw error;
+  if (!recent?.coffee) return null;
+
+  const { coffee } = recent;
+  const preferredId = coffee.preferred_attempt_id;
+
+  const [preferred, { data: bags, error: bagsError }] = await Promise.all([
+    preferredId && preferredId !== recent.id
+      ? supabase
+          .from("brew_attempts")
+          .select(RECIPE_CARD_FIELDS)
+          .eq("id", preferredId)
+          .eq("user_id", userId)
+          .maybeSingle()
+          .then(({ data }) => data)
+      : Promise.resolve(null),
+    supabase
+      .from("coffee_bags")
+      .select("id, status")
+      .eq("coffee_id", coffee.id)
+      .eq("user_id", userId),
+  ]);
+  if (bagsError) throw bagsError;
+
+  // Same order the coffee page and the brew picker use: brew from the bag
+  // that's actually open, not whichever one this attempt happened to use.
+  const targetBag =
+    bags?.find((b) => b.status === "open") ?? bags?.find((b) => b.status === "sealed") ?? bags?.[0];
+
   return {
-    totalBrews: data?.total_brews ?? 0,
-    avgRating: data?.avg_rating ?? null,
-    favoriteMethod: data?.favorite_method ?? null,
+    attempt: preferred ?? recent,
+    coffeeId: coffee.id,
+    coffeeName: coffee.name,
+    roaster: coffee.roaster,
+    targetBagId: targetBag?.id ?? recent.coffee_bag_id,
+    isPreferred: Boolean(preferred) || preferredId === recent.id,
   };
 }
 

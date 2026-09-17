@@ -1,11 +1,11 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
-import { IconCafe, IconFavorito } from "@/components/icons/pencil-icons";
-import { getDashboardOverview, getRecentAttempts, hasAnyCoffee } from "@/features/dashboard/queries";
+import { IconCafe, IconFavorito, IconPreparar } from "@/components/icons/pencil-icons";
+import { getDashboardRecipe, getRecentAttempts, hasAnyCoffee } from "@/features/dashboard/queries";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { NewBrewCta } from "@/components/dashboard/NewBrewCta";
 import { DraftResumeBanner } from "@/components/dashboard/DraftResumeBanner";
-import { DashboardStats } from "@/components/dashboard/DashboardStats";
+import { RecipeCard } from "@/components/attempt/RecipeCard";
 import { RecentAttemptsList } from "@/components/dashboard/RecentAttemptsList";
 import { DashboardSnapshotWriter } from "@/components/dashboard/DashboardSnapshotWriter";
 import { Button } from "@/components/ui/Button";
@@ -25,10 +25,10 @@ export default async function DashboardPage() {
 
   const hasCoffee = user ? await hasAnyCoffee(supabase, user.id) : false;
 
-  const [overview, recentAttempts] =
+  const [recipe, recentAttempts] =
     hasCoffee && user
       ? await Promise.all([
-          getDashboardOverview(supabase),
+          getDashboardRecipe(supabase, user.id),
           getRecentAttempts(supabase, user.id, 4, { excludeHiddenFromDashboard: true }),
         ])
       : [null, []];
@@ -84,11 +84,18 @@ export default async function DashboardPage() {
 
             <NewBrewCta />
 
-            <DashboardStats
-              totalBrews={overview?.totalBrews ?? 0}
-              avgRating={overview?.avgRating ?? null}
-              favoriteMethod={overview?.favoriteMethod ?? null}
-            />
+            {recipe && (
+              <RecipeCard
+                attempt={recipe.attempt}
+                coffeeId={recipe.coffeeId}
+                coffeeName={recipe.coffeeName}
+                roaster={recipe.roaster}
+                targetBagId={recipe.targetBagId}
+                userId={user?.id ?? ""}
+                label={recipe.isPreferred ? undefined : dict.dashboard.lastAttempt}
+                icon={recipe.isPreferred ? undefined : IconPreparar}
+              />
+            )}
 
             <div>
               <div className="flex items-center justify-between">
