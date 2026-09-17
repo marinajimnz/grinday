@@ -79,7 +79,7 @@ export function NewBrewWizard({
       )}
 
       <div className="mt-6">
-        <BrewPicker coffees={coffees} onSelect={handleSelectCoffee} disabled={isPending} />
+        <BrewPicker coffees={coffees} method={method} onSelect={handleSelectCoffee} disabled={isPending} />
       </div>
     </div>
   );

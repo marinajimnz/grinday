@@ -66,10 +66,11 @@ export async function getAttemptMedia(supabase: Client, attemptId: string) {
   return attachSignedUrls(supabase, data ?? []);
 }
 
-// Only what BrewPicker's "receta preferida" badge needs to display — the
-// actual recipe values for a new brew are seeded per (coffee, method) by
-// getLastAttemptForCoffeeAndMethod below, not from this preferred pointer.
-const PREFERRED_ATTEMPT_RECIPE_FIELDS = "id, attempt_no";
+// What BrewPicker's "receta preferida" badge needs to display, plus the
+// method it was brewed with: a preferred V60 recipe says nothing about the
+// espresso you're about to pull, so both the badge and the seeding in
+// startBrewAction have to check it before claiming anything.
+const PREFERRED_ATTEMPT_RECIPE_FIELDS = "id, attempt_no, method";
 
 export type BrewableCoffee = {
   coffeeId: string;
@@ -77,7 +78,7 @@ export type BrewableCoffee = {
   roaster: string;
   bagId: string;
   coverPhotoUrl: string | null;
-  preferredAttempt: Pick<BrewAttemptRow, "id" | "attempt_no"> | null;
+  preferredAttempt: Pick<BrewAttemptRow, "id" | "attempt_no" | "method"> | null;
 };
 
 export const RECIPE_SOURCE_ATTEMPT_FIELDS =
