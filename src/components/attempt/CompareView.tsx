@@ -1,6 +1,6 @@
 import { IconFavorita } from "@/components/icons/pencil-icons";
 import { cn } from "@/lib/cn";
-import { Button } from "@/components/ui/Button";
+import { BrewFromAttemptButton } from "@/components/brew/BrewFromAttemptButton";
 import { getCompareFields } from "@/features/attempts/compareFields";
 import type { BrewAttemptRow } from "@/features/attempts/queries";
 import type { Dictionary } from "@/lib/i18n/dictionaries/es";
@@ -128,14 +128,9 @@ export function CompareView({
             <th scope="row" className={cn(stickyLabelCell, "bg-surface")} />
             {attempts.map((attempt) => (
               <td key={attempt.id} className="bg-surface px-3 py-3 align-top">
-                <Button
-                  href={`/attempts/new?coffeeBagId=${attempt.coffee_bag_id}&duplicateFrom=${attempt.id}`}
-                  variant="secondary"
-                  fullWidth
-                  className="px-3"
-                >
+                <BrewFromAttemptButton attemptId={attempt.id} fullWidth className="px-3">
                   {dict.attempts.useAsBase}
-                </Button>
+                </BrewFromAttemptButton>
               </td>
             ))}
           </tr>

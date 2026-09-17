@@ -489,8 +489,6 @@ const en: Dictionary = {
     newTitle: "New attempt",
     newSubtitle:
       "The built-in timer arrives in a later phase; for now, log the extraction time by hand if you know it.",
-    basedOnAttempt: "Starting from attempt",
-    basedOnAttemptSuffix: ". Adjust whatever you want to change.",
     saveAttempt: "Save attempt",
     grinding: "Grinding",
     grindSeconds: "Grind seconds",

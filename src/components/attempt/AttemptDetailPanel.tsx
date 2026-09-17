@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Copy, Pencil } from "lucide-react";
 import { IconEliminar, IconFavorita } from "@/components/icons/pencil-icons";
 import { EditAttemptForm } from "./EditAttemptForm";
+import { BrewFromAttemptButton } from "@/components/brew/BrewFromAttemptButton";
 import { Button } from "@/components/ui/Button";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { TASTE_DIMENSIONS } from "@/features/attempts/constants";
@@ -104,14 +105,10 @@ export function AttemptDetailPanel({
           {isPreferred ? dict.attempts.removeFromPreferred : dict.attempts.markAsPreferred}
         </Button>
 
-        <Button
-          href={`/attempts/new?coffeeBagId=${attempt.coffee_bag_id}&duplicateFrom=${attempt.id}`}
-          variant="secondary"
-          className="px-3"
-        >
+        <BrewFromAttemptButton attemptId={attempt.id} className="px-3">
           <Copy aria-hidden className="size-4" />
           {dict.attempts.duplicateAndAdjust}
-        </Button>
+        </BrewFromAttemptButton>
 
         <Button
           variant="destructive"
