@@ -73,8 +73,17 @@ test("guided brew: recipe, timer, photo step, and result", async ({ page, testUs
   // Step 4/6 — timer.
   await expect(page.getByText("Paso 4 de 6")).toBeVisible();
   await expect(page.getByRole("heading", { name: "Cronómetro" })).toBeVisible();
-  await page.getByRole("button", { name: "Play" }).click();
+  // "Guardar sin cronometrar" is the escape hatch for a brew you never
+  // timed, so it's on screen right up until the shot starts.
+  await expect(page.getByRole("button", { name: "Guardar sin cronometrar" })).toBeVisible();
+
+  await page.getByRole("button", { name: "Empezar" }).click();
   await expect(page.getByText("En marcha")).toBeVisible();
+
+  // Once it's running that same button would save with extractionMs null,
+  // from a full-width target directly under "Parar" — it has to be gone.
+  await expect(page.getByRole("button", { name: "Guardar sin cronometrar" })).toHaveCount(0);
+
   await page.waitForTimeout(1200);
   await page.getByRole("button", { name: "Parar" }).click();
 
