@@ -37,7 +37,7 @@ export default async function DashboardPage() {
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-8 md:px-8">
-      <h1 className="flex items-center gap-2 font-display text-4xl text-ink">
+      <h1 className="flex flex-wrap items-center gap-x-2 font-display text-4xl break-words text-ink">
         {profile?.display_name ? (
           <>
             {profile.display_name}
@@ -100,7 +100,10 @@ export default async function DashboardPage() {
             <div>
               <div className="flex items-center justify-between">
                 <h2 className="text-lg font-semibold text-ink">{dict.dashboard.recentBrews}</h2>
-                <Link href="/attempts" className="text-sm font-medium text-ink-muted underline">
+                <Link
+                  href="/attempts"
+                  className="-mr-3 inline-flex min-h-11 items-center px-3 text-sm font-medium text-ink-muted underline"
+                >
                   {dict.dashboard.viewAll}
                 </Link>
               </div>

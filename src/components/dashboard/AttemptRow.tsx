@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { MoreVertical } from "lucide-react";
 import { cn } from "@/lib/cn";
+import { formatDuration } from "@/features/brew/formatTime";
 import { METHOD_ICONS } from "@/features/equipment/methodIcons";
 import {
   IconAnadir,
@@ -24,14 +25,6 @@ import { useLongPress } from "@/components/ui/useLongPress";
 import { buildDraftFromRecipe, saveDraft } from "@/features/brew/draft";
 import { startBrewFromAttemptAction } from "@/features/brew/actions";
 import { deleteAttemptAction, setAttemptDashboardVisibilityAction } from "@/features/attempts/actions";
-
-function formatDuration(extractionMs: number | null) {
-  if (extractionMs == null) return null;
-  const totalSeconds = Math.round(extractionMs / 1000);
-  const minutes = Math.floor(totalSeconds / 60);
-  const seconds = totalSeconds % 60;
-  return `${minutes}:${String(seconds).padStart(2, "0")}`;
-}
 
 // The ratio used to be printed here too, between the two weights it's
 // computed from and the coffee's name. It cost about fifty pixels on a line
@@ -85,7 +78,8 @@ export function AttemptRow({ attempt }: { attempt: RecentAttempt }) {
 
   const method = (attempt.method as BrewMethod) ?? "espresso";
   const Icon = METHOD_ICONS[method] ?? IconCafe;
-  const duration = formatDuration(attempt.extraction_ms);
+  const duration =
+    attempt.extraction_ms != null ? formatDuration(attempt.extraction_ms) : null;
 
   function openMenu() {
     setError(null);

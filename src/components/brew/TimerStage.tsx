@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/cn";
-import { formatElapsed } from "@/features/brew/formatElapsed";
+import { formatElapsed } from "@/features/brew/formatTime";
 import type { BrewMethod } from "@/features/equipment/constants";
 import { useDictionary } from "@/components/i18n/LocaleProvider";
 

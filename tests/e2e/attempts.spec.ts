@@ -71,8 +71,8 @@ test("logs an attempt manually, marks it preferred, duplicates it, and compares 
   // Preparar / quitar del inicio / eliminar used to need a held finger and
   // carried no mark saying so, which left them unreachable from a keyboard
   // and undiscoverable by eye. The row now carries the control.
-  await page.getByRole("button", { name: "Acciones de la preparación" }).first().click();
-  const menu = page.getByRole("menu", { name: "Acciones de la preparación" });
+  await page.getByRole("button", { name: "Acciones del intento" }).first().click();
+  const menu = page.getByRole("menu", { name: "Acciones del intento" });
   await expect(menu).toBeVisible();
   await expect(menu.getByRole("menuitem", { name: "Preparar" })).toBeVisible();
   await expect(menu.getByRole("menuitem", { name: "Quitar del inicio" })).toBeVisible();

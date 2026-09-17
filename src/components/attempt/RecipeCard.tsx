@@ -3,6 +3,7 @@ import { PrepareWithRecipeButton } from "@/components/brew/PrepareWithRecipeButt
 import { Button } from "@/components/ui/Button";
 import type { BrewAttemptRow } from "@/features/attempts/queries";
 import type { RecipeSourceAttempt } from "@/features/brew/draft";
+import { formatDuration } from "@/features/brew/formatTime";
 import { getLocale } from "@/lib/i18n/locale";
 import { getDictionary } from "@/lib/i18n/get-dictionary";
 
@@ -60,7 +61,7 @@ export async function RecipeCard({
   const time =
     attempt.extraction_ms != null
       ? {
-          value: `${(attempt.extraction_ms / 1000).toFixed(1)}s`,
+          value: formatDuration(attempt.extraction_ms),
           label: dict.dashboard.extraction,
         }
       : null;

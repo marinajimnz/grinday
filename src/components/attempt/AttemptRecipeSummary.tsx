@@ -3,6 +3,7 @@
 import { IconCafe } from "@/components/icons/pencil-icons";
 import { METHOD_ICONS } from "@/features/equipment/methodIcons";
 import { computeRatios, formatRatio, getRecipeFieldConfig } from "@/features/brew/recipeFieldConfig";
+import { formatDuration } from "@/features/brew/formatTime";
 import type { BrewMethod } from "@/features/equipment/constants";
 import type { BrewAttemptRow } from "@/features/attempts/queries";
 import { useDictionary } from "@/components/i18n/LocaleProvider";
@@ -33,7 +34,7 @@ export function AttemptRecipeSummary({ attempt }: { attempt: BrewAttemptRow }) {
     brewWeightG,
   });
 
-  const targetSeconds = attempt.target_time_ms != null ? attempt.target_time_ms / 1000 : null;
+  const targetTimeMs = attempt.target_time_ms;
   const metrics = [
     doseG != null && { label: dict.brew.doseG, value: `${doseG} g` },
     config.hasWater &&
@@ -78,8 +79,8 @@ export function AttemptRecipeSummary({ attempt }: { attempt: BrewAttemptRow }) {
     },
     attempt.extraction_ms != null && {
       label: dict.brew[config.timeLabelKey],
-      value: `${(attempt.extraction_ms / 1000).toFixed(1)} s`,
-      caption: targetSeconds != null ? `${dict.brew.target} ${targetSeconds.toFixed(0)} s` : undefined,
+      value: formatDuration(attempt.extraction_ms),
+      caption: targetTimeMs != null ? `${dict.brew.target} ${formatDuration(targetTimeMs)}` : undefined,
     },
     config.hasMoka &&
       attempt.moka_cup_size != null && {

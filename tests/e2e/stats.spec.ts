@@ -51,7 +51,7 @@ test("dashboard shows the active coffee and stats aggregate once there's enough 
   await logRatedAttempt(page, bagId, "5");
   await logRatedAttempt(page, bagId, "3");
 
-  // Dashboard: all three attempts show up under "Preparaciones recientes",
+  // Dashboard: all three attempts show up under "Intentos recientes",
   // newest first. This used to assert a single "café activo" card with
   // "Último intento: #3"; that card is gone — the dashboard lists the recent
   // attempts instead, so the coffee's name now appears once per row and the

@@ -97,15 +97,17 @@ const es = {
     viewAttempt: "Ver intento",
     whatToday: "¿Qué café preparamos hoy?",
     newBrew: "Nueva preparación",
-    brews: "Brews",
-    average: "Media",
-    favorite: "Favorito",
-    recentBrews: "Preparaciones recientes",
-    allBrewsSubtitle: "Todo tu historial de preparaciones.",
+    // "Preparación" is the act — the flow, the draft, the timer running.
+    // "Intento" is the record it leaves behind: the thing that carries a
+    // number, gets compared, counted and rated. The two had drifted into
+    // naming the same saved row, so a list of records read "Preparaciones
+    // recientes" while each one opened as "Intento #3". Keep the split.
+    recentBrews: "Intentos recientes",
+    allBrewsSubtitle: "Todo tu historial de intentos.",
     viewAll: "Ver todas",
     noBrewsYet: "Aún no has preparado nada.",
     noRecipeData: "Sin datos de receta",
-    today: "ahora",
+    today: "hoy",
     yesterday: "ayer",
     draftInProgress: "Preparación sin terminar",
     resumeDraft: "Continuar",
@@ -114,7 +116,7 @@ const es = {
     draftAbandonedContinueLater: "Seguir más tarde",
     draftAbandonedDiscard: "Descartar",
     draftDiscardConfirm: "¿Descartar esta preparación? Se perderán sus fotos y sus tiempos, y no podrás recuperarla.",
-    attemptMenuLabel: "Acciones de la preparación",
+    attemptMenuLabel: "Acciones del intento",
     removeFromDashboard: "Quitar del inicio",
     includeInDashboard: "Incluir en el inicio",
     deleteAttemptConfirm: "¿Eliminar este intento? No podrás recuperarlo.",
