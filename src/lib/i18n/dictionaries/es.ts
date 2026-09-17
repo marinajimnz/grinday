@@ -538,6 +538,7 @@ const es = {
     compare: "Comparar",
     technical: "Técnico",
     useAsBase: "Usar como base",
+    machineSettings: "Ajustes de máquina",
   },
   comparePage: {
     backToCoffee: "Volver al café",

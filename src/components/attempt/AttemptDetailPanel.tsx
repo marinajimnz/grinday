@@ -5,7 +5,9 @@ import { useRouter } from "next/navigation";
 import { Copy, Pencil } from "lucide-react";
 import { IconEliminar, IconFavorita } from "@/components/icons/pencil-icons";
 import { EditAttemptForm } from "./EditAttemptForm";
+import { AttemptRecipeSummary } from "./AttemptRecipeSummary";
 import { BrewFromAttemptButton } from "@/components/brew/BrewFromAttemptButton";
+import { SettingsAccordionCard } from "@/components/settings/SettingsAccordionCard";
 import { Button } from "@/components/ui/Button";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { TASTE_DIMENSIONS } from "@/features/attempts/constants";
@@ -68,6 +70,24 @@ export function AttemptDetailPanel({
     );
   }
 
+  // The Sage-era columns the manual form still collects. They're real data
+  // for whoever recorded them, but they're settings of one particular
+  // machine — they don't belong in front of the recipe, and for anything
+  // logged through the guided flow they're empty anyway.
+  const machineFields = [
+    attempt.upper_burr_setting,
+    attempt.dose_mode,
+    attempt.dose_feedback,
+    attempt.used_bit_more || null,
+    attempt.basket_size,
+    attempt.temperature_offset_c,
+    attempt.shot_mode,
+    attempt.preinfusion_ms,
+    attempt.pressure_observation,
+    attempt.output_volume_ml,
+  ];
+  const hasMachineFields = machineFields.some((v) => v !== null && v !== undefined);
+
   return (
     <div className="rounded-card border border-border bg-surface p-5">
       <div className="flex items-start justify-between gap-4">
@@ -83,7 +103,18 @@ export function AttemptDetailPanel({
         </Button>
       </div>
 
+      {/* First thing on the page, because it's the reason you opened it:
+          what you brewed, and whether to brew it again. */}
+      <div className="mt-4">
+        <AttemptRecipeSummary attempt={attempt} />
+      </div>
+
       <div className="mt-4 flex flex-wrap gap-2">
+        <BrewFromAttemptButton attemptId={attempt.id} className="px-3">
+          <Copy aria-hidden className="size-4" />
+          {dict.attempts.duplicateAndAdjust}
+        </BrewFromAttemptButton>
+
         <Button
           variant="secondary"
           className="border-coffee px-3 text-coffee"
@@ -104,107 +135,7 @@ export function AttemptDetailPanel({
           />
           {isPreferred ? dict.attempts.removeFromPreferred : dict.attempts.markAsPreferred}
         </Button>
-
-        <BrewFromAttemptButton attemptId={attempt.id} className="px-3">
-          <Copy aria-hidden className="size-4" />
-          {dict.attempts.duplicateAndAdjust}
-        </BrewFromAttemptButton>
-
-        <Button
-          variant="destructive"
-          className="px-3"
-          disabled={isDeleting}
-          onClick={() => {
-            setDeleteError(null);
-            setConfirmDeleteOpen(true);
-          }}
-        >
-          <IconEliminar aria-hidden className="size-4" />
-          {dict.common.delete}
-        </Button>
       </div>
-
-      {deleteError && (
-        <p role="alert" className="mt-2 text-sm text-danger">
-          {deleteError}
-        </p>
-      )}
-
-      <ConfirmDialog
-        open={confirmDeleteOpen}
-        message={dict.dashboard.deleteAttemptConfirm}
-        onConfirm={handleDelete}
-        onCancel={() => setConfirmDeleteOpen(false)}
-      />
-
-      <dl className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-3">
-        <Stat label={dict.brew.grindSetting} value={attempt.grind_setting} />
-        <Stat label={dict.brew.grinderUpperBurr} value={attempt.grinder_upper_burr} />
-        <Stat label={dict.brew.grinderLowerBurr} value={attempt.grinder_lower_burr} />
-        <Stat label={dict.attempts.grindSeconds} value={attempt.grind_seconds} />
-        <Stat
-          label={dict.brew.doseMode}
-          value={
-            attempt.dose_mode
-              ? dict.enums.doseMode[attempt.dose_mode as keyof typeof dict.enums.doseMode]
-              : null
-          }
-        />
-        <Stat
-          label={dict.attempts.doseFeedback}
-          value={
-            attempt.dose_feedback
-              ? dict.enums.doseFeedback[attempt.dose_feedback as keyof typeof dict.enums.doseFeedback]
-              : null
-          }
-        />
-        <Stat label={dict.attempts.aBitMore} value={attempt.used_bit_more ? dict.attempts.yes : null} />
-        <Stat
-          label={dict.attempts.basketSize}
-          value={
-            attempt.basket_size
-              ? dict.enums.basketSize[attempt.basket_size as keyof typeof dict.enums.basketSize]
-              : null
-          }
-        />
-        <Stat
-          label={dict.attempts.temperatureOffsetShort}
-          value={attempt.temperature_offset_c != null ? `${attempt.temperature_offset_c} °C` : null}
-        />
-        <Stat label={dict.brew.upperBurr} value={attempt.upper_burr_setting} />
-        <Stat
-          label={dict.brew.shotMode}
-          value={
-            attempt.shot_mode
-              ? dict.enums.shotMode[attempt.shot_mode as keyof typeof dict.enums.shotMode]
-              : null
-          }
-        />
-        <Stat
-          label={dict.attempts.extraction}
-          value={attempt.extraction_ms ? `${(attempt.extraction_ms / 1000).toFixed(1)} s` : null}
-        />
-        <Stat
-          label={dict.attempts.preinfusionShort}
-          value={attempt.preinfusion_ms ? `${attempt.preinfusion_ms} ms` : null}
-        />
-        <Stat
-          label={dict.attempts.pressureObservation}
-          value={
-            attempt.pressure_observation
-              ? dict.enums.pressureObservation[
-                  attempt.pressure_observation as keyof typeof dict.enums.pressureObservation
-                ]
-              : null
-          }
-        />
-        <Stat label={dict.attempts.input} value={attempt.input_weight_g ? `${attempt.input_weight_g} g` : null} />
-        <Stat label={dict.attempts.output} value={attempt.output_weight_g ? `${attempt.output_weight_g} g` : null} />
-        <Stat
-          label={dict.attempts.volume}
-          value={attempt.output_volume_ml ? `${attempt.output_volume_ml} ml` : null}
-        />
-      </dl>
 
       {(TASTE_DIMENSIONS.some((d) => attempt[d] != null) || attempt.overall_rating) && (
         <div className="mt-6 border-t border-border pt-4">
@@ -231,6 +162,120 @@ export function AttemptDetailPanel({
           <p className="mt-1 whitespace-pre-wrap text-sm text-ink">{attempt.notes}</p>
         </div>
       )}
+
+      {hasMachineFields && (
+        <div className="mt-6">
+          <SettingsAccordionCard title={dict.attempts.machineSettings}>
+            <dl className="grid grid-cols-2 gap-4 sm:grid-cols-3">
+              <Stat label={dict.brew.upperBurr} value={attempt.upper_burr_setting} />
+              <Stat
+                label={dict.brew.doseMode}
+                value={
+                  attempt.dose_mode
+                    ? dict.enums.doseMode[attempt.dose_mode as keyof typeof dict.enums.doseMode]
+                    : null
+                }
+              />
+              <Stat
+                label={dict.attempts.doseFeedback}
+                value={
+                  attempt.dose_feedback
+                    ? dict.enums.doseFeedback[
+                        attempt.dose_feedback as keyof typeof dict.enums.doseFeedback
+                      ]
+                    : null
+                }
+              />
+              <Stat
+                label={dict.attempts.aBitMore}
+                value={attempt.used_bit_more ? dict.attempts.yes : null}
+              />
+              <Stat
+                label={dict.attempts.basketSize}
+                value={
+                  attempt.basket_size
+                    ? dict.enums.basketSize[attempt.basket_size as keyof typeof dict.enums.basketSize]
+                    : null
+                }
+              />
+              <Stat
+                label={dict.attempts.temperatureOffsetShort}
+                value={
+                  attempt.temperature_offset_c != null ? `${attempt.temperature_offset_c} °C` : null
+                }
+              />
+              <Stat
+                label={dict.brew.shotMode}
+                value={
+                  attempt.shot_mode
+                    ? dict.enums.shotMode[attempt.shot_mode as keyof typeof dict.enums.shotMode]
+                    : null
+                }
+              />
+              <Stat
+                label={dict.attempts.preinfusionShort}
+                value={attempt.preinfusion_ms ? `${attempt.preinfusion_ms} ms` : null}
+              />
+              <Stat
+                label={dict.attempts.pressureObservation}
+                value={
+                  attempt.pressure_observation
+                    ? dict.enums.pressureObservation[
+                        attempt.pressure_observation as keyof typeof dict.enums.pressureObservation
+                      ]
+                    : null
+                }
+              />
+              {/* Only when it isn't already standing in for the dose above. */}
+              <Stat
+                label={dict.attempts.input}
+                value={
+                  attempt.dose_g != null && attempt.input_weight_g
+                    ? `${attempt.input_weight_g} g`
+                    : null
+                }
+              />
+              <Stat
+                label={dict.attempts.volume}
+                value={attempt.output_volume_ml ? `${attempt.output_volume_ml} ml` : null}
+              />
+            </dl>
+          </SettingsAccordionCard>
+        </div>
+      )}
+
+      {deleteError && (
+        <p role="alert" className="mt-2 text-sm text-danger">
+          {deleteError}
+        </p>
+      )}
+
+      {/* Deleting an attempt is rare and irreversible, so it sits apart at
+          the end rather than carrying the heaviest fill on the page next to
+          the two things you actually came to do. */}
+      <div className="mt-6 border-t border-border pt-4">
+        <Button
+          variant="secondary"
+          className="border-danger/40 px-3 text-danger"
+          disabled={isDeleting}
+          onClick={() => {
+            setDeleteError(null);
+            setConfirmDeleteOpen(true);
+          }}
+        >
+          <IconEliminar aria-hidden className="size-4" />
+          {dict.common.delete}
+        </Button>
+      </div>
+
+      <ConfirmDialog
+        open={confirmDeleteOpen}
+        message={dict.dashboard.deleteAttemptConfirm}
+        confirmLabel={dict.common.delete}
+        confirmVariant="destructive"
+        onConfirm={handleDelete}
+        onCancel={() => setConfirmDeleteOpen(false)}
+      />
     </div>
   );
 }

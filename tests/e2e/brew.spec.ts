@@ -124,6 +124,14 @@ test("guided brew: recipe, timer, photo step, and result", async ({ page, testUs
   await expect(page.getByRole("heading", { name: "Intento #1" })).toBeVisible();
   await expect(page.getByRole("heading", { name: "Fotos del espresso" })).toBeVisible();
 
+  // The recipe this brew was actually pulled with — 21 g in, 42 g out — has
+  // to be the thing the page opens on. It used to show the manual form's
+  // columns instead, which a guided brew never writes, so the page you came
+  // to for the recipe had everything except the recipe.
+  await expect(page.getByText("1:2", { exact: true })).toBeVisible();
+  await expect(page.getByText("21 g")).toBeVisible();
+  await expect(page.getByText("42 g")).toBeVisible();
+
   // "Duplicar y ajustar" is a preparation like any other, so it has to land
   // on the same live brew flow — step 3/6, recipe card grid — seeded from
   // this attempt, not on the plain manual form at /attempts/new.

@@ -540,6 +540,7 @@ const en: Dictionary = {
     compare: "Compare",
     technical: "Technical",
     useAsBase: "Use as base",
+    machineSettings: "Machine settings",
   },
   comparePage: {
     backToCoffee: "Back to coffee",

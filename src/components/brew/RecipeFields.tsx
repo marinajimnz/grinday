@@ -3,7 +3,7 @@
 import { cn } from "@/lib/cn";
 import { SteppableFieldGrid, type SteppableField } from "./SteppableFieldGrid";
 import { SettingsAccordionCard } from "@/components/settings/SettingsAccordionCard";
-import { getRecipeFieldConfig, formatRatio } from "@/features/brew/recipeFieldConfig";
+import { computeRatios, getRecipeFieldConfig, formatRatio } from "@/features/brew/recipeFieldConfig";
 import { HEAT_INTENSITIES } from "@/features/attempts/constants";
 import type { BrewDraftRecipe } from "@/features/brew/draft";
 import { useDictionary } from "@/components/i18n/LocaleProvider";
@@ -23,14 +23,14 @@ export function RecipeFields({
     onChange({ ...value, [key]: v });
   }
 
-  const baseDenominator = config.ratioDenominator === "targetWeightG" ? value.targetWeightG : value.waterG;
-  const hasDilution = config.hasDilutionWater && value.dilutionWaterG != null;
-  const finalDenominator = hasDilution ? (value.waterG ?? 0) + (value.dilutionWaterG ?? 0) : baseDenominator;
-  const finalRatio = value.doseG && finalDenominator ? finalDenominator / value.doseG : undefined;
-  // Brew-only ratio (before dilution) — only worth a separate line when it
-  // actually differs from the final one.
-  const brewRatio =
-    hasDilution && value.doseG && value.waterG ? value.waterG / value.doseG : undefined;
+  // Nothing has been brewed yet, so the ratio is measured against the
+  // target weight rather than whatever ends up in the cup.
+  const { ratio: finalRatio, brewRatio } = computeRatios(config, {
+    doseG: value.doseG,
+    waterG: value.waterG,
+    dilutionWaterG: value.dilutionWaterG,
+    brewWeightG: value.targetWeightG,
+  });
 
   const fields: SteppableField[] = [
     { key: "doseG", label: dict.brew.doseG, value: value.doseG, onChange: (v) => set("doseG", v), step: 0.5, min: 0, suffix: "g" },

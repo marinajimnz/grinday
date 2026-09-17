@@ -83,6 +83,33 @@ export function getRecipeFieldConfig(method: BrewMethod): RecipeFieldConfig {
   return { ...RECIPE_FIELD_CONFIG_DEFAULTS[category], ...RECIPE_FIELD_CONFIG_OVERRIDES[method] };
 }
 
+// The one place the ratio is worked out, so the number you set in the
+// recipe step, the one you correct on the result step, and the one you read
+// back on the attempt can't drift apart. The caller decides what counts as
+// the brew weight — the target while you're planning, what actually landed
+// in the cup afterwards — because that's the only part that differs.
+export function computeRatios(
+  config: RecipeFieldConfig,
+  values: {
+    doseG?: number | null;
+    waterG?: number | null;
+    dilutionWaterG?: number | null;
+    brewWeightG?: number | null;
+  },
+): { ratio?: number; brewRatio?: number } {
+  const { doseG, waterG, dilutionWaterG, brewWeightG } = values;
+  // Dilution water is still water, so it counts towards a coffee/water
+  // ratio — and says nothing about an espresso measured against the cup.
+  const hasDilution = config.hasDilutionWater && dilutionWaterG != null;
+  const waterDenominator = hasDilution ? (waterG ?? 0) + dilutionWaterG : waterG;
+  const denominator = config.ratioDenominator === "targetWeightG" ? brewWeightG : waterDenominator;
+  return {
+    ratio: doseG && denominator ? denominator / doseG : undefined,
+    // Only worth showing separately when dilution actually moved it.
+    brewRatio: hasDilution && doseG && waterG ? waterG / doseG : undefined,
+  };
+}
+
 // "1:2" for a whole ratio, "1:16.7" when it isn't — never a forced
 // trailing ".0".
 export function formatRatio(ratio: number): string {
