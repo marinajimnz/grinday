@@ -52,3 +52,6 @@ next-env.d.ts
 /blob-report
 /playwright/.cache
 
+
+# impeccable (design skill: critique snapshots, detector hook cache, local config)
+/.impeccable
