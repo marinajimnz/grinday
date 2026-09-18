@@ -194,3 +194,26 @@ as $$
   group by grind_setting
   order by grind_setting;
 $$;
+
+-- Home screen aggregate: total brews, average rating, most-used method.
+create or replace function public.dashboard_overview()
+returns table (
+  total_brews bigint,
+  avg_rating numeric,
+  favorite_method text
+)
+language sql
+security invoker
+stable
+as $$
+  select
+    (select count(*) from public.brew_attempts where user_id = auth.uid()),
+    (select round(avg(overall_rating), 1) from public.brew_attempts where overall_rating is not null and user_id = auth.uid()),
+    (
+      select method from public.brew_attempts
+      where user_id = auth.uid()
+      group by method
+      order by count(*) desc, max(created_at) desc
+      limit 1
+    );
+$$;
