@@ -5,7 +5,6 @@ import {
   DOSE_FEEDBACKS,
   DOSE_MODES,
   HEAT_INTENSITIES,
-  PRESSURE_OBSERVATIONS,
   SHOT_MODES,
 } from "@/features/attempts/constants";
 import { BREW_METHODS } from "@/features/equipment/constants";
@@ -43,7 +42,6 @@ export const attemptFieldsSchema = z.object({
   grindSeconds: optionalPositiveNumber,
   doseMode: optionalEnum(DOSE_MODES),
   doseFeedback: optionalEnum(DOSE_FEEDBACKS),
-  usedBitMore: z.boolean().default(false),
 
   // Configuración del molinillo (opcional, todos los métodos): molinillos
   // de doble muela (p. ej. Sage) exponen un dial en el molinillo y otro en
@@ -61,13 +59,10 @@ export const attemptFieldsSchema = z.object({
   // Extracción
   shotMode: optionalEnum(SHOT_MODES),
   extractionMs: optionalInt,
-  preinfusionMs: optionalInt,
-  pressureObservation: optionalEnum(PRESSURE_OBSERVATIONS),
 
   // Peso / volumen
   inputWeightG: optionalPositiveNumber,
   outputWeightG: optionalPositiveNumber,
-  outputVolumeMl: optionalPositiveNumber,
 
   // Cata
   acidity: optionalRating,

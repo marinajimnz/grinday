@@ -38,7 +38,6 @@ export type BrewDraftRecipe = {
   temperatureOffsetC?: number;
   upperBurrSetting?: number;
   shotMode?: "single" | "double" | "manual";
-  preinfusionMs?: number;
 };
 
 export type BrewDraftPostShot = {
@@ -55,10 +54,7 @@ export type BrewDraftPostShot = {
   notes?: string;
   // Legacy Sage-only fields — same reasoning as BrewDraftRecipe above.
   doseFeedback?: "under" | "ideal" | "over" | "unknown";
-  usedBitMore?: boolean;
-  pressureObservation?: "low" | "espresso_range" | "high" | "unknown";
   inputWeightG?: number;
-  outputVolumeMl?: number;
 };
 
 // A photo taken during the photo step — already uploaded to Storage (under

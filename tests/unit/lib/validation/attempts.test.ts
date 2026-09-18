@@ -71,12 +71,12 @@ describe("attemptFieldsSchema", () => {
     const result = attemptFieldsSchema.safeParse({
       ...validAttempt,
       doseFeedback: "",
-      pressureObservation: "",
+      shotMode: "",
     });
     expect(result.success).toBe(true);
     if (result.success) {
       expect(result.data.doseFeedback).toBeUndefined();
-      expect(result.data.pressureObservation).toBeUndefined();
+      expect(result.data.shotMode).toBeUndefined();
     }
   });
 
@@ -84,12 +84,6 @@ describe("attemptFieldsSchema", () => {
     expect(attemptFieldsSchema.safeParse({ ...validAttempt, overallRating: 6 }).success).toBe(
       false,
     );
-  });
-
-  it("defaults usedBitMore to false", () => {
-    const result = attemptFieldsSchema.safeParse(validAttempt);
-    expect(result.success).toBe(true);
-    if (result.success) expect(result.data.usedBitMore).toBe(false);
   });
 });
 

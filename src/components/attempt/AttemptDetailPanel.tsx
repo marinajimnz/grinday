@@ -158,7 +158,6 @@ export function AttemptDetailPanel({
               : null
           }
         />
-        <Stat label={dict.attempts.aBitMore} value={attempt.used_bit_more ? dict.attempts.yes : null} />
         <Stat
           label={dict.attempts.basketSize}
           value={
@@ -184,26 +183,8 @@ export function AttemptDetailPanel({
           label={dict.attempts.extraction}
           value={attempt.extraction_ms ? `${(attempt.extraction_ms / 1000).toFixed(1)} s` : null}
         />
-        <Stat
-          label={dict.attempts.preinfusionShort}
-          value={attempt.preinfusion_ms ? `${attempt.preinfusion_ms} ms` : null}
-        />
-        <Stat
-          label={dict.attempts.pressureObservation}
-          value={
-            attempt.pressure_observation
-              ? dict.enums.pressureObservation[
-                  attempt.pressure_observation as keyof typeof dict.enums.pressureObservation
-                ]
-              : null
-          }
-        />
         <Stat label={dict.attempts.input} value={attempt.input_weight_g ? `${attempt.input_weight_g} g` : null} />
         <Stat label={dict.attempts.output} value={attempt.output_weight_g ? `${attempt.output_weight_g} g` : null} />
-        <Stat
-          label={dict.attempts.volume}
-          value={attempt.output_volume_ml ? `${attempt.output_volume_ml} ml` : null}
-        />
       </dl>
 
       {(TASTE_DIMENSIONS.some((d) => attempt[d] != null) || attempt.overall_rating) && (
