@@ -45,17 +45,6 @@ export async function getAttemptsByIds(supabase: Client, ids: string[], userId: 
   return ids.map((id) => byId.get(id)).filter((a): a is BrewAttemptRow => Boolean(a));
 }
 
-export async function getUserDefaultMachine(supabase: Client, userId: string) {
-  const { data, error } = await supabase
-    .from("user_machines")
-    .select("*, machine_model:machine_models(*)")
-    .eq("user_id", userId)
-    .eq("is_default", true)
-    .maybeSingle();
-  if (error) throw error;
-  return data;
-}
-
 export async function getAttemptMedia(supabase: Client, attemptId: string) {
   const { data, error } = await supabase
     .from("attempt_media")
