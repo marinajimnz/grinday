@@ -10,7 +10,6 @@ import { buildDraftFromRecipe, saveDraft } from "@/features/brew/draft";
 import type { BrewMethod } from "@/features/equipment/constants";
 import type { BrewableCoffee } from "@/features/attempts/queries";
 import { useDictionary } from "@/components/i18n/LocaleProvider";
-import { Button } from "@/components/ui/Button";
 
 export function NewBrewWizard({
   availableMethods,
@@ -53,7 +52,7 @@ export function NewBrewWizard({
   if (!method) {
     return (
       <div>
-        <BrewStepHeader step={1} title={dict.brew.chooseMethodTitle} />
+        <BrewStepHeader step={1} name={dict.brew.stepNameMethod} heading={dict.brew.chooseMethodTitle} />
         <p className="mt-1 text-sm text-ink-muted">{dict.brew.chooseMethodSubtitle}</p>
         <div className="mt-6">
           <BrewMethodSelectCards methods={availableMethods} onSelect={setMethod} />
@@ -64,13 +63,12 @@ export function NewBrewWizard({
 
   return (
     <div>
-      <Button type="button" variant="secondary" onClick={() => setMethod(null)}>
-        {dict.common.back}
-      </Button>
-
-      <div className="mt-4">
-        <BrewStepHeader step={2} title={dict.brew.chooseCoffeeTitle} />
-      </div>
+      <BrewStepHeader
+        step={2}
+        name={dict.brew.stepNameCoffee}
+        heading={dict.brew.chooseCoffeeTitle}
+        onBack={() => setMethod(null)}
+      />
 
       {error && (
         <p role="alert" className="mt-3 text-sm text-danger">

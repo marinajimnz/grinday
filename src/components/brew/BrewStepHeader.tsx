@@ -1,35 +1,78 @@
+import { cn } from "@/lib/cn";
+import { IconChevronIzq } from "@/components/icons/pencil-icons";
 import { useDictionary } from "@/components/i18n/LocaleProvider";
 
 // Shared step header for the whole "Preparar" journey — method + coffee
 // pick in /brew/new, then recipe/timer/photo/result in /brew/live/[draftId]
 // — so the progress bar reads as one continuous 6-step flow across both
 // routes.
+//
+// Six dashes rather than one filling bar: the flow has six discrete steps
+// and the bar could only ever say "somewhere past two thirds". The step you
+// are on is the last lit one, so the count and the drawing agree without
+// the drawing having to be read.
+//
+// `name` is the short label for this step (CRONÓMETRO, FOTO…). `heading` is
+// the full sentence for the steps that ask something ("¿Qué café vas a
+// usar?"); where it's given it becomes the page's h2 and `name` drops to a
+// plain label, so each step still has exactly one heading.
 export function BrewStepHeader({
   step,
   total = 6,
-  title,
+  name,
+  heading,
+  onBack,
+  backLabel,
 }: {
   step: number;
   total?: number;
-  title: string;
+  name: string;
+  heading?: string;
+  onBack?: () => void;
+  backLabel?: string;
 }) {
   const dict = useDictionary();
+  const Name = heading === undefined ? "h2" : "p";
 
   return (
     <div>
-      <p className="text-xs font-medium uppercase tracking-wide text-ink-muted">
-        {dict.equipment.stepLabel} {step} {dict.equipment.stepOfLabel} {total}
-      </p>
-      <h2 className="font-display text-4xl text-ink">{title}</h2>
-      {/* The track was bg-canvas on a bg-canvas page, so in dark mode only
-          the fill rendered and "3 de 6" read as a stray underline. Tinting
-          it from the fill's own colour keeps the two in step across themes. */}
-      <div className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-ink/15">
-        <div
-          className="h-full rounded-full bg-ink transition-[width]"
-          style={{ width: `${(step / total) * 100}%` }}
-        />
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex items-center gap-2">
+          {/* The back affordance lives in the step line because that's what
+              it undoes — a step. It used to be a full secondary button
+              sitting above the header, which read as an action of the step
+              rather than a way out of it. Negative margin keeps the arrow
+              optically flush with the text while the tap target stays 44px. */}
+          {onBack && (
+            <button
+              type="button"
+              onClick={onBack}
+              aria-label={backLabel ?? dict.common.back}
+              className="-my-2.5 -mx-3 flex size-11 shrink-0 items-center justify-center rounded-full text-ink-muted outline-none focus-visible:ring-2 focus-visible:ring-ink"
+            >
+              <IconChevronIzq aria-hidden className="size-4" />
+            </button>
+          )}
+          <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-ink-muted">
+            {dict.equipment.stepLabel} {step} {dict.equipment.stepOfLabel} {total}
+          </p>
+        </div>
+        <Name className="text-right text-[11px] font-medium uppercase tracking-[0.1em] text-ink-muted">
+          {name}
+        </Name>
       </div>
+
+      {/* Decorative: "Paso 4 de 6" above says all of this in words. */}
+      <div aria-hidden className="mt-2.5 flex gap-1.5">
+        {Array.from({ length: total }, (_, i) => (
+          <div
+            key={i}
+            className={cn("h-1 flex-1 rounded-full", i < step ? "bg-ink" : "bg-border")}
+          />
+        ))}
+      </div>
+
+      {heading !== undefined && <h2 className="mt-5 font-display text-4xl text-ink">{heading}</h2>}
     </div>
   );
 }
