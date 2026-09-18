@@ -10,6 +10,7 @@ describe("getRecipeFieldConfig", () => {
       brewWeightMode: "required",
       timeLabelKey: "extractionTime",
       hasMoka: false,
+      hasCupCount: true,
       ratioDenominator: "targetWeightG",
     });
     expect(getRecipeFieldConfig("v60")).toEqual({
@@ -18,6 +19,7 @@ describe("getRecipeFieldConfig", () => {
       brewWeightMode: "required",
       timeLabelKey: "brewTime",
       hasMoka: false,
+      hasCupCount: false,
       ratioDenominator: "waterG",
     });
     expect(getRecipeFieldConfig("chemex")).toEqual({
@@ -26,6 +28,7 @@ describe("getRecipeFieldConfig", () => {
       brewWeightMode: "optional",
       timeLabelKey: "brewTime",
       hasMoka: false,
+      hasCupCount: false,
       ratioDenominator: "waterG",
     });
     expect(getRecipeFieldConfig("aeropress")).toEqual({
@@ -34,6 +37,7 @@ describe("getRecipeFieldConfig", () => {
       brewWeightMode: "optional",
       timeLabelKey: "brewTime",
       hasMoka: false,
+      hasCupCount: false,
       ratioDenominator: "waterG",
     });
     expect(getRecipeFieldConfig("prensa")).toEqual({
@@ -42,6 +46,7 @@ describe("getRecipeFieldConfig", () => {
       brewWeightMode: "required",
       timeLabelKey: "steepTime",
       hasMoka: false,
+      hasCupCount: false,
       ratioDenominator: "waterG",
     });
     expect(getRecipeFieldConfig("moka")).toEqual({
@@ -50,6 +55,7 @@ describe("getRecipeFieldConfig", () => {
       brewWeightMode: "optional",
       timeLabelKey: "brewTime",
       hasMoka: true,
+      hasCupCount: false,
       ratioDenominator: "waterG",
     });
     expect(getRecipeFieldConfig("otros")).toEqual({
@@ -58,6 +64,7 @@ describe("getRecipeFieldConfig", () => {
       brewWeightMode: "optional",
       timeLabelKey: "brewTime",
       hasMoka: false,
+      hasCupCount: false,
       ratioDenominator: "waterG",
     });
   });
@@ -70,6 +77,17 @@ describe("getRecipeFieldConfig", () => {
     // V60 shares that category but needs its own override.
     expect(BREW_METHOD_CATEGORY.v60).toBe("pour_over");
     expect(getRecipeFieldConfig("v60").brewWeightMode).toBe("required");
+  });
+
+  it("asks how many cups on the espresso machine and nowhere else", () => {
+    // The moka pot answers the same question with mokaCupSize (up to
+    // twelve) and every brewing method answers it with the water, so a
+    // one-or-two toggle would be a second, worse way to say it.
+    for (const method of BREW_METHODS) {
+      expect(getRecipeFieldConfig(method).hasCupCount).toBe(
+        BREW_METHOD_CATEGORY[method] === "espresso_machine",
+      );
+    }
   });
 
   it("assigns every known method a category", () => {

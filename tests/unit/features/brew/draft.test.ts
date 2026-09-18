@@ -33,6 +33,17 @@ describe("buildDraftFromRecipe", () => {
     expect(draft.draftId).toMatch(/^[0-9a-f-]{36}$/);
   });
 
+  it("proposes one cup for espresso and asks nothing of the other methods", () => {
+    // Pre-selected, not blank: the recipe step proposes 20 g and 94 °C the
+    // same way. Every attempt logged before the column existed has nothing
+    // to recall, so without this the control would start empty for every
+    // coffee already in the journal.
+    expect(
+      buildDraftFromRecipe({ ...baseParams, method: "espresso" }).recipe.cupCount,
+    ).toBe(1);
+    expect(buildDraftFromRecipe({ ...baseParams, method: "v60" }).recipe.cupCount).toBeUndefined();
+  });
+
   it("copies the recipe fields from the source attempt but not the outcome", () => {
     const source: RecipeSourceAttempt = {
       id: "attempt-1",
@@ -48,6 +59,7 @@ describe("buildDraftFromRecipe", () => {
       grinder_upper_burr: 8,
       grinder_lower_burr: 3,
       moka_cup_size: null,
+      cup_count: null,
       heat_intensity: null,
       equipment_id: "equip-1",
       grinder_id: "grinder-1",

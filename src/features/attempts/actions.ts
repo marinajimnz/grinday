@@ -36,6 +36,7 @@ function toAttemptRow(
     tds_percent: input.tdsPercent ?? null,
     would_brew_again: input.wouldBrewAgain ?? null,
     moka_cup_size: input.mokaCupSize ?? null,
+    cup_count: input.cupCount ?? null,
     heat_intensity: input.heatIntensity ?? null,
     equipment_id: input.equipmentId ?? null,
     grinder_id: input.grinderId ?? null,

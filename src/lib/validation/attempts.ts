@@ -2,6 +2,7 @@ import { z } from "zod";
 import {
   ATTEMPT_MEDIA_KINDS,
   BASKET_SIZES,
+  CUP_COUNTS,
   DOSE_FEEDBACKS,
   DOSE_MODES,
   HEAT_INTENSITIES,
@@ -29,6 +30,7 @@ export const attemptFieldsSchema = z.object({
   tdsPercent: optionalPositiveNumber,
   wouldBrewAgain: z.boolean().optional(),
   mokaCupSize: optionalInt,
+  cupCount: z.literal(CUP_COUNTS).optional(),
   heatIntensity: optionalEnum(HEAT_INTENSITIES),
   equipmentId: z.uuid().optional(),
   grinderId: z.uuid().optional(),

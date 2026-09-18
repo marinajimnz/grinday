@@ -159,6 +159,7 @@ export function BrewLiveScreen({ draftId }: { draftId: string }) {
           temperatureC: draft.recipe.temperatureC,
           targetTimeMs: draft.recipe.targetTimeMs,
           mokaCupSize: draft.recipe.mokaCupSize,
+          cupCount: draft.recipe.cupCount,
           heatIntensity: draft.recipe.heatIntensity,
           equipmentId: draft.recipe.equipmentId,
           grinderId: draft.recipe.grinderId,

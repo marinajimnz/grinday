@@ -73,6 +73,23 @@ test("guided brew: recipe, timer, photo step, and result", async ({ page, testUs
   await expect(page.getByRole("button", { name: /^Peso de bebida/ })).toContainText("42g");
   await expect(page.getByText("1:2", { exact: true })).toBeVisible();
 
+  // One cup or two: espresso's own question, pre-selected at one the way
+  // every other card on this step arrives pre-filled. Picking two must not
+  // move the dose, the beverage weight or the ratio — it records what the
+  // shot was for, and a double is a different basket, not a doubled single.
+  await expect(page.getByRole("button", { name: "Una taza" })).toHaveAttribute(
+    "aria-pressed",
+    "true",
+  );
+  await page.getByRole("button", { name: "Dos tazas" }).click();
+  await expect(page.getByRole("button", { name: "Dos tazas" })).toHaveAttribute(
+    "aria-pressed",
+    "true",
+  );
+  await expect(page.getByRole("button", { name: /^Café/ })).toContainText("21g");
+  await expect(page.getByRole("button", { name: /^Peso de bebida/ })).toContainText("42g");
+  await expect(page.getByText("1:2", { exact: true })).toBeVisible();
+
   await page.getByRole("button", { name: "Siguiente" }).click();
 
   // Step 4/6 — timer.
@@ -131,6 +148,9 @@ test("guided brew: recipe, timer, photo step, and result", async ({ page, testUs
   await expect(page.getByText("1:2", { exact: true })).toBeVisible();
   await expect(page.getByText("21 g")).toBeVisible();
   await expect(page.getByText("42 g")).toBeVisible();
+  // And the cup count came with it, so the journal can tell a 42 g double
+  // apart from a 42 g single later on.
+  await expect(page.getByText("Dos tazas")).toBeVisible();
 
   // "Duplicar y ajustar" is a preparation like any other, so it has to land
   // on the same live brew flow — step 3/6, recipe card grid — seeded from
