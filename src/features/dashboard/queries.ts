@@ -46,16 +46,6 @@ export async function getRecentAttempts(
   return data ?? [];
 }
 
-export async function getDashboardOverview(supabase: Client) {
-  const { data, error } = await supabase.rpc("dashboard_overview").maybeSingle();
-  if (error) throw error;
-  return {
-    totalBrews: data?.total_brews ?? 0,
-    avgRating: data?.avg_rating ?? null,
-    favoriteMethod: data?.favorite_method ?? null,
-  };
-}
-
 export async function hasAnyCoffee(supabase: Client, userId: string) {
   const { count, error } = await supabase
     .from("coffees")

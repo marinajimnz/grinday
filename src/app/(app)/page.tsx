@@ -1,11 +1,10 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { IconCafe, IconFavorito } from "@/components/icons/pencil-icons";
-import { getDashboardOverview, getRecentAttempts, hasAnyCoffee } from "@/features/dashboard/queries";
+import { getRecentAttempts, hasAnyCoffee } from "@/features/dashboard/queries";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { NewBrewCta } from "@/components/dashboard/NewBrewCta";
 import { DraftResumeBanner } from "@/components/dashboard/DraftResumeBanner";
-import { DashboardStats } from "@/components/dashboard/DashboardStats";
 import { RecentAttemptsList } from "@/components/dashboard/RecentAttemptsList";
 import { DashboardSnapshotWriter } from "@/components/dashboard/DashboardSnapshotWriter";
 import { Button } from "@/components/ui/Button";
@@ -25,13 +24,10 @@ export default async function DashboardPage() {
 
   const hasCoffee = user ? await hasAnyCoffee(supabase, user.id) : false;
 
-  const [overview, recentAttempts] =
+  const recentAttempts =
     hasCoffee && user
-      ? await Promise.all([
-          getDashboardOverview(supabase),
-          getRecentAttempts(supabase, user.id, 4, { excludeHiddenFromDashboard: true }),
-        ])
-      : [null, []];
+      ? await getRecentAttempts(supabase, user.id, 4, { excludeHiddenFromDashboard: true })
+      : [];
 
   const lastAttempt = recentAttempts[0];
 
@@ -83,12 +79,6 @@ export default async function DashboardPage() {
             {user && <DraftResumeBanner currentUserId={user.id} />}
 
             <NewBrewCta />
-
-            <DashboardStats
-              totalBrews={overview?.totalBrews ?? 0}
-              avgRating={overview?.avgRating ?? null}
-              favoriteMethod={overview?.favoriteMethod ?? null}
-            />
 
             <div>
               <div className="flex items-center justify-between">

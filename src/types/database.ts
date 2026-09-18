@@ -553,7 +553,6 @@ export type Database = {
           display_name: string | null
           id: string
           is_anonymous: boolean
-          is_public: boolean
           locale: string
           role: string
           updated_at: string
@@ -565,7 +564,6 @@ export type Database = {
           display_name?: string | null
           id: string
           is_anonymous?: boolean
-          is_public?: boolean
           locale?: string
           role?: string
           updated_at?: string
@@ -577,7 +575,6 @@ export type Database = {
           display_name?: string | null
           id?: string
           is_anonymous?: boolean
-          is_public?: boolean
           locale?: string
           role?: string
           updated_at?: string
@@ -690,14 +687,6 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      dashboard_overview: {
-        Args: never
-        Returns: {
-          avg_rating: number
-          favorite_method: string
-          total_brews: number
-        }[]
-      }
       set_default_equipment: {
         Args: { p_equipment_id: string }
         Returns: {
