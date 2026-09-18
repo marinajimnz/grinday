@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/cn";
 import { formatElapsed } from "@/features/brew/formatTime";
-import type { BrewMethod } from "@/features/equipment/constants";
+import { BrewCup } from "./BrewCup";
 import { useDictionary } from "@/components/i18n/LocaleProvider";
 
 /**
@@ -40,7 +40,6 @@ function SteadyDigits({ value }: { value: string }) {
  * accumulated tick counts.
  */
 export function TimerStage({
-  method,
   targetTimeMs,
   startedAtEpochMs,
   accumulatedMs = 0,
@@ -49,7 +48,6 @@ export function TimerStage({
   onStop,
   onReset,
 }: {
-  method: BrewMethod;
   targetTimeMs?: number;
   startedAtEpochMs: number | null;
   accumulatedMs?: number;
@@ -103,12 +101,17 @@ export function TimerStage({
   // survives a pause instead of starting over at zero.
   const elapsedMs = accumulatedMs + (startedAtEpochMs !== null ? now - startedAtEpochMs : 0);
   const reachedTarget = targetTimeMs !== undefined && elapsedMs >= targetTimeMs && elapsedMs > 0;
+  // The cup gives the target half a second of grace before the first drop
+  // goes over the rim; the reading turns with it rather than a beat early.
+  const overMs = targetTimeMs !== undefined ? Math.max(0, elapsedMs - targetTimeMs) : 0;
+  const overflowing = targetTimeMs !== undefined && overMs > 450;
 
   // The one moment this screen exists for, and it used to pass in silence:
   // at 36.9s against a 27.0s target the card was byte-identical to 3s. The
   // person it's for has both hands busy and their eyes on the cup, so the
-  // buzz is the part that actually lands; the badge change is for when the
-  // phone can't vibrate (desktop, iOS Safari) or is on a hard surface.
+  // buzz is the part that actually lands; the cup filling, hopping and then
+  // spilling over is for when the phone can't vibrate (desktop, iOS Safari)
+  // or is lying on a hard surface.
   const buzzedRef = useRef(false);
   useEffect(() => {
     // Rearmed by a reset, not by a pause — pausing past the target and
@@ -123,59 +126,51 @@ export function TimerStage({
   }, [isRunning, reachedTarget, elapsedMs]);
 
   return (
-    <div className="rounded-card border border-border bg-surface py-8">
-      <div className="flex items-center justify-between px-6">
-        <span className="font-display text-lg text-ink">{dict.equipment.methodLabels[method]}</span>
-        {/* Nothing has run yet means no state worth announcing — this used
-            to read "En pausa" before the clock had ever moved, which is the
-            one thing it wasn't. */}
+    <div>
+      <div className="flex flex-col items-center">
+        <div className="flex h-[210px] w-full items-center justify-center">
+          <BrewCup
+            startedAtEpochMs={startedAtEpochMs}
+            accumulatedMs={accumulatedMs}
+            targetMs={targetTimeMs}
+            className="max-w-full"
+          />
+        </div>
+
         <span
+          role="timer"
+          aria-live="off"
           className={cn(
-            "rounded-full px-3 py-1 text-xs font-medium uppercase tracking-wide",
-            reachedTarget && !isPaused ? "bg-ink text-surface" : "bg-canvas text-ink-muted",
-            !isRunning && !isPaused && "invisible",
+            "font-display text-[56px] leading-none",
+            overflowing ? "text-coffee" : "text-ink",
           )}
         >
-          {/* Paused wins over the target: a frozen clock past its target
-              still needs to say why it stopped moving, and the reading and
-              its target sit right below anyway. */}
-          {isPaused ? dict.brew.paused : reachedTarget ? dict.brew.targetReached : dict.brew.running}
-        </span>
-      </div>
-
-      <div className="mt-6 flex flex-col items-center gap-1.5">
-        <span className="font-display text-6xl text-ink" role="timer" aria-live="off">
           <SteadyDigits value={formatElapsed(elapsedMs)} />
         </span>
+
         {targetTimeMs !== undefined && (
-          <p
-            className={cn(
-              "text-sm",
-              reachedTarget ? "font-semibold text-ink" : "text-ink-muted",
-            )}
-          >
-            {dict.brew.targetCaption} {formatElapsed(targetTimeMs)}
+          <p className="mt-1.5 text-sm text-ink-muted">
+            {overflowing
+              ? `+${(overMs / 1000).toFixed(1)}s ${dict.brew.overTargetCaption} ${formatElapsed(targetTimeMs)}`
+              : `${dict.brew.targetCaption} ${formatElapsed(targetTimeMs)}`}
           </p>
         )}
+
+        {/* The cup says all of this in pictures and the numbers above say it
+            in numbers; this is the same sentence for a screen reader, which
+            gets neither. Polite, so it waits for a gap rather than talking
+            over the reading. */}
+        <p role="status" className="sr-only">
+          {isPaused ? dict.brew.paused : reachedTarget ? dict.brew.targetReached : isRunning ? dict.brew.running : ""}
+        </p>
       </div>
 
-      {/* Whichever control is live gets the wide filled pill, the other
-          shrinks to its own label. Starting is the precision-timed action —
-          you press it as you press the machine — and it used to be a 56px
-          circle while the relaxed one (you've already watched the cup fill)
-          was four times its size. The idle control can't be a circle now
-          that both labels pass through it: "Play" fitted 56px, "Empezar"
-          doesn't.
-
-          Paused, the expected move is to carry on, so that one takes the
-          wide pill and stopping steps back — but stopping stays reachable,
-          because a brew you paused and then decided was finished should not
-          have to be restarted to be saved. */}
-      <div className="mt-6 flex items-center justify-center gap-3 px-6">
-        {/* One control for the clock — start it, hold it, pick it back up —
-            and one for ending the brew. Whichever is the expected next move
-            takes the wide filled pill: start when nothing has run, stop
-            while it's pouring, carry on when it's held. */}
+      {/* One control for the clock — start it, hold it, pick it back up —
+          and one for ending the brew. The clock's keeps the wide filled
+          pill throughout: it's the control you press as you press the
+          machine, and it used to swap places with "Parar" mid-shot, moving
+          the target under a thumb that was already on its way. */}
+      <div className="mt-8 flex items-stretch gap-3">
         <button
           type="button"
           onClick={() => {
@@ -186,35 +181,32 @@ export function TimerStage({
             setNow(Date.now());
             onStart();
           }}
-          className={cn(
-            "min-h-14 rounded-full",
-            isRunning
-              ? "shrink-0 border border-border px-5 text-sm font-medium text-ink-muted"
-              : "max-w-56 flex-1 bg-ink text-base font-semibold text-surface",
-          )}
+          className="min-h-14 flex-1 rounded-full bg-ink text-[17px] font-semibold text-surface outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-2 focus-visible:ring-offset-canvas"
         >
           {isRunning ? dict.brew.pause : isPaused ? dict.brew.resume : dict.brew.go}
         </button>
+        {/* Stopping stays reachable while paused: a brew you held and then
+            decided was finished should not have to be restarted to be
+            saved. With nothing on the clock there is nothing to stop, and
+            the button says so by dimming rather than by looking live and
+            doing nothing. */}
         <button
           type="button"
           disabled={!isRunning && !isPaused}
           onClick={() => onStop(elapsedMs)}
-          className={cn(
-            "min-h-14 rounded-full font-medium",
-            isRunning
-              ? "max-w-56 flex-1 bg-ink text-base text-surface"
-              : "shrink-0 border border-border px-5 text-sm text-ink-muted",
-          )}
+          className="min-h-14 w-28 shrink-0 rounded-full border-[1.5px] border-border text-base font-medium text-ink-muted outline-none disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-2 focus-visible:ring-offset-canvas"
         >
           {dict.brew.stop}
         </button>
       </div>
 
+      <p className="mx-auto mt-3 max-w-[280px] text-center text-xs text-ink-muted">{dict.brew.timerNote}</p>
+
       {/* Only while paused: it throws the reading away, so it stays out of
           reach of the thumb going for "Continuar", and off screen entirely
           while the clock is moving. */}
       {isPaused && (
-        <div className="mt-3 flex justify-center px-6">
+        <div className="mt-3 flex justify-center">
           <button
             type="button"
             onClick={onReset}
@@ -224,8 +216,6 @@ export function TimerStage({
           </button>
         </div>
       )}
-
-      <p className="mx-auto mt-4 max-w-[240px] text-center text-xs text-ink-muted">{dict.brew.timerNote}</p>
     </div>
   );
 }

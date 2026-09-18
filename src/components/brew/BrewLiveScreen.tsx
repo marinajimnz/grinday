@@ -267,7 +267,7 @@ export function BrewLiveScreen({ draftId }: { draftId: string }) {
 
       {!brewFinished && !showTimer && (
         <div className="mt-6">
-          <BrewStepHeader step={3} title={dict.brew.stepRecipeTitle} />
+          <BrewStepHeader step={3} name={dict.brew.stepNameRecipe} heading={dict.brew.stepRecipeTitle} />
           <p className="mt-1 text-sm text-ink-muted">{dict.brew.recipeRememberedNote}</p>
           <div className="mt-6 space-y-6">
             <RecipeFields value={draft.recipe} onChange={updateRecipe} />
@@ -280,14 +280,15 @@ export function BrewLiveScreen({ draftId }: { draftId: string }) {
 
       {!brewFinished && showTimer && (
         <div className="mt-6 space-y-6">
-          <BrewStepHeader step={4} title={dict.brew.stepTimerTitle} />
-          {!timerHasRun && (
-            <Button type="button" variant="secondary" onClick={() => setShowTimer(false)}>
-              {dict.common.back}
-            </Button>
-          )}
+          {/* Going back re-opens the recipe, which the clock's reading was
+              taken against — so the way back closes as soon as there is a
+              reading, exactly like "Guardar sin cronometrar" below. */}
+          <BrewStepHeader
+            step={4}
+            name={dict.brew.stepTimerTitle}
+            onBack={timerHasRun ? undefined : () => setShowTimer(false)}
+          />
           <TimerStage
-            method={method}
             targetTimeMs={draft.recipe.targetTimeMs}
             startedAtEpochMs={draft.startedAtEpochMs}
             accumulatedMs={draft.accumulatedMs}
@@ -320,7 +321,7 @@ export function BrewLiveScreen({ draftId }: { draftId: string }) {
 
       {isPhotoStep && (
         <div className="mt-6 space-y-6">
-          <BrewStepHeader step={5} title={dict.brew.stepPhotoTitle} />
+          <BrewStepHeader step={5} name={dict.brew.stepPhotoTitle} />
 
           <BrewPhotoStage draftId={draft.draftId} photos={photos} onChange={updatePhotos} />
 
@@ -336,15 +337,12 @@ export function BrewLiveScreen({ draftId }: { draftId: string }) {
 
       {isReview && (
         <div className="mt-6 space-y-6">
-          <BrewStepHeader step={6} title={dict.brew.stepResultTitle} />
-
-          <Button
-            type="button"
-            variant="secondary"
-            onClick={() => persist({ ...draft, photoStepDone: false })}
-          >
-            {dict.brew.backToPhoto}
-          </Button>
+          <BrewStepHeader
+            step={6}
+            name={dict.brew.stepResultTitle}
+            onBack={() => persist({ ...draft, photoStepDone: false })}
+            backLabel={dict.brew.backToPhoto}
+          />
 
           <BrewResultFields
             recipe={draft.recipe}
