@@ -63,7 +63,6 @@ const CHILD_TABLES = [
   "brew_attempts",
   "coffee_bags",
   "coffees",
-  "user_machines",
 ];
 
 async function clearChildRows(id) {
