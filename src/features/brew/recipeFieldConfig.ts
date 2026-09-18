@@ -12,6 +12,11 @@ export type RecipeFieldConfig = {
   brewWeightMode: BrewWeightMode;
   timeLabelKey: "extractionTime" | "brewTime" | "steepTime";
   hasMoka: boolean;
+  // One cup or two. Only the espresso machine asks: it's the single/double
+  // distinction its two baskets already make. Everywhere else the question
+  // is answered by the water, or — on a moka pot — by mokaCupSize, which
+  // goes to twelve.
+  hasCupCount: boolean;
   // What the auto ratio is computed against: espresso ratios against the
   // beverage weight in the cup ("coffee/brew ratio"), every pour-over/
   // immersion method against the water poured in ("coffee/water ratio").
@@ -30,6 +35,7 @@ const RECIPE_FIELD_CONFIG_DEFAULTS: Record<BrewMethodCategory, RecipeFieldConfig
     brewWeightMode: "required",
     timeLabelKey: "extractionTime",
     hasMoka: false,
+    hasCupCount: true,
     ratioDenominator: "targetWeightG",
   },
   // Modeled on Chemex: weighing the finished brew is nice to have but not
@@ -40,6 +46,7 @@ const RECIPE_FIELD_CONFIG_DEFAULTS: Record<BrewMethodCategory, RecipeFieldConfig
     brewWeightMode: "optional",
     timeLabelKey: "brewTime",
     hasMoka: false,
+    hasCupCount: false,
     ratioDenominator: "waterG",
   },
   // Modeled on the French press: steep for a set time, then weigh what you
@@ -51,6 +58,7 @@ const RECIPE_FIELD_CONFIG_DEFAULTS: Record<BrewMethodCategory, RecipeFieldConfig
     brewWeightMode: "required",
     timeLabelKey: "steepTime",
     hasMoka: false,
+    hasCupCount: false,
     ratioDenominator: "waterG",
   },
   moka_pot: {
@@ -59,6 +67,7 @@ const RECIPE_FIELD_CONFIG_DEFAULTS: Record<BrewMethodCategory, RecipeFieldConfig
     brewWeightMode: "optional",
     timeLabelKey: "brewTime",
     hasMoka: true,
+    hasCupCount: false,
     ratioDenominator: "waterG",
   },
   other: {
@@ -67,6 +76,7 @@ const RECIPE_FIELD_CONFIG_DEFAULTS: Record<BrewMethodCategory, RecipeFieldConfig
     brewWeightMode: "optional",
     timeLabelKey: "brewTime",
     hasMoka: false,
+    hasCupCount: false,
     ratioDenominator: "waterG",
   },
 };

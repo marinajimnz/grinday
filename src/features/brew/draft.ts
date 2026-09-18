@@ -4,7 +4,7 @@
 // lost" true — nothing here ever depends on a network round trip.
 
 import type { BrewMethod } from "@/features/equipment/constants";
-import type { AttemptMediaKind } from "@/features/attempts/constants";
+import type { AttemptMediaKind, CupCount } from "@/features/attempts/constants";
 import { getRecipeFieldConfig } from "@/features/brew/recipeFieldConfig";
 
 export type BrewDraftRecipe = {
@@ -19,6 +19,9 @@ export type BrewDraftRecipe = {
   temperatureC?: number;
   targetTimeMs?: number;
   mokaCupSize?: number;
+  // Espresso only: one cup or two. A label on the shot, not a multiplier —
+  // nothing else in the recipe moves when it changes.
+  cupCount?: CupCount;
   heatIntensity?: "low" | "medium" | "high";
   equipmentId?: string;
   equipmentModelName?: string;
@@ -192,11 +195,16 @@ export type RecipeSourceAttempt = {
   grinder_upper_burr: number | null;
   grinder_lower_burr: number | null;
   moka_cup_size: number | null;
+  cup_count: number | null;
   heat_intensity: string | null;
   equipment_id: string | null;
   grinder_id: string | null;
   equipment_snapshot: unknown;
 };
+
+function cupCountFrom(value: number | null | undefined): CupCount | undefined {
+  return value === 1 || value === 2 ? value : undefined;
+}
 
 type SnapshotNames = { equipmentModelName?: string; grinderModelName?: string };
 
@@ -261,6 +269,11 @@ export function buildDraftFromRecipe(params: {
       grinderUpperBurr: p?.grinder_upper_burr ?? undefined,
       grinderLowerBurr: p?.grinder_lower_burr ?? undefined,
       mokaCupSize: p?.moka_cup_size ?? undefined,
+      // Pre-selected rather than left blank, like every other proposal on
+      // this step: one cup is what an espresso is unless you say otherwise,
+      // and the twenty-five attempts logged before the column existed have
+      // nothing to recall.
+      cupCount: cupCountFrom(p?.cup_count) ?? (config.hasCupCount ? 1 : undefined),
       heatIntensity: (p?.heat_intensity as BrewDraftRecipe["heatIntensity"]) ?? undefined,
       equipmentId: params.defaultEquipment?.id ?? p?.equipment_id ?? undefined,
       equipmentModelName: params.defaultEquipment?.model_name ?? names.equipmentModelName,

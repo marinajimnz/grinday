@@ -82,6 +82,11 @@ export function AttemptRecipeSummary({ attempt }: { attempt: BrewAttemptRow }) {
       value: formatDuration(attempt.extraction_ms),
       caption: targetTimeMs != null ? `${dict.brew.target} ${formatDuration(targetTimeMs)}` : undefined,
     },
+    config.hasCupCount &&
+      attempt.cup_count != null && {
+        label: dict.brew.cupCount,
+        value: attempt.cup_count === 2 ? dict.brew.twoCups : dict.brew.oneCup,
+      },
     config.hasMoka &&
       attempt.moka_cup_size != null && {
         label: dict.brew.mokaCupSize,

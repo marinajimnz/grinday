@@ -2,10 +2,10 @@ import { cn } from "@/lib/cn";
 import { IconChevronIzq } from "@/components/icons/pencil-icons";
 import { useDictionary } from "@/components/i18n/LocaleProvider";
 
-// Shared step header for the whole "Preparar" journey — method + coffee
-// pick in /brew/new, then recipe/timer/photo/result in /brew/live/[draftId]
-// — so the progress bar reads as one continuous 6-step flow across both
-// routes.
+// The step line every numbered flow in the app wears: adding a coffee,
+// adding a machine, and the six steps of Preparar (which span two routes —
+// method and coffee in /brew/new, then recipe/timer/photo/result in
+// /brew/live/[draftId] — and read as one journey because of this).
 //
 // Six dashes rather than one filling bar: the flow has six discrete steps
 // and the bar could only ever say "somewhere past two thirds". The step you
@@ -16,7 +16,7 @@ import { useDictionary } from "@/components/i18n/LocaleProvider";
 // the full sentence for the steps that ask something ("¿Qué café vas a
 // usar?"); where it's given it becomes the page's h2 and `name` drops to a
 // plain label, so each step still has exactly one heading.
-export function BrewStepHeader({
+export function StepHeader({
   step,
   total = 6,
   name,
@@ -54,7 +54,7 @@ export function BrewStepHeader({
             </button>
           )}
           <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-ink-muted">
-            {dict.equipment.stepLabel} {step} {dict.equipment.stepOfLabel} {total}
+            {dict.common.stepLabel} {step} {dict.common.stepOfLabel} {total}
           </p>
         </div>
         <Name className="text-right text-[11px] font-medium uppercase tracking-[0.1em] text-ink-muted">

@@ -4,12 +4,12 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { BrewMethodSelectCards } from "./BrewMethodSelectCards";
 import { BrewPicker } from "./BrewPicker";
-import { BrewStepHeader } from "./BrewStepHeader";
 import { startBrewAction } from "@/features/brew/actions";
 import { buildDraftFromRecipe, saveDraft } from "@/features/brew/draft";
 import type { BrewMethod } from "@/features/equipment/constants";
 import type { BrewableCoffee } from "@/features/attempts/queries";
 import { useDictionary } from "@/components/i18n/LocaleProvider";
+import { StepHeader } from "@/components/ui/StepHeader";
 
 export function NewBrewWizard({
   availableMethods,
@@ -52,7 +52,7 @@ export function NewBrewWizard({
   if (!method) {
     return (
       <div>
-        <BrewStepHeader step={1} name={dict.brew.stepNameMethod} heading={dict.brew.chooseMethodTitle} />
+        <StepHeader step={1} name={dict.brew.stepNameMethod} heading={dict.brew.chooseMethodTitle} />
         <p className="mt-1 text-sm text-ink-muted">{dict.brew.chooseMethodSubtitle}</p>
         <div className="mt-6">
           <BrewMethodSelectCards methods={availableMethods} onSelect={setMethod} />
@@ -63,7 +63,7 @@ export function NewBrewWizard({
 
   return (
     <div>
-      <BrewStepHeader
+      <StepHeader
         step={2}
         name={dict.brew.stepNameCoffee}
         heading={dict.brew.chooseCoffeeTitle}
