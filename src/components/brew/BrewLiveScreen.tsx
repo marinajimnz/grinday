@@ -4,7 +4,6 @@ import { useEffect, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { CupSoda } from "lucide-react";
 import { IconFavorita } from "@/components/icons/pencil-icons";
-import { BrewStepHeader } from "./BrewStepHeader";
 import { TimerStage } from "./TimerStage";
 import { RecipeFields } from "./RecipeFields";
 import { BrewPhotoStage } from "./BrewPhotoStage";
@@ -25,6 +24,7 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { useDictionary } from "@/components/i18n/LocaleProvider";
 import { LoadingLabel } from "@/components/ui/LoadingLabel";
 import { Button } from "@/components/ui/Button";
+import { StepHeader } from "@/components/ui/StepHeader";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { useConfirmBeforeLeaving } from "./useConfirmBeforeLeaving";
 
@@ -267,7 +267,7 @@ export function BrewLiveScreen({ draftId }: { draftId: string }) {
 
       {!brewFinished && !showTimer && (
         <div className="mt-6">
-          <BrewStepHeader step={3} name={dict.brew.stepNameRecipe} heading={dict.brew.stepRecipeTitle} />
+          <StepHeader step={3} name={dict.brew.stepNameRecipe} heading={dict.brew.stepRecipeTitle} />
           <p className="mt-1 text-sm text-ink-muted">{dict.brew.recipeRememberedNote}</p>
           <div className="mt-6 space-y-6">
             <RecipeFields value={draft.recipe} onChange={updateRecipe} />
@@ -283,7 +283,7 @@ export function BrewLiveScreen({ draftId }: { draftId: string }) {
           {/* Going back re-opens the recipe, which the clock's reading was
               taken against — so the way back closes as soon as there is a
               reading, exactly like "Guardar sin cronometrar" below. */}
-          <BrewStepHeader
+          <StepHeader
             step={4}
             name={dict.brew.stepTimerTitle}
             onBack={timerHasRun ? undefined : () => setShowTimer(false)}
@@ -321,7 +321,7 @@ export function BrewLiveScreen({ draftId }: { draftId: string }) {
 
       {isPhotoStep && (
         <div className="mt-6 space-y-6">
-          <BrewStepHeader step={5} name={dict.brew.stepPhotoTitle} />
+          <StepHeader step={5} name={dict.brew.stepPhotoTitle} />
 
           <BrewPhotoStage draftId={draft.draftId} photos={photos} onChange={updatePhotos} />
 
@@ -337,7 +337,7 @@ export function BrewLiveScreen({ draftId }: { draftId: string }) {
 
       {isReview && (
         <div className="mt-6 space-y-6">
-          <BrewStepHeader
+          <StepHeader
             step={6}
             name={dict.brew.stepResultTitle}
             onBack={() => persist({ ...draft, photoStepDone: false })}
