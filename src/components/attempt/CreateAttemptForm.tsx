@@ -31,7 +31,6 @@ export function CreateAttemptForm({ coffeeBagId }: { coffeeBagId: string }) {
     formState: { errors },
   } = useForm({
     resolver: zodResolver(formSchema),
-    defaultValues: { attempt: { usedBitMore: false } },
   });
 
   function onSubmit(values: FormValues) {
