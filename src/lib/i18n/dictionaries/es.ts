@@ -259,11 +259,11 @@ const es = {
     chooseModeTitle: "¿Cómo quieres añadirlo?",
     chooseModeSubtitle: "Elige básico para ir rápido, o completo si quieres registrarlo todo desde ahora.",
     modeBasicTitle: "Básico",
-    modeBasicDescription: "Lo esencial en 2 pasos: el café y la bolsa.",
+    modeBasicDescription: "Lo esencial en {count} pasos: el café, la bolsa y la foto.",
     modeBasicNote:
       "El resto de datos (fecha de tueste, primer intento, dosis, lote…) podrás añadirlos más adelante editando el café.",
     modeCompleteTitle: "Completo",
-    modeCompleteDescription: "Todo el detalle del café y la bolsa, paso a paso.",
+    modeCompleteDescription: "Todo el detalle del café y la bolsa, en {count} pasos.",
     changeMode: "Cambiar tipo",
     changeModeSentence: "Vas a cambiar del modo {from} al modo {to}.",
     changeModeDataKept: "Los datos que has introducido se quedarán guardados para el modo elegido.",

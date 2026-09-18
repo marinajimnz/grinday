@@ -256,11 +256,11 @@ const en: Dictionary = {
     chooseModeTitle: "How do you want to add it?",
     chooseModeSubtitle: "Pick basic to go fast, or complete if you want to log everything now.",
     modeBasicTitle: "Basic",
-    modeBasicDescription: "The essentials in 2 steps: the coffee and the bag.",
+    modeBasicDescription: "The essentials in {count} steps: the coffee, the bag and the photo.",
     modeBasicNote:
       "The rest of the fields (roast date, first attempt, dose, lot…) can be added later by editing the coffee.",
     modeCompleteTitle: "Complete",
-    modeCompleteDescription: "Every detail of the coffee and the bag, step by step.",
+    modeCompleteDescription: "Every detail of the coffee and the bag, in {count} steps.",
     changeMode: "Change type",
     changeModeSentence: "You're switching from {from} mode to {to} mode.",
     changeModeDataKept: "The data you've entered will stay saved for the mode you choose.",

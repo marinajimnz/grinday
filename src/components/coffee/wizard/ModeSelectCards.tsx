@@ -3,6 +3,7 @@
 import { useDictionary } from "@/components/i18n/LocaleProvider";
 import { IconBolsa, IconGrano } from "@/components/icons/pencil-icons";
 import type { CoffeeWizardMode } from "./types";
+import { WIZARD_STEP_COUNT } from "./steps";
 
 export function ModeSelectCards({ onSelect }: { onSelect: (mode: CoffeeWizardMode) => void }) {
   const dict = useDictionary();
@@ -22,7 +23,9 @@ export function ModeSelectCards({ onSelect }: { onSelect: (mode: CoffeeWizardMod
             <IconGrano className="size-6" />
           </span>
           <span className="font-display text-lg font-bold text-ink">{dict.coffees.modeBasicTitle}</span>
-          <span className="text-sm text-ink-muted">{dict.coffees.modeBasicDescription}</span>
+          <span className="text-sm text-ink-muted">
+            {dict.coffees.modeBasicDescription.replace("{count}", String(WIZARD_STEP_COUNT.basic))}
+          </span>
         </button>
 
         <button
@@ -34,7 +37,9 @@ export function ModeSelectCards({ onSelect }: { onSelect: (mode: CoffeeWizardMod
             <IconBolsa className="size-6" />
           </span>
           <span className="font-display text-lg font-bold text-ink">{dict.coffees.modeCompleteTitle}</span>
-          <span className="text-sm text-ink-muted">{dict.coffees.modeCompleteDescription}</span>
+          <span className="text-sm text-ink-muted">
+            {dict.coffees.modeCompleteDescription.replace("{count}", String(WIZARD_STEP_COUNT.complete))}
+          </span>
         </button>
       </div>
     </div>
