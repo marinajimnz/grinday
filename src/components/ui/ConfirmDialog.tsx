@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import { useDictionary } from "@/components/i18n/LocaleProvider";
-import { buttonClassName } from "@/components/ui/Button";
+import { buttonClassName, type Variant } from "@/components/ui/Button";
 
 // A confirm()/alert() replacement: window.confirm() is real browser chrome
 // (Chrome adds its own "prevent this page from creating additional
@@ -15,12 +15,22 @@ export function ConfirmDialog({
   message,
   onConfirm,
   onCancel,
+  // Sí/No reads fine on a question the dialog itself asks, but a caller that
+  // can name the action ("Descartar") should — it's the last thing read
+  // before something irreversible happens, and it's what makes the
+  // destructive variant mean anything.
+  confirmLabel,
+  cancelLabel,
+  confirmVariant = "primary",
 }: {
   open: boolean;
   header?: React.ReactNode;
   message: string;
   onConfirm: () => void;
   onCancel: () => void;
+  confirmLabel?: string;
+  cancelLabel?: string;
+  confirmVariant?: Variant;
 }) {
   const dict = useDictionary();
   const confirmRef = useRef<HTMLButtonElement>(null);
@@ -57,15 +67,15 @@ export function ConfirmDialog({
             onClick={onCancel}
             className={buttonClassName("secondary", { className: "flex-1" })}
           >
-            {dict.common.no}
+            {cancelLabel ?? dict.common.no}
           </button>
           <button
             type="button"
             ref={confirmRef}
             onClick={onConfirm}
-            className={buttonClassName("primary", { className: "flex-1" })}
+            className={buttonClassName(confirmVariant, { className: "flex-1" })}
           >
-            {dict.common.yes}
+            {confirmLabel ?? dict.common.yes}
           </button>
         </div>
       </div>

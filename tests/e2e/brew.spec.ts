@@ -6,20 +6,17 @@ import { createCoffeeBasic } from "./helpers";
 // retries below actually fire.
 test.setTimeout(90_000);
 
-test("guided brew: recipe, timer, photo step, and result", async ({ page, testUser }) => {
-  void testUser;
-  const name = `Brew Coffee ${Date.now()}`;
-
-  // A brand-new account owns no equipment, and /brew/new only offers the
-  // methods that have a machine saved — so the espresso machine has to
-  // exist before the flow is reachable at all.
+// A brand-new account owns no equipment, and /brew/new only offers the
+// methods that have a machine saved — so the espresso machine has to exist
+// before the flow is reachable at all.
+async function addEspressoMachine(page: import("@playwright/test").Page) {
   await page.goto("/settings/machines/new");
 
-  // Same pre-hydration race as the coffee wizard's mode picker (see the
-  // note on selectWizardMode in helpers.ts): this toggle is the first click
-  // after a fresh navigation, so it can land before React is listening and
-  // leave "Continuar" disabled with nothing selected. Re-clicking only when
-  // the selection didn't take keeps the retry from toggling it back off.
+  // Same pre-hydration race as the coffee wizard's mode picker (see the note
+  // on selectWizardMode in helpers.ts): this toggle is the first click after
+  // a fresh navigation, so it can land before React is listening and leave
+  // "Continuar" disabled with nothing selected. Re-clicking only when the
+  // selection didn't take keeps the retry from toggling it back off.
   const continueButton = page.getByRole("button", { name: "Continuar" });
   await expect(async () => {
     if (!(await continueButton.isEnabled())) {
@@ -33,6 +30,14 @@ test("guided brew: recipe, timer, photo step, and result", async ({ page, testUs
   await page.getByLabel("Espresso").press("Enter");
   await page.getByRole("button", { name: "Guardar" }).click();
   await expect(page).toHaveURL(/\/settings\/machines$/);
+}
+
+
+test("guided brew: recipe, timer, photo step, and result", async ({ page, testUser }) => {
+  void testUser;
+  const name = `Brew Coffee ${Date.now()}`;
+
+  await addEspressoMachine(page);
 
   await createCoffeeBasic(page, { name });
   await expect(page).toHaveURL(/\/coffees\/[0-9a-f-]+$/);
@@ -73,8 +78,17 @@ test("guided brew: recipe, timer, photo step, and result", async ({ page, testUs
   // Step 4/6 — timer.
   await expect(page.getByText("Paso 4 de 6")).toBeVisible();
   await expect(page.getByRole("heading", { name: "Cronómetro" })).toBeVisible();
-  await page.getByRole("button", { name: "Play" }).click();
+  // "Guardar sin cronometrar" is the escape hatch for a brew you never
+  // timed, so it's on screen right up until the shot starts.
+  await expect(page.getByRole("button", { name: "Guardar sin cronometrar" })).toBeVisible();
+
+  await page.getByRole("button", { name: "Empezar" }).click();
   await expect(page.getByText("En marcha")).toBeVisible();
+
+  // Once it's running that same button would save with extractionMs null,
+  // from a full-width target directly under "Parar" — it has to be gone.
+  await expect(page.getByRole("button", { name: "Guardar sin cronometrar" })).toHaveCount(0);
+
   await page.waitForTimeout(1200);
   await page.getByRole("button", { name: "Parar" }).click();
 
@@ -110,6 +124,14 @@ test("guided brew: recipe, timer, photo step, and result", async ({ page, testUs
   await expect(page.getByRole("heading", { name: "Intento #1" })).toBeVisible();
   await expect(page.getByRole("heading", { name: "Fotos del espresso" })).toBeVisible();
 
+  // The recipe this brew was actually pulled with — 21 g in, 42 g out — has
+  // to be the thing the page opens on. It used to show the manual form's
+  // columns instead, which a guided brew never writes, so the page you came
+  // to for the recipe had everything except the recipe.
+  await expect(page.getByText("1:2", { exact: true })).toBeVisible();
+  await expect(page.getByText("21 g")).toBeVisible();
+  await expect(page.getByText("42 g")).toBeVisible();
+
   // "Duplicar y ajustar" is a preparation like any other, so it has to land
   // on the same live brew flow — step 3/6, recipe card grid — seeded from
   // this attempt, not on the plain manual form at /attempts/new.
@@ -121,4 +143,52 @@ test("guided brew: recipe, timer, photo step, and result", async ({ page, testUs
   // Seeded from intento #1, not from the first-time defaults (20 g / 40 g).
   await expect(page.getByRole("button", { name: /^Café/ })).toContainText("21g");
   await expect(page.getByRole("button", { name: /^Peso de bebida/ })).toContainText("42g");
+});
+
+test("seeds a new brew from the preferred recipe, not merely the newest attempt", async ({
+  page,
+  testUser,
+}) => {
+  void testUser;
+  const name = `Preferred Coffee ${Date.now()}`;
+
+  await addEspressoMachine(page);
+  await createCoffeeBasic(page, { name });
+  await expect(page).toHaveURL(/\/coffees\/[0-9a-f-]+$/);
+  const coffeeUrl = page.url();
+
+  // Two espresso attempts, #1 starred. #2 is the newest, so anything seeding
+  // from "most recent for this (coffee, method)" lands on the wrong one.
+  async function logAttempt(grind: string) {
+    await page.goto(coffeeUrl);
+    await page.getByRole("link", { name: "Registrar manual" }).click();
+    await expect(page).toHaveURL(/\/attempts\/new/);
+    await page.getByLabel("Molido").fill(grind);
+    await page.getByLabel("Dosificación").selectOption("auto");
+    await page.getByLabel("Tamaño").selectOption("double");
+    await page.getByLabel("Modo de shot").selectOption("double");
+    await page.getByRole("button", { name: "Guardar intento" }).click();
+    await expect(page).toHaveURL(/\/attempts\/[0-9a-f-]+$/);
+  }
+
+  await logAttempt("12");
+  await expect(page.getByRole("heading", { name: "Intento #1" })).toBeVisible();
+  await page.getByRole("button", { name: "Marcar como preferido" }).click();
+  await expect(page.getByRole("button", { name: "Quitar de preferido" })).toBeVisible();
+
+  await logAttempt("18");
+  await expect(page.getByRole("heading", { name: "Intento #2" })).toBeVisible();
+
+  await page.goto("/brew/new");
+  await expect(page.getByText("Paso 1 de 6")).toBeVisible();
+  await page.getByRole("button", { name: "Espresso" }).click();
+
+  // The badge only claims a preferred recipe when it was brewed with the
+  // method just chosen — here it was, so it has to name #1.
+  await expect(page.getByText("Receta preferida · intento #1")).toBeVisible();
+
+  await page.getByRole("button", { name: new RegExp(name) }).click();
+  await expect(page).toHaveURL(/\/brew\/live\/[0-9a-f-]+$/);
+  await expect(page.getByText("Basado en intento #1")).toBeVisible();
+  await expect(page.getByText("Basado en intento #2")).toHaveCount(0);
 });

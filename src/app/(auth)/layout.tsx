@@ -9,11 +9,14 @@ export default async function AuthLayout({ children }: { children: React.ReactNo
 
   return (
     <LocaleProvider locale={locale} dict={dict}>
-      <div className="flex min-h-dvh items-center justify-center bg-canvas px-4 py-16">
+      {/* The app shell gives its pages a <main> and a labelled <nav>; the
+          auth pages had no landmarks at all, so a screen reader had nothing
+          to jump to and the footer credit read as part of the form. */}
+      <main className="flex min-h-dvh items-center justify-center bg-canvas px-4 py-16">
         {children}
-      </div>
+      </main>
 
-      <div className="fixed inset-x-0 bottom-6 flex flex-col items-center gap-1 px-4">
+      <footer className="fixed inset-x-0 bottom-6 flex flex-col items-center gap-1 px-4">
         <a
           href="https://www.linkedin.com/in/marina-jimenez-mendez/?locale=es"
           target="_blank"
@@ -23,7 +26,7 @@ export default async function AuthLayout({ children }: { children: React.ReactNo
           Marina <IconFavorito aria-hidden className="size-4 text-coffee" /> coffee
         </a>
         <p className="text-xs text-ink-muted">All rights reserved</p>
-      </div>
+      </footer>
     </LocaleProvider>
   );
 }

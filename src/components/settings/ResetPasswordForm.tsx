@@ -85,7 +85,7 @@ export function ResetPasswordForm() {
   if (status === "invalid") {
     return (
       <div className="space-y-4">
-        <p className="text-sm text-red-700">{dict.resetPassword.invalidLink}</p>
+        <p className="text-sm text-danger">{dict.resetPassword.invalidLink}</p>
         <Link href="/forgot-password" className="text-sm font-medium text-ink underline">
           {dict.resetPassword.requestNewLink}
         </Link>
@@ -127,7 +127,7 @@ export function ResetPasswordForm() {
       </Field>
 
       {error && (
-        <p role="alert" className="text-sm text-red-700">
+        <p role="alert" className="text-sm text-danger">
           {error}
         </p>
       )}

@@ -22,8 +22,9 @@ export type StartBrewData = {
 
 // Bundles everything the client needs to build a brew draft for a
 // (coffee, method) pair into one round trip: which bag to consume from,
-// the last recipe logged for that exact pair, and the silently-picked
-// default equipment/grinder for the chosen method.
+// the recipe to seed from — the preferred attempt when it was brewed with
+// this method, else the last one logged for the pair — and the
+// silently-picked default equipment/grinder for the chosen method.
 export async function startBrewAction(rawInput: unknown): Promise<ActionResult<StartBrewData>> {
   const parsed = startBrewSchema.safeParse(rawInput);
   if (!parsed.success) {
@@ -39,7 +40,7 @@ export async function startBrewAction(rawInput: unknown): Promise<ActionResult<S
 
   const { data: coffee, error: coffeeError } = await supabase
     .from("coffees")
-    .select("id, name, roaster")
+    .select("id, name, roaster, preferred_attempt_id")
     .eq("id", coffeeId)
     .eq("user_id", user.id)
     .maybeSingle();
@@ -59,11 +60,30 @@ export async function startBrewAction(rawInput: unknown): Promise<ActionResult<S
     bags?.[0];
   if (!bag) return { success: false, message: "Este café no tiene ninguna bolsa disponible" };
 
-  const [sourceAttempt, defaultEquipment, defaultGrinder] = await Promise.all([
+  // The picker labels a coffee "Receta preferida · intento #N" and the page
+  // above it promises "si tiene receta preferida, partimos de ahí" — but the
+  // seeding ignored the pointer entirely and always took the newest attempt
+  // for this (coffee, method), so marking a recipe preferred changed nothing
+  // in the flow that advertises it. It's honoured now, with the caveat the
+  // original comment was right about: a preferred V60 says nothing about the
+  // espresso you're pulling, so a method mismatch falls back to the newest.
+  const [preferredAttempt, lastForMethod, defaultEquipment, defaultGrinder] = await Promise.all([
+    coffee.preferred_attempt_id
+      ? supabase
+          .from("brew_attempts")
+          .select(RECIPE_SOURCE_ATTEMPT_FIELDS)
+          .eq("id", coffee.preferred_attempt_id)
+          .eq("user_id", user.id)
+          .maybeSingle()
+          .then(({ data }) => data)
+      : Promise.resolve(null),
     getLastAttemptForCoffeeAndMethod(supabase, coffeeId, method, user.id),
     getDefaultEquipmentForMethod(supabase, method, user.id),
     getDefaultGrinder(supabase, user.id),
   ]);
+
+  const sourceAttempt =
+    preferredAttempt?.method === method ? preferredAttempt : lastForMethod;
 
   return {
     success: true,

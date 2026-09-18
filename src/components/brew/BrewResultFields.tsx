@@ -6,9 +6,17 @@ import { TasteScale } from "@/components/ui/TasteScale";
 import { SettingsAccordionCard } from "@/components/settings/SettingsAccordionCard";
 import { SteppableFieldGrid, type SteppableField } from "./SteppableFieldGrid";
 import { TASTE_DIMENSIONS } from "@/features/attempts/constants";
-import { getRecipeFieldConfig, formatRatio } from "@/features/brew/recipeFieldConfig";
+import { computeRatios, getRecipeFieldConfig, formatRatio } from "@/features/brew/recipeFieldConfig";
 import type { BrewDraftRecipe, BrewDraftPostShot } from "@/features/brew/draft";
 import { useDictionary } from "@/components/i18n/LocaleProvider";
+
+function SectionHeading({ children }: { children: React.ReactNode }) {
+  return (
+    <p className="border-t border-border pt-4 text-xs font-medium uppercase tracking-wide text-ink-muted">
+      {children}
+    </p>
+  );
+}
 
 export function BrewResultFields({
   recipe,
@@ -40,18 +48,15 @@ export function BrewResultFields({
   // The ratio always follows the method's own convention (coffee/brew for
   // espresso, coffee/water for everything else) regardless of whether the
   // brew-weight field is also shown — editing brew weight lets you correct
-  // that number without changing what the ratio itself is measuring.
-  const usesBrewWeightRatio = config.ratioDenominator === "targetWeightG";
-  const hasDilution = config.hasDilutionWater && recipe.dilutionWaterG != null;
-  const waterBasedDenominator = hasDilution
-    ? (recipe.waterG ?? 0) + (recipe.dilutionWaterG ?? 0)
-    : recipe.waterG;
-  const ratioDenominator = usesBrewWeightRatio
-    ? (value.outputWeightG ?? recipe.targetWeightG)
-    : waterBasedDenominator;
-  const ratio = recipe.doseG && ratioDenominator ? ratioDenominator / recipe.doseG : undefined;
-  const brewRatio =
-    hasDilution && recipe.doseG && recipe.waterG ? recipe.waterG / recipe.doseG : undefined;
+  // that number without changing what the ratio itself is measuring. The
+  // shot has been pulled by now, so it's measured against what actually
+  // came out, falling back to the target while that's still blank.
+  const { ratio, brewRatio } = computeRatios(config, {
+    doseG: recipe.doseG,
+    waterG: recipe.waterG,
+    dilutionWaterG: recipe.dilutionWaterG,
+    brewWeightG: value.outputWeightG ?? recipe.targetWeightG,
+  });
   const actualSeconds = extractionMs !== null ? Math.round(extractionMs / 100) / 10 : undefined;
   const targetSeconds = recipe.targetTimeMs !== undefined ? recipe.targetTimeMs / 1000 : undefined;
 
@@ -146,8 +151,15 @@ export function BrewResultFields({
   ];
   const hasGrinderConfig = recipe.grinderUpperBurr != null || recipe.grinderLowerBurr != null;
 
+  // Nine field groups used to stack here as equal siblings with nothing
+  // naming them, so the last step of a brew read as one undifferentiated
+  // wall and gave no clue which half was correcting the recipe you'd just
+  // brewed and which half was recording how it tasted. Same fields, same
+  // order — told apart.
   return (
     <div className="space-y-6">
+      <SectionHeading>{dict.brew.recipeSectionTitle}</SectionHeading>
+
       <p className="text-xs text-ink-muted">{dict.brew.resultEditableNote}</p>
 
       <SteppableFieldGrid fields={fields} />
@@ -171,6 +183,8 @@ export function BrewResultFields({
           </p>
         )}
       </div>
+
+      <SectionHeading>{dict.attempts.tasting}</SectionHeading>
 
       <TasteScale
         id="postshot.overallRating"

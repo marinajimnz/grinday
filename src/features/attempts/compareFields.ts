@@ -1,5 +1,6 @@
 import type { BrewAttemptRow } from "./queries";
 import type { Dictionary } from "@/lib/i18n/dictionaries/es";
+import { formatDuration } from "@/features/brew/formatTime";
 
 export type CompareField = {
   key: string;
@@ -46,13 +47,13 @@ export function getCompareFields(dict: Dictionary): CompareField[] {
       key: "extraction_ms",
       label: dict.attempts.extraction,
       group: "technical",
-      format: (a) => (a.extraction_ms ? `${(a.extraction_ms / 1000).toFixed(1)} s` : "—"),
+      format: (a) => (a.extraction_ms ? formatDuration(a.extraction_ms) : "—"),
     },
     {
       key: "target_time_ms",
       label: dict.brew.target,
       group: "technical",
-      format: (a) => (a.target_time_ms ? `${(a.target_time_ms / 1000).toFixed(0)} s` : "—"),
+      format: (a) => (a.target_time_ms ? formatDuration(a.target_time_ms) : "—"),
     },
     {
       key: "tds_percent",

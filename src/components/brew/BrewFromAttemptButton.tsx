@@ -71,7 +71,7 @@ export function BrewFromAttemptButton({
         // w-full so it drops onto its own line when this sits in a
         // flex-wrap row of buttons (the attempt page) instead of squeezing
         // in between them; a no-op in the compare table's cell.
-        <p role="alert" className="mt-2 w-full text-sm text-red-700">
+        <p role="alert" className="mt-2 w-full text-sm text-danger">
           {error}
         </p>
       )}

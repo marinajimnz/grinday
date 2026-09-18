@@ -191,7 +191,7 @@ export function BrewLiveScreen({ draftId }: { draftId: string }) {
     </p>
   ) : (
     saveError && (
-      <p role="alert" className="text-sm text-red-700">
+      <p role="alert" className="text-sm text-danger">
         {saveError} {dict.brew.savedLocallyRetry}
       </p>
     )
@@ -271,11 +271,20 @@ export function BrewLiveScreen({ draftId }: { draftId: string }) {
 
           {saveStatus}
 
-          <Button type="button" variant="secondary" disabled={isSaving} onClick={handleSave} fullWidth>
-            <LoadingLabel loading={isSaving}>
-              {pendingSync ? dict.brew.retryNow : saveError ? dict.common.retry : dict.brew.saveWithoutTimer}
-            </LoadingLabel>
-          </Button>
+          {/* Full-width, directly under "Parar", and it saves with
+              extractionMs null — while the shot is running that's a wet
+              thumb away from throwing the timing away with no confirm and no
+              undo. It's an escape hatch for a brew you never timed, so it
+              belongs to the not-yet-started state, exactly like "Volver"
+              above. A failed or queued save still needs its retry, so that
+              keeps it on screen. */}
+          {(draft.startedAtEpochMs === null || pendingSync || saveError) && (
+            <Button type="button" variant="secondary" disabled={isSaving} onClick={handleSave} fullWidth>
+              <LoadingLabel loading={isSaving}>
+                {pendingSync ? dict.brew.retryNow : saveError ? dict.common.retry : dict.brew.saveWithoutTimer}
+              </LoadingLabel>
+            </Button>
+          )}
         </div>
       )}
 

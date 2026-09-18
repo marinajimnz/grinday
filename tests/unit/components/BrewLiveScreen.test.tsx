@@ -98,6 +98,36 @@ describe("BrewLiveScreen step order", () => {
   });
 });
 
+describe("BrewLiveScreen timer step", () => {
+  beforeEach(() => {
+    localStorage.clear();
+  });
+
+  it("offers 'guardar sin cronometrar' while the shot hasn't started", async () => {
+    saveFinishedBrew({ startedAtEpochMs: null, stoppedAtEpochMs: null, extractionMs: null });
+    renderScreen();
+
+    // Nothing has run, so the screen opens on the recipe step — step into the
+    // timer the way a person does.
+    await userEvent.click(await screen.findByRole("button", { name: es.common.next }));
+
+    expect(await screen.findByRole("heading", { name: es.brew.stepTimerTitle })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: es.brew.saveWithoutTimer })).toBeInTheDocument();
+  });
+
+  it("hides it once the timer is running, so a mis-tap can't discard the timing", async () => {
+    // Started and not yet stopped: the shot is pulling right now. The button
+    // is full-width and sits directly under "Parar", and it saves with
+    // extractionMs null — no confirm, no undo.
+    saveFinishedBrew({ startedAtEpochMs: Date.now() - 5000, stoppedAtEpochMs: null, extractionMs: null });
+    renderScreen();
+
+    expect(await screen.findByRole("heading", { name: es.brew.stepTimerTitle })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: es.brew.stop })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: es.brew.saveWithoutTimer })).not.toBeInTheDocument();
+  });
+});
+
 describe("BrewLiveScreen legacy drafts", () => {
   beforeEach(() => {
     localStorage.clear();

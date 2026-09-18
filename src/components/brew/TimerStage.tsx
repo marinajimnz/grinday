@@ -2,9 +2,33 @@
 
 import { useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/cn";
-import { formatElapsed } from "@/features/brew/formatElapsed";
+import { formatElapsed } from "@/features/brew/formatTime";
 import type { BrewMethod } from "@/features/equipment/constants";
 import { useDictionary } from "@/components/i18n/LocaleProvider";
+
+/**
+ * Bagel Fat One has no tabular figures, so `tabular-nums` on the timer was
+ * inert: a "1" measures 28.1px where a "4" measures 41.6px at 60px, and the
+ * centred string swung between 197px and 239px — visibly breathing outwards
+ * ten times a second as the tenths ticked. Giving every digit the width of
+ * the widest one holds the line still without giving up the display face.
+ * Separators keep their own width; they never change.
+ */
+function SteadyDigits({ value }: { value: string }) {
+  return (
+    <>
+      {[...value].map((char, i) =>
+        char >= "0" && char <= "9" ? (
+          <span key={i} className="inline-block w-[0.7em] text-center">
+            {char}
+          </span>
+        ) : (
+          <span key={i}>{char}</span>
+        ),
+      )}
+    </>
+  );
+}
 
 /**
  * Timestamp-anchored timer: the displayed value is always
@@ -69,27 +93,61 @@ export function TimerStage({
   }, [isRunning]);
 
   const elapsedMs = startedAtEpochMs !== null ? now - startedAtEpochMs : 0;
+  const reachedTarget = isRunning && targetTimeMs !== undefined && elapsedMs >= targetTimeMs;
+
+  // The one moment this screen exists for, and it used to pass in silence:
+  // at 36.9s against a 27.0s target the card was byte-identical to 3s. The
+  // person it's for has both hands busy and their eyes on the cup, so the
+  // buzz is the part that actually lands; the badge change is for when the
+  // phone can't vibrate (desktop, iOS Safari) or is on a hard surface.
+  const buzzedRef = useRef(false);
+  useEffect(() => {
+    if (!isRunning) {
+      buzzedRef.current = false;
+      return;
+    }
+    if (!reachedTarget || buzzedRef.current) return;
+    buzzedRef.current = true;
+    navigator.vibrate?.([120, 60, 120]);
+  }, [isRunning, reachedTarget]);
 
   return (
     <div className="rounded-card border border-border bg-surface py-8">
       <div className="flex items-center justify-between px-6">
         <span className="font-display text-lg text-ink">{dict.equipment.methodLabels[method]}</span>
-        <span className="rounded-full bg-canvas px-3 py-1 text-xs font-medium uppercase tracking-wide text-ink-muted">
-          {isRunning ? dict.brew.running : dict.brew.paused}
+        <span
+          className={cn(
+            "rounded-full px-3 py-1 text-xs font-medium uppercase tracking-wide",
+            reachedTarget ? "bg-ink text-surface" : "bg-canvas text-ink-muted",
+          )}
+        >
+          {reachedTarget ? dict.brew.targetReached : isRunning ? dict.brew.running : dict.brew.paused}
         </span>
       </div>
 
       <div className="mt-6 flex flex-col items-center gap-1.5">
-        <span className="font-display text-6xl tabular-nums text-ink" role="timer" aria-live="off">
-          {formatElapsed(elapsedMs)}
+        <span className="font-display text-6xl text-ink" role="timer" aria-live="off">
+          <SteadyDigits value={formatElapsed(elapsedMs)} />
         </span>
         {targetTimeMs !== undefined && (
-          <p className="text-xs text-ink-muted">
+          <p
+            className={cn(
+              "text-sm",
+              reachedTarget ? "font-semibold text-ink" : "text-ink-muted",
+            )}
+          >
             {dict.brew.targetCaption} {formatElapsed(targetTimeMs)}
           </p>
         )}
       </div>
 
+      {/* Whichever control is live gets the wide filled pill, the other
+          shrinks to its own label. Starting is the precision-timed action —
+          you press it as you press the machine — and it used to be a 56px
+          circle while the relaxed one (you've already watched the cup fill)
+          was four times its size. The idle control can't be a circle now
+          that both labels pass through it: "Play" fitted 56px, "Empezar"
+          doesn't. */}
       <div className="mt-6 flex items-center justify-center gap-3 px-6">
         <button
           type="button"
@@ -98,10 +156,11 @@ export function TimerStage({
             setNow(Date.now());
             onStart();
           }}
-          aria-label={dict.brew.go}
           className={cn(
-            "flex size-14 shrink-0 items-center justify-center rounded-full text-sm font-semibold",
-            isRunning ? "border border-border text-ink-muted" : "bg-coffee text-surface",
+            "min-h-14 rounded-full font-semibold",
+            isRunning
+              ? "shrink-0 border border-border px-5 text-sm text-ink-muted"
+              : "max-w-56 flex-1 bg-ink text-base text-surface",
           )}
         >
           {dict.brew.go}
@@ -111,8 +170,10 @@ export function TimerStage({
           disabled={!isRunning}
           onClick={() => onStop(Date.now() - startedAtEpochMs!)}
           className={cn(
-            "min-h-14 max-w-56 flex-1 rounded-full text-base font-medium",
-            isRunning ? "bg-ink text-surface" : "border border-border text-ink-muted",
+            "min-h-14 rounded-full font-medium",
+            isRunning
+              ? "max-w-56 flex-1 bg-ink text-base text-surface"
+              : "shrink-0 border border-border px-5 text-sm text-ink-muted",
           )}
         >
           {dict.brew.stop}

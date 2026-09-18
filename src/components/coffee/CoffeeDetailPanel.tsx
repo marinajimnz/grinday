@@ -226,7 +226,7 @@ export function CoffeeDetailPanel({ coffee }: { coffee: CoffeeRow }) {
             </Field>
           </div>
           {deleteError && (
-            <p role="alert" className="mt-2 text-xs text-red-700">
+            <p role="alert" className="mt-2 text-xs text-danger">
               {deleteError}
             </p>
           )}

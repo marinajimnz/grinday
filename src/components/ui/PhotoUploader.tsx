@@ -95,7 +95,7 @@ export function PhotoUploader<K extends string>({
       />
 
       {error && (
-        <p role="alert" className="w-full text-xs text-red-700">
+        <p role="alert" className="w-full text-xs text-danger">
           {error}
         </p>
       )}
