@@ -4,7 +4,8 @@ import { cn } from "@/lib/cn";
 import { SteppableFieldGrid, type SteppableField } from "./SteppableFieldGrid";
 import { SettingsAccordionCard } from "@/components/settings/SettingsAccordionCard";
 import { computeRatios, getRecipeFieldConfig, formatRatio } from "@/features/brew/recipeFieldConfig";
-import { HEAT_INTENSITIES } from "@/features/attempts/constants";
+import { CUP_COUNTS, HEAT_INTENSITIES } from "@/features/attempts/constants";
+import { IconCafe } from "@/components/icons/pencil-icons";
 import type { BrewDraftRecipe } from "@/features/brew/draft";
 import { useDictionary } from "@/components/i18n/LocaleProvider";
 
@@ -125,6 +126,44 @@ export function RecipeFields({
   return (
     <div className="space-y-6">
       <SteppableFieldGrid fields={fields} />
+
+      {/* One cup or two, and nothing else: a rule, then one cup against
+          two. No heading and no captions — two cups drawn next to one cup
+          is the whole question, and the set's own cup is what draws it.
+          Both face the same way, so the pair reads as two of the same
+          thing rather than as a mirrored ornament.
+
+          It moves none of the numbers above it — a double is a different
+          basket, not a single with the dose doubled, and the dose you want
+          is the one you already set. With the labels gone, aria-label is
+          now the only name these buttons have. */}
+      {config.hasCupCount && (
+        <div className="border-t border-border pt-6">
+          <div className="flex gap-2">
+            {CUP_COUNTS.map((count) => {
+              const selected = value.cupCount === count;
+              return (
+                <button
+                  key={count}
+                  type="button"
+                  aria-pressed={selected}
+                  aria-label={count === 1 ? dict.brew.oneCup : dict.brew.twoCups}
+                  onClick={() => set("cupCount", count)}
+                  className={cn(
+                    "flex min-h-14 flex-1 items-center justify-center gap-1 rounded-input border transition-colors",
+                    selected
+                      ? "border-ink bg-ink text-surface"
+                      : "border-border bg-surface text-ink-muted",
+                  )}
+                >
+                  <IconCafe aria-hidden className="size-7" />
+                  {count === 2 && <IconCafe aria-hidden className="size-7" />}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       <SettingsAccordionCard title={dict.brew.grinderConfigTitle} defaultExpanded={hasGrinderConfig}>
         <p className="mb-4 text-xs text-ink-muted">{dict.brew.grinderConfigHint}</p>

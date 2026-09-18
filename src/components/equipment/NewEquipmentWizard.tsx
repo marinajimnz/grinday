@@ -11,6 +11,7 @@ import { useHideBottomNav } from "@/components/ui/BottomNavVisibility";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { LoadingLabel } from "@/components/ui/LoadingLabel";
 import { Button } from "@/components/ui/Button";
+import { StepHeader } from "@/components/ui/StepHeader";
 
 export function NewEquipmentWizard() {
   const router = useRouter();
@@ -78,18 +79,15 @@ export function NewEquipmentWizard() {
           </Button>
         </div>
 
-        <div>
-          <p className="text-xs font-medium uppercase tracking-wide text-ink-muted">
-            {dict.equipment.stepLabel} {step + 1} {dict.equipment.stepOfLabel} 2
-          </p>
-        </div>
-
-        <div className="h-1.5 w-full overflow-hidden rounded-full bg-canvas">
-          <div
-            className="h-full rounded-full bg-ink transition-[width]"
-            style={{ width: `${((step + 1) / 2) * 100}%` }}
-          />
-        </div>
+        {/* The step line used to carry a number and nothing else — two
+            steps, and no way to know what the second one would ask for
+            until you got there. */}
+        <StepHeader
+          step={step + 1}
+          total={2}
+          name={step === 0 ? dict.equipment.stepNameMethods : dict.equipment.stepNameModels}
+          onBack={step > 0 ? handleBack : undefined}
+        />
 
         {step === 0 ? (
           <MethodSelectCards selected={selected} onToggle={toggleMethod} />
@@ -104,16 +102,7 @@ export function NewEquipmentWizard() {
         )}
 
         <div className="flex gap-2">
-          {step > 0 && (
-            <Button type="button" variant="secondary" onClick={handleBack}>
-              {dict.common.back}
-            </Button>
-          )}
-          <Button
-            type="submit"
-            disabled={isPending || nextDisabled}
-            className={`flex-1${step > 0 ? " sm:flex-none" : ""}`}
-          >
+          <Button type="submit" disabled={isPending || nextDisabled} className="flex-1">
             <LoadingLabel loading={isPending} loadingText={dict.common.saving}>
               {isLastStep ? dict.equipment.saveEquipment : dict.equipment.continueLabel}
             </LoadingLabel>

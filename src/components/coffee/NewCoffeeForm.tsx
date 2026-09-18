@@ -32,6 +32,7 @@ import { useHideBottomNav } from "@/components/ui/BottomNavVisibility";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { LoadingLabel } from "@/components/ui/LoadingLabel";
 import { Button } from "@/components/ui/Button";
+import { StepHeader } from "@/components/ui/StepHeader";
 import { IconBolsa, IconFlecha, IconGrano } from "@/components/icons/pencil-icons";
 import type { Dictionary } from "@/lib/i18n/dictionaries/es";
 
@@ -379,19 +380,12 @@ export function NewCoffeeForm() {
         </Button>
       </div>
 
-      <div>
-        <p className="text-xs font-medium uppercase tracking-wide text-ink-muted">
-          {dict.coffees.stepLabel} {currentIndex + 1} {dict.coffees.stepOfLabel} {flatSteps.length}
-        </p>
-        <h2 className="font-display text-lg text-ink">{step.title(dict)}</h2>
-      </div>
-
-      <div className="h-1.5 w-full overflow-hidden rounded-full bg-canvas">
-        <div
-          className="h-full rounded-full bg-ink transition-[width]"
-          style={{ width: `${((currentIndex + 1) / flatSteps.length) * 100}%` }}
-        />
-      </div>
+      <StepHeader
+        step={currentIndex + 1}
+        total={flatSteps.length}
+        name={step.title(dict)}
+        onBack={showBack ? handleBack : undefined}
+      />
 
       {mode === "basic" && (
         <p className="rounded-input bg-canvas px-3 py-2 text-xs text-ink-muted">{dict.coffees.modeBasicNote}</p>
@@ -410,16 +404,7 @@ export function NewCoffeeForm() {
       )}
 
       <div className="flex gap-2">
-        {showBack && (
-          <Button type="button" variant="secondary" onClick={handleBack}>
-            {dict.common.back}
-          </Button>
-        )}
-        <Button
-          type="submit"
-          disabled={isPending}
-          className={`flex-1${showBack ? " sm:flex-none" : ""}`}
-        >
+        <Button type="submit" disabled={isPending} className="flex-1">
           {nextLabel}
         </Button>
       </div>

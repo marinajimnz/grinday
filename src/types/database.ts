@@ -91,6 +91,7 @@ export type Database = {
           coffee_bag_id: string
           coffee_id: string
           created_at: string
+          cup_count: number | null
           dilution_water_g: number | null
           dose_feedback: string | null
           dose_g: number | null
@@ -138,6 +139,7 @@ export type Database = {
           coffee_bag_id: string
           coffee_id: string
           created_at?: string
+          cup_count?: number | null
           dilution_water_g?: number | null
           dose_feedback?: string | null
           dose_g?: number | null
@@ -185,6 +187,7 @@ export type Database = {
           coffee_bag_id?: string
           coffee_id?: string
           created_at?: string
+          cup_count?: number | null
           dilution_water_g?: number | null
           dose_feedback?: string | null
           dose_g?: number | null
