@@ -55,3 +55,8 @@ next-env.d.ts
 
 # impeccable (design skill: critique snapshots, detector hook cache, local config)
 /.impeccable
+
+# Planning notes kept locally on purpose — the social-network plan in here
+# was dropped as a product decision and shouldn't come back through a
+# stray `git add -A`.
+/docs/

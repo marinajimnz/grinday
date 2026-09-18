@@ -79,7 +79,14 @@ export type BrewDraft = {
   parentAttemptId?: string;
   parentAttemptNo?: number;
   recipe: BrewDraftRecipe;
+  // When the current run began; null whenever the clock isn't moving,
+  // which is both "never started" and "paused".
   startedAtEpochMs: number | null;
+  // Time banked by earlier runs, so a pause doesn't throw away what was
+  // already on the clock. Absent on drafts written before the timer could
+  // pause, where it is simply zero. What tells "paused" apart from "never
+  // started" is this being above zero — see hasTimerRun.
+  accumulatedMs?: number;
   stoppedAtEpochMs: number | null;
   extractionMs: number | null;
   // Photos of the coffee, taken right after the timer stops and before it's
@@ -131,6 +138,14 @@ export function getMostRecentDraft(currentUserId: string): BrewDraft | null {
     console.error("[brew-draft] failed to list drafts:", err);
     return null;
   }
+}
+
+// Whether the clock has been running at all: moving right now, or stopped
+// with time banked. The distinction matters because "Guardar sin
+// cronometrar" throws the timing away without a confirm, so it belongs to
+// the state where there is no timing to lose — and after a pause there is.
+export function hasTimerRun(draft: Pick<BrewDraft, "startedAtEpochMs" | "accumulatedMs">) {
+  return draft.startedAtEpochMs !== null || (draft.accumulatedMs ?? 0) > 0;
 }
 
 export function createDraftId() {
@@ -253,6 +268,7 @@ export function buildDraftFromRecipe(params: {
       grinderModelName: params.defaultGrinder?.model_name ?? names.grinderModelName,
     },
     startedAtEpochMs: null,
+    accumulatedMs: 0,
     stoppedAtEpochMs: null,
     extractionMs: null,
     photos: [],

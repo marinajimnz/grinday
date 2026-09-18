@@ -105,7 +105,7 @@ export function BrewResultFields({
       suffix: "g",
       sublabel:
         recipe.targetWeightG !== undefined && effectiveOutputWeight !== recipe.targetWeightG
-          ? `${dict.brew.target} ${recipe.targetWeightG} g`
+          ? `${dict.brew.target} ${recipe.targetWeightG}g`
           : undefined,
     });
   }
@@ -118,7 +118,7 @@ export function BrewResultFields({
       step: method === "espresso" ? 0.1 : 1,
       min: 0,
       suffix: "s",
-      sublabel: targetSeconds !== undefined ? `${dict.brew.target} ${targetSeconds.toFixed(0)} s` : undefined,
+      sublabel: targetSeconds !== undefined ? `${dict.brew.target} ${targetSeconds.toFixed(0)}s` : undefined,
     },
     {
       key: "temperatureC",
