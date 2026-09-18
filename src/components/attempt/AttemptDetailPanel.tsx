@@ -78,13 +78,9 @@ export function AttemptDetailPanel({
     attempt.upper_burr_setting,
     attempt.dose_mode,
     attempt.dose_feedback,
-    attempt.used_bit_more || null,
     attempt.basket_size,
     attempt.temperature_offset_c,
     attempt.shot_mode,
-    attempt.preinfusion_ms,
-    attempt.pressure_observation,
-    attempt.output_volume_ml,
   ];
   const hasMachineFields = machineFields.some((v) => v !== null && v !== undefined);
 
@@ -187,10 +183,6 @@ export function AttemptDetailPanel({
                 }
               />
               <Stat
-                label={dict.attempts.aBitMore}
-                value={attempt.used_bit_more ? dict.attempts.yes : null}
-              />
-              <Stat
                 label={dict.attempts.basketSize}
                 value={
                   attempt.basket_size
@@ -212,20 +204,6 @@ export function AttemptDetailPanel({
                     : null
                 }
               />
-              <Stat
-                label={dict.attempts.preinfusionShort}
-                value={attempt.preinfusion_ms ? `${attempt.preinfusion_ms} ms` : null}
-              />
-              <Stat
-                label={dict.attempts.pressureObservation}
-                value={
-                  attempt.pressure_observation
-                    ? dict.enums.pressureObservation[
-                        attempt.pressure_observation as keyof typeof dict.enums.pressureObservation
-                      ]
-                    : null
-                }
-              />
               {/* Only when it isn't already standing in for the dose above. */}
               <Stat
                 label={dict.attempts.input}
@@ -234,10 +212,6 @@ export function AttemptDetailPanel({
                     ? `${attempt.input_weight_g} g`
                     : null
                 }
-              />
-              <Stat
-                label={dict.attempts.volume}
-                value={attempt.output_volume_ml ? `${attempt.output_volume_ml} ml` : null}
               />
             </dl>
           </SettingsAccordionCard>

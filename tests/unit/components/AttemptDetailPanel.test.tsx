@@ -33,12 +33,10 @@ function makeAttempt(overrides: Partial<BrewAttemptRow> = {}): BrewAttemptRow {
     updated_at: "2026-01-02T10:00:00.000Z",
     equipment_snapshot: {},
     machine_snapshot: {},
-    used_bit_more: false,
     hidden_from_dashboard: false,
     acidity: null,
     balance: null,
     basket_size: null,
-    basket_wall: null,
     bitterness: null,
     body: null,
     dilution_water_g: null,
@@ -59,12 +57,9 @@ function makeAttempt(overrides: Partial<BrewAttemptRow> = {}): BrewAttemptRow {
     machine_id: null,
     moka_cup_size: null,
     notes: null,
-    output_volume_ml: null,
     output_weight_g: null,
     overall_rating: null,
     parent_attempt_id: null,
-    preinfusion_ms: null,
-    pressure_observation: null,
     shot_mode: null,
     sweetness: null,
     target_time_ms: null,
@@ -142,20 +137,20 @@ describe("AttemptDetailPanel recipe", () => {
 describe("AttemptDetailPanel machine settings", () => {
   it("keeps the legacy machine columns behind a disclosure instead of in front of the recipe", () => {
     renderPanel(
-      makeAttempt({ dose_g: 18, output_weight_g: 36, preinfusion_ms: 4000, upper_burr_setting: 3 }),
+      makeAttempt({ dose_g: 18, output_weight_g: 36, temperature_offset_c: 1, upper_burr_setting: 3 }),
     );
 
-    expect(screen.queryByText(es.attempts.preinfusionShort)).not.toBeInTheDocument();
+    expect(screen.queryByText(es.attempts.temperatureOffsetShort)).not.toBeInTheDocument();
     expect(screen.getByRole("button", { name: es.attempts.machineSettings })).toBeInTheDocument();
   });
 
   it("opens them on demand", async () => {
-    renderPanel(makeAttempt({ dose_g: 18, output_weight_g: 36, preinfusion_ms: 4000 }));
+    renderPanel(makeAttempt({ dose_g: 18, output_weight_g: 36, temperature_offset_c: 1 }));
 
     await userEvent.click(screen.getByRole("button", { name: es.attempts.machineSettings }));
 
-    expect(screen.getByText(es.attempts.preinfusionShort)).toBeInTheDocument();
-    expect(screen.getByText("4000 ms")).toBeInTheDocument();
+    expect(screen.getByText(es.attempts.temperatureOffsetShort)).toBeInTheDocument();
+    expect(screen.getByText("1 °C")).toBeInTheDocument();
   });
 
   it("offers no disclosure at all when there's nothing legacy on the row", () => {

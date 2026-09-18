@@ -6,7 +6,6 @@ export const BASKET_SIZES = ["single", "double"] as const;
 
 export const SHOT_MODES = ["single", "double", "manual"] as const;
 
-export const PRESSURE_OBSERVATIONS = ["low", "espresso_range", "high", "unknown"] as const;
 
 export const TASTE_DIMENSIONS = [
   "acidity",

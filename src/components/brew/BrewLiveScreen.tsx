@@ -146,7 +146,6 @@ export function BrewLiveScreen({ draftId }: { draftId: string }) {
           outputWeightG: draft.postShot.outputWeightG ?? draft.recipe.targetWeightG,
           tdsPercent: draft.postShot.tdsPercent,
           wouldBrewAgain: draft.postShot.wouldBrewAgain,
-          usedBitMore: false,
           acidity: draft.postShot.acidity,
           sweetness: draft.postShot.sweetness,
           bitterness: draft.postShot.bitterness,
