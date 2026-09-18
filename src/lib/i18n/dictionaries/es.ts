@@ -74,6 +74,10 @@ const es = {
   language: {
     label: "Idioma",
   },
+  errors: {
+    title: "Algo ha fallado por aquí",
+    description: "No hemos podido cargar esta pantalla. Vuelve a intentarlo; si sigue igual, tus datos están a salvo.",
+  },
   dashboard: {
     title: "Inicio",
     subtitle: "Tu café activo, último intento y accesos rápidos.",
@@ -87,26 +91,32 @@ const es = {
     grindSetting: "Molido",
     grindTime: "Molienda",
     extraction: "Extracción",
+    dose: "Café",
+    water: "Agua",
+    brewWeight: "Bebida",
     viewAttempt: "Ver intento",
     whatToday: "¿Qué café preparamos hoy?",
     newBrew: "Nueva preparación",
-    brews: "Brews",
-    average: "Media",
-    favorite: "Favorito",
-    recentBrews: "Preparaciones recientes",
-    allBrewsSubtitle: "Todo tu historial de preparaciones.",
+    // "Preparación" is the act — the flow, the draft, the timer running.
+    // "Intento" is the record it leaves behind: the thing that carries a
+    // number, gets compared, counted and rated. The two had drifted into
+    // naming the same saved row, so a list of records read "Preparaciones
+    // recientes" while each one opened as "Intento #3". Keep the split.
+    recentBrews: "Intentos recientes",
+    allBrewsSubtitle: "Todo tu historial de intentos.",
     viewAll: "Ver todas",
     noBrewsYet: "Aún no has preparado nada.",
     noRecipeData: "Sin datos de receta",
-    today: "ahora",
+    today: "hoy",
     yesterday: "ayer",
     draftInProgress: "Preparación sin terminar",
     resumeDraft: "Continuar",
     draftAbandonedTitle: "¿Qué quieres hacer con esta preparación?",
-    draftAbandonedDescription: "Has vuelto a salir de {coffeeName} sin guardarla.",
+    draftAbandonedDescription: "Sigue sin guardar.",
     draftAbandonedContinueLater: "Seguir más tarde",
-    draftAbandonedDiscard: "Descartar receta",
-    attemptMenuLabel: "Acciones de la preparación",
+    draftAbandonedDiscard: "Descartar",
+    draftDiscardConfirm: "¿Descartar esta preparación? Se perderán sus fotos y sus tiempos, y no podrás recuperarla.",
+    attemptMenuLabel: "Acciones del intento",
     removeFromDashboard: "Quitar del inicio",
     includeInDashboard: "Incluir en el inicio",
     deleteAttemptConfirm: "¿Eliminar este intento? No podrás recuperarlo.",
@@ -472,8 +482,10 @@ const es = {
     running: "En marcha",
     paused: "En pausa",
     targetCaption: "Objetivo",
-    go: "Play",
+    go: "Empezar",
+    targetReached: "En objetivo",
     saveRecipe: "Guardar receta",
+    recipeSectionTitle: "La receta",
   },
   attempts: {
     newTitle: "Nuevo intento",
@@ -514,6 +526,7 @@ const es = {
     compare: "Comparar",
     technical: "Técnico",
     useAsBase: "Usar como base",
+    machineSettings: "Ajustes de máquina",
   },
   comparePage: {
     backToCoffee: "Volver al café",

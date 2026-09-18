@@ -41,7 +41,7 @@ export default async function CoffeesPage({
           <p className="mt-1 text-sm text-ink-muted">{dict.coffees.subtitle}</p>
         </div>
         <div className="flex gap-2">
-          <Button href="/inventory" aria-label={dict.coffees.inventory} variant="secondary" className="px-3">
+          <Button href="/inventory" aria-label={dict.coffees.inventory} variant="secondary" className="w-11 px-0">
             <IconArchivar aria-hidden className="size-4" />
           </Button>
           <Button href="/coffees/new" aria-label={dict.coffees.addCoffee}>

@@ -26,8 +26,11 @@ export function TagInput({
     setDraft("");
   }
 
+  // The inner input drops its outline, so the wrapper has to show the focus
+  // instead — it's the thing that looks like the field. Same pairing
+  // Field.tsx uses for its own outline-none.
   return (
-    <div className="flex min-h-11 flex-wrap items-center gap-1.5 rounded-input border border-border bg-surface px-2 py-1.5">
+    <div className="flex min-h-11 flex-wrap items-center gap-1.5 rounded-input border border-border bg-surface px-2 py-1.5 focus-within:border-ink">
       {value.map((tag) => (
         <span
           key={tag}

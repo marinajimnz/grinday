@@ -91,7 +91,7 @@ function AppShellLayout({ children }: { children: React.ReactNode }) {
                 key={href}
                 href={href}
                 className={cn(
-                  "flex min-h-11 flex-1 flex-col items-center justify-center gap-1 py-2 text-[11px] font-medium",
+                  "flex min-h-11 flex-1 flex-col items-center justify-center gap-1 py-2 text-xs font-medium",
                   active ? "text-ink" : "text-ink-muted",
                 )}
                 aria-current={active ? "page" : undefined}

@@ -307,7 +307,7 @@ export function NewCoffeeForm() {
         </p>
         <p className="mt-1 text-sm text-ink-muted">{dict.coffees.sameCoffeeQuestion}</p>
         {formError && (
-          <p role="alert" className="mt-3 text-sm text-red-700">
+          <p role="alert" className="mt-3 text-sm text-danger">
             {formError}
           </p>
         )}
@@ -404,7 +404,7 @@ export function NewCoffeeForm() {
       )}
 
       {formError && (
-        <p role="alert" className="text-sm text-red-700">
+        <p role="alert" className="text-sm text-danger">
           {formError}
         </p>
       )}

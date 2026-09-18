@@ -21,7 +21,10 @@ export function BrewStepHeader({
         {dict.equipment.stepLabel} {step} {dict.equipment.stepOfLabel} {total}
       </p>
       <h2 className="font-display text-4xl text-ink">{title}</h2>
-      <div className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-canvas">
+      {/* The track was bg-canvas on a bg-canvas page, so in dark mode only
+          the fill rendered and "3 de 6" read as a stray underline. Tinting
+          it from the fill's own colour keeps the two in step across themes. */}
+      <div className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-ink/15">
         <div
           className="h-full rounded-full bg-ink transition-[width]"
           style={{ width: `${(step / total) * 100}%` }}

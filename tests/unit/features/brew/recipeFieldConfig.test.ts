@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { getRecipeFieldConfig } from "@/features/brew/recipeFieldConfig";
+import { computeRatios, getRecipeFieldConfig } from "@/features/brew/recipeFieldConfig";
 import { BREW_METHODS, BREW_METHOD_CATEGORY } from "@/features/equipment/constants";
 
 describe("getRecipeFieldConfig", () => {
@@ -76,5 +76,46 @@ describe("getRecipeFieldConfig", () => {
     for (const method of BREW_METHODS) {
       expect(BREW_METHOD_CATEGORY[method]).toBeDefined();
     }
+  });
+});
+
+describe("computeRatios", () => {
+  it("measures an espresso against the cup, not against water it never poured", () => {
+    const config = getRecipeFieldConfig("espresso");
+    // 18 g in, 36 g out. hasWater is false for espresso, so a stray water_g
+    // must not get a vote.
+    expect(computeRatios(config, { doseG: 18, brewWeightG: 36, waterG: 500 }).ratio).toBe(2);
+  });
+
+  it("measures a pour-over against the water poured in", () => {
+    const config = getRecipeFieldConfig("v60");
+    const { ratio } = computeRatios(config, { doseG: 15, waterG: 250, brewWeightG: 230 });
+    expect(ratio).toBeCloseTo(16.67, 2);
+  });
+
+  it("counts aeropress dilution water towards the final ratio and keeps the brew ratio apart", () => {
+    const config = getRecipeFieldConfig("aeropress");
+    const { ratio, brewRatio } = computeRatios(config, {
+      doseG: 15,
+      waterG: 100,
+      dilutionWaterG: 125,
+    });
+    expect(ratio).toBeCloseTo(15, 5);
+    // Before dilution it brewed strong — that's a different, useful number.
+    expect(brewRatio).toBeCloseTo(6.67, 2);
+  });
+
+  it("leaves the brew ratio out when the method doesn't dilute", () => {
+    const config = getRecipeFieldConfig("v60");
+    expect(computeRatios(config, { doseG: 15, waterG: 250, dilutionWaterG: 50 }).brewRatio).toBeUndefined();
+    // ...and that stray dilution doesn't move the ratio either.
+    expect(computeRatios(config, { doseG: 15, waterG: 250, dilutionWaterG: 50 }).ratio).toBeCloseTo(16.67, 2);
+  });
+
+  it("returns nothing rather than zero or Infinity when a side is missing", () => {
+    const config = getRecipeFieldConfig("espresso");
+    expect(computeRatios(config, { doseG: null, brewWeightG: 36 }).ratio).toBeUndefined();
+    expect(computeRatios(config, { doseG: 18, brewWeightG: null }).ratio).toBeUndefined();
+    expect(computeRatios(config, { doseG: 0, brewWeightG: 36 }).ratio).toBeUndefined();
   });
 });
