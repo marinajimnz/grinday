@@ -1,25 +1,13 @@
 "use client";
 
-import { useEffect, useMemo, useState, useTransition, type ComponentType } from "react";
+import { useEffect, useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { ModeSelectCards } from "./wizard/ModeSelectCards";
-import {
-  CoffeeAltitudeFields,
-  CoffeeBasicModeFields,
-  CoffeeBasicsFields,
-  CoffeeOriginFields,
-  CoffeeProfileFields,
-} from "./wizard/CoffeeStepFields";
-import {
-  BagBasicModeFields,
-  BagConditionFields,
-  BagDatesFields,
-  BagInventoryFields,
-} from "./wizard/BagStepFields";
 import { CoverPhotoPicker } from "./wizard/CoverPhotoPicker";
+import { wizardSteps } from "./wizard/steps";
 import type { CoffeeWizardMode } from "./wizard/types";
 import { bagFieldsSchema, coffeeFieldsSchema } from "@/lib/validation/coffees";
 import {
@@ -34,7 +22,6 @@ import { LoadingLabel } from "@/components/ui/LoadingLabel";
 import { Button } from "@/components/ui/Button";
 import { StepHeader } from "@/components/ui/StepHeader";
 import { IconBolsa, IconFlecha, IconGrano } from "@/components/icons/pencil-icons";
-import type { Dictionary } from "@/lib/i18n/dictionaries/es";
 
 const formSchema = z.object({
   coffee: coffeeFieldsSchema,
@@ -42,45 +29,6 @@ const formSchema = z.object({
 });
 
 type FormValues = z.infer<typeof formSchema>;
-
-type WizardStep = {
-  key: string;
-  section: "coffee" | "bag";
-  title: (dict: Dictionary) => string;
-  // Step components come from two families with different prop shapes
-  // (coffee steps take `control`, bag steps don't); see CoffeeStepFields /
-  // BagStepFields for why those are loosely typed too.
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  Fields: ComponentType<any>;
-};
-
-const BASIC_COFFEE_STEPS: WizardStep[] = [
-  { key: "basic-coffee", section: "coffee", title: (d) => d.coffees.theCoffee, Fields: CoffeeBasicModeFields },
-];
-const BASIC_BAG_STEPS: WizardStep[] = [
-  { key: "basic-bag", section: "bag", title: (d) => d.coffees.theBag, Fields: BagBasicModeFields },
-];
-const COMPLETE_COFFEE_STEPS: WizardStep[] = [
-  { key: "coffee-basics", section: "coffee", title: (d) => d.coffees.stepCoffeeBasics, Fields: CoffeeBasicsFields },
-  { key: "coffee-origin", section: "coffee", title: (d) => d.coffees.stepCoffeeOrigin, Fields: CoffeeOriginFields },
-  { key: "coffee-profile", section: "coffee", title: (d) => d.coffees.stepCoffeeProfile, Fields: CoffeeProfileFields },
-  { key: "coffee-altitude", section: "coffee", title: (d) => d.coffees.stepCoffeeAltitude, Fields: CoffeeAltitudeFields },
-];
-const COMPLETE_BAG_STEPS: WizardStep[] = [
-  { key: "bag-dates", section: "bag", title: (d) => d.coffees.stepBagDates, Fields: BagDatesFields },
-  { key: "bag-condition", section: "bag", title: (d) => d.coffees.stepBagCondition, Fields: BagConditionFields },
-  { key: "bag-inventory", section: "bag", title: (d) => d.coffees.stepBagInventory, Fields: BagInventoryFields },
-];
-
-// Last step in every mode, handled outside the register()-driven fields
-// system below (see the "cover-photo" special case in the render) since it
-// holds a plain File, not a form field.
-const COVER_PHOTO_STEP: WizardStep = {
-  key: "cover-photo",
-  section: "bag",
-  title: (d) => d.coffees.stepCoverPhoto,
-  Fields: CoverPhotoPicker,
-};
 
 export function NewCoffeeForm() {
   const router = useRouter();
@@ -123,13 +71,10 @@ export function NewCoffeeForm() {
   // the mobile bottom nav so it doesn't compete for space or attention.
   useHideBottomNav(mode !== null);
 
-  const flatSteps = useMemo(() => {
-    if (!mode) return [];
-    const coffeeSteps = mode === "basic" ? BASIC_COFFEE_STEPS : COMPLETE_COFFEE_STEPS;
-    const bagSteps = mode === "basic" ? BASIC_BAG_STEPS : COMPLETE_BAG_STEPS;
-    const tail = [...bagSteps, COVER_PHOTO_STEP];
-    return existingCoffeeId ? tail : [...coffeeSteps, ...tail];
-  }, [mode, existingCoffeeId]);
+  const flatSteps = useMemo(
+    () => (mode ? wizardSteps(mode, existingCoffeeId !== undefined) : []),
+    [mode, existingCoffeeId],
+  );
 
   async function onSubmit(values: FormValues) {
     setFormError(null);
