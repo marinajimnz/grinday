@@ -11,7 +11,6 @@ import {
   setPreferredAttemptSchema,
   updateAttemptSchema,
 } from "@/lib/validation/attempts";
-import { getUserDefaultMachine } from "./queries";
 import type { Database, Json } from "@/types/database";
 
 type ActionResult<T = undefined> =
@@ -24,7 +23,7 @@ function toAttemptRow(
   input: z.infer<typeof attemptFieldsSchema>,
 ): Omit<
   AttemptFields,
-  "id" | "user_id" | "coffee_id" | "coffee_bag_id" | "machine_id" | "equipment_snapshot"
+  "id" | "user_id" | "coffee_id" | "coffee_bag_id" | "equipment_snapshot"
 > {
   return {
     method: input.method ?? "espresso",
@@ -151,20 +150,6 @@ export async function createAttemptAction(
   if (bagError) return { success: false, message: bagError.message };
   if (!bag) return { success: false, message: "Bolsa no encontrada" };
 
-  // A default machine isn't required to log a shot — a user can brew before
-  // ever visiting Ajustes → Máquinas. When there is one, its capabilities and
-  // current settings are snapshotted onto the attempt; without one the
-  // snapshot just stays empty.
-  const machine = await getUserDefaultMachine(supabase, user.id);
-  const machineSnapshot: Json = machine
-    ? {
-        machine_model_slug: machine.machine_model?.slug ?? null,
-        capabilities_version: machine.machine_model?.capabilities_version ?? null,
-        capabilities: machine.machine_model?.capabilities ?? {},
-        user_settings: machine.settings,
-      }
-    : {};
-
   const equipmentSnapshot: Json = {
     method: attempt.method ?? "espresso",
     equipment_model_name: attempt.equipmentModelName ?? null,
@@ -178,10 +163,8 @@ export async function createAttemptAction(
       user_id: user.id,
       coffee_id: bag.coffee_id,
       coffee_bag_id: bag.id,
-      machine_id: machine?.id ?? null,
       parent_attempt_id: parentAttemptId ?? null,
       idempotency_key: idempotencyKey ?? null,
-      machine_snapshot: machineSnapshot,
       equipment_snapshot: equipmentSnapshot,
     })
     .select("id")
