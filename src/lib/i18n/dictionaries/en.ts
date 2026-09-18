@@ -8,6 +8,7 @@ const en: Dictionary = {
     stats: "Stats",
     settings: "Settings",
     mainNav: "Main navigation",
+    skipToContent: "Skip to content",
   },
   common: {
     save: "Save",
@@ -422,6 +423,9 @@ const en: Dictionary = {
     saveAttempt: "Save attempt",
     saveWithoutTimer: "Save without timing",
     stop: "Stop",
+    pause: "Pause",
+    resume: "Continue",
+    reset: "Reset",
     startTimer: "Start timer",
     timerNote: "The time will be saved to this attempt automatically.",
     grindSetting: "Grind",

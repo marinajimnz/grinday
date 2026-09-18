@@ -11,6 +11,7 @@ import { BrewPhotoStage } from "./BrewPhotoStage";
 import { BrewResultFields } from "./BrewResultFields";
 import {
   clearDraft,
+  hasTimerRun,
   loadDraft,
   saveDraft,
   type BrewDraft,
@@ -67,7 +68,7 @@ export function BrewLiveScreen({ draftId }: { draftId: string }) {
     }
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setDraft(loaded);
-    if (loaded && (loaded.startedAtEpochMs !== null || loaded.stoppedAtEpochMs !== null)) {
+    if (loaded && (hasTimerRun(loaded) || loaded.stoppedAtEpochMs !== null)) {
       setShowTimer(true);
     }
   }, [draftId]);
@@ -95,6 +96,29 @@ export function BrewLiveScreen({ draftId }: { draftId: string }) {
   function handleStart() {
     if (!draft) return;
     persist({ ...draft, startedAtEpochMs: Date.now() });
+  }
+
+  // Bank what this run added and stop the clock. startedAtEpochMs going
+  // back to null is what "not running" means; accumulatedMs above zero is
+  // what tells a pause apart from a brew that never started.
+  function handlePause(elapsedMs: number) {
+    if (!draft) return;
+    persist({
+      ...draft,
+      accumulatedMs: (draft.accumulatedMs ?? 0) + Math.round(elapsedMs),
+      startedAtEpochMs: null,
+    });
+  }
+
+  function handleReset() {
+    if (!draft) return;
+    persist({
+      ...draft,
+      accumulatedMs: 0,
+      startedAtEpochMs: null,
+      stoppedAtEpochMs: null,
+      extractionMs: null,
+    });
   }
 
   function handleStop(elapsedMs: number) {
@@ -218,6 +242,7 @@ export function BrewLiveScreen({ draftId }: { draftId: string }) {
   // Once the timer stops the coffee is made but not tasted yet, so the photo
   // step comes first; the result step only opens after it's been passed.
   const brewFinished = draft.stoppedAtEpochMs !== null;
+  const timerHasRun = hasTimerRun(draft);
   const isPhotoStep = brewFinished && !draft.photoStepDone;
   const isReview = brewFinished && draft.photoStepDone === true;
   const photos = draft.photos ?? [];
@@ -256,7 +281,7 @@ export function BrewLiveScreen({ draftId }: { draftId: string }) {
       {!brewFinished && showTimer && (
         <div className="mt-6 space-y-6">
           <BrewStepHeader step={4} title={dict.brew.stepTimerTitle} />
-          {draft.startedAtEpochMs === null && (
+          {!timerHasRun && (
             <Button type="button" variant="secondary" onClick={() => setShowTimer(false)}>
               {dict.common.back}
             </Button>
@@ -265,8 +290,11 @@ export function BrewLiveScreen({ draftId }: { draftId: string }) {
             method={method}
             targetTimeMs={draft.recipe.targetTimeMs}
             startedAtEpochMs={draft.startedAtEpochMs}
+            accumulatedMs={draft.accumulatedMs}
             onStart={handleStart}
+            onPause={handlePause}
             onStop={handleStop}
+            onReset={handleReset}
           />
 
           {saveStatus}
@@ -275,10 +303,12 @@ export function BrewLiveScreen({ draftId }: { draftId: string }) {
               extractionMs null — while the shot is running that's a wet
               thumb away from throwing the timing away with no confirm and no
               undo. It's an escape hatch for a brew you never timed, so it
-              belongs to the not-yet-started state, exactly like "Volver"
-              above. A failed or queued save still needs its retry, so that
-              keeps it on screen. */}
-          {(draft.startedAtEpochMs === null || pendingSync || saveError) && (
+              belongs to the state where there is no timing to lose,
+              exactly like "Volver" above. Pausing does not put it back:
+              a paused clock is holding a reading, which is precisely what
+              this button would discard. A failed or queued save still
+              needs its retry, so that keeps it on screen. */}
+          {(!timerHasRun || pendingSync || saveError) && (
             <Button type="button" variant="secondary" disabled={isSaving} onClick={handleSave} fullWidth>
               <LoadingLabel loading={isSaving}>
                 {pendingSync ? dict.brew.retryNow : saveError ? dict.common.retry : dict.brew.saveWithoutTimer}

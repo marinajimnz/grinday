@@ -6,6 +6,7 @@ const es = {
     stats: "Estadísticas",
     settings: "Ajustes",
     mainNav: "Navegación principal",
+    skipToContent: "Saltar al contenido",
   },
   common: {
     save: "Guardar",
@@ -425,6 +426,9 @@ const es = {
     saveAttempt: "Guardar intento",
     saveWithoutTimer: "Guardar sin cronometrar",
     stop: "Parar",
+    pause: "Pausa",
+    resume: "Continuar",
+    reset: "Reiniciar",
     startTimer: "Iniciar temporizador",
     timerNote: "El tiempo se guardará en este intento automáticamente.",
     grindSetting: "Molido",

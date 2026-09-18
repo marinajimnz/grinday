@@ -48,6 +48,18 @@ function AppShellLayout({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="flex min-h-dvh flex-col md:flex-row">
+      {/* On a wide screen the sidebar's five links come before the content
+          in the DOM, so a keyboard walked all five of them on every page
+          before reaching anything. This is the first thing Tab lands on and
+          it is invisible until then. Main takes tabIndex={-1} so following
+          it actually moves focus rather than only scrolling. */}
+      <a
+        href="#contenido"
+        className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-input focus:bg-ink focus:px-4 focus:py-2.5 focus:text-sm focus:font-medium focus:text-surface focus:outline-none focus:ring-2 focus:ring-ink focus:ring-offset-2 focus:ring-offset-canvas"
+      >
+        {dict.nav.skipToContent}
+      </a>
+
       <nav
         aria-label={dict.nav.mainNav}
         className="hidden md:flex md:w-64 md:shrink-0 md:flex-col md:gap-1 md:border-r md:border-border md:bg-surface md:p-4"
@@ -76,7 +88,13 @@ function AppShellLayout({ children }: { children: React.ReactNode }) {
         })}
       </nav>
 
-      <main className={cn("flex-1 md:pb-0", bottomNavHidden ? "pb-0" : "pb-20")}>{children}</main>
+      <main
+        id="contenido"
+        tabIndex={-1}
+        className={cn("flex-1 outline-none md:pb-0", bottomNavHidden ? "pb-0" : "pb-20")}
+      >
+        {children}
+      </main>
 
       {!bottomNavHidden && (
         <nav

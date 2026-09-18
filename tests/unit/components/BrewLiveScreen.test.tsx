@@ -158,3 +158,67 @@ describe("BrewLiveScreen legacy drafts", () => {
     expect(screen.queryByRole("heading", { name: es.brew.stepPhotoTitle })).not.toBeInTheDocument();
   });
 });
+
+describe("BrewLiveScreen timer pause and reset", () => {
+  beforeEach(() => {
+    localStorage.clear();
+  });
+
+  it("banks the time it had when paused, instead of losing it", async () => {
+    saveFinishedBrew({ startedAtEpochMs: Date.now() - 5000, stoppedAtEpochMs: null, extractionMs: null });
+    renderScreen();
+
+    await userEvent.click(await screen.findByRole("button", { name: es.brew.pause }));
+
+    const draft = loadDraft(DRAFT_ID);
+    expect(draft?.startedAtEpochMs).toBeNull();
+    expect(draft?.accumulatedMs).toBeGreaterThanOrEqual(4900);
+    // Still on the timer step — pausing isn't finishing.
+    expect(draft?.stoppedAtEpochMs).toBeNull();
+  });
+
+  it("keeps 'guardar sin cronometrar' away while paused", async () => {
+    // The button saves with extractionMs null and no confirm. A paused
+    // clock is holding a reading, so it is exactly what would be thrown
+    // away — the same trap as while it's running.
+    saveFinishedBrew({ startedAtEpochMs: Date.now() - 5000, stoppedAtEpochMs: null, extractionMs: null });
+    renderScreen();
+
+    await userEvent.click(await screen.findByRole("button", { name: es.brew.pause }));
+
+    expect(screen.getByRole("button", { name: es.brew.resume })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: es.brew.saveWithoutTimer })).not.toBeInTheDocument();
+  });
+
+  it("can still be stopped from paused, without resuming first", async () => {
+    saveFinishedBrew({ startedAtEpochMs: Date.now() - 5000, stoppedAtEpochMs: null, extractionMs: null });
+    renderScreen();
+
+    await userEvent.click(await screen.findByRole("button", { name: es.brew.pause }));
+    await userEvent.click(screen.getByRole("button", { name: es.brew.stop }));
+
+    const draft = loadDraft(DRAFT_ID);
+    expect(draft?.stoppedAtEpochMs).not.toBeNull();
+    expect(draft?.extractionMs).toBeGreaterThanOrEqual(4900);
+  });
+
+  it("puts the escape hatch back once a reset leaves nothing to lose", async () => {
+    saveFinishedBrew({ startedAtEpochMs: Date.now() - 5000, stoppedAtEpochMs: null, extractionMs: null });
+    renderScreen();
+
+    await userEvent.click(await screen.findByRole("button", { name: es.brew.pause }));
+    await userEvent.click(screen.getByRole("button", { name: es.brew.reset }));
+
+    expect(loadDraft(DRAFT_ID)?.accumulatedMs).toBe(0);
+    expect(screen.getByRole("button", { name: es.brew.saveWithoutTimer })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: es.brew.reset })).not.toBeInTheDocument();
+  });
+
+  it("offers no reset while the clock is moving", async () => {
+    saveFinishedBrew({ startedAtEpochMs: Date.now() - 5000, stoppedAtEpochMs: null, extractionMs: null });
+    renderScreen();
+
+    expect(await screen.findByRole("button", { name: es.brew.stop })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: es.brew.reset })).not.toBeInTheDocument();
+  });
+});

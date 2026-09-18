@@ -5,7 +5,13 @@ import { cn } from "@/lib/cn";
 const VARIANT_CLASSES = {
   primary: "bg-ink text-surface",
   secondary: "border border-border text-ink",
-  destructive: "bg-[#F47174] text-[#1b2a6e]",
+  // Both halves were hardcoded hex, so this one fill ignored the theme and
+  // ignored --color-danger, the token every other danger-coloured thing in
+  // the app reads. On the token it is a deep red on white in light and the
+  // same coral it always was on dark ink in dark — 6.42:1 and 5.83:1,
+  // against 4.65:1 before — and it finally agrees with text-danger about
+  // what danger looks like.
+  destructive: "bg-danger text-surface",
 } as const;
 
 export type Variant = keyof typeof VARIANT_CLASSES;
