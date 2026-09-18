@@ -1,11 +1,14 @@
--- Fase 8 (0026_public_profiles.sql) split coffees/brew_attempts' RLS from
--- one owner-only "for all" policy into select_own + select_public — so
--- these `security invoker` functions, written back in Fase 6/7 on the old
--- assumption that RLS alone scoped every result to the calling user, now
--- silently aggregate across every public profile's data instead of just
--- the caller's own. Redefining each with an explicit auth.uid() filter,
--- same as every hand-written query elsewhere in the app already needed
--- after that migration.
+-- These `security invoker` functions were written assuming RLS alone
+-- scoped every result to the calling user. That held while each table had
+-- a single owner-only policy, and stopped holding the moment a second,
+-- broader select policy existed alongside it — the aggregates then ran
+-- over every row the caller could read, not just their own.
+--
+-- The policy that broke the assumption has since been removed, but the
+-- assumption was never safe to rely on in the first place: an aggregate
+-- that must be per-user should say so. Each function filters on
+-- auth.uid() explicitly, the same way every hand-written query in the app
+-- already does.
 
 create or replace function public.stats_by_coffee(p_from date default null, p_to date default null)
 returns table (
@@ -192,6 +195,7 @@ as $$
   order by grind_setting;
 $$;
 
+-- Home screen aggregate: total brews, average rating, most-used method.
 create or replace function public.dashboard_overview()
 returns table (
   total_brews bigint,
