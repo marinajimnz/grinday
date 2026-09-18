@@ -574,14 +574,6 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      dashboard_overview: {
-        Args: never
-        Returns: {
-          avg_rating: number
-          favorite_method: string
-          total_brews: number
-        }[]
-      }
       set_default_equipment: {
         Args: { p_equipment_id: string }
         Returns: {
