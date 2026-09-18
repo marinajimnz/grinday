@@ -110,8 +110,6 @@ export type Database = {
           idempotency_key: string | null
           input_weight_g: number | null
           intensity: number | null
-          machine_id: string | null
-          machine_snapshot: Json
           method: string
           moka_cup_size: number | null
           notes: string | null
@@ -164,8 +162,6 @@ export type Database = {
           idempotency_key?: string | null
           input_weight_g?: number | null
           intensity?: number | null
-          machine_id?: string | null
-          machine_snapshot?: Json
           method?: string
           moka_cup_size?: number | null
           notes?: string | null
@@ -218,8 +214,6 @@ export type Database = {
           idempotency_key?: string | null
           input_weight_g?: number | null
           intensity?: number | null
-          machine_id?: string | null
-          machine_snapshot?: Json
           method?: string
           moka_cup_size?: number | null
           notes?: string | null
@@ -270,13 +264,6 @@ export type Database = {
             columns: ["grinder_id"]
             isOneToOne: false
             referencedRelation: "user_grinders"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "brew_attempts_machine_id_fkey"
-            columns: ["machine_id"]
-            isOneToOne: false
-            referencedRelation: "user_machines"
             referencedColumns: ["id"]
           },
           {
@@ -513,43 +500,9 @@ export type Database = {
           },
         ]
       }
-      machine_models: {
-        Row: {
-          brand: string
-          capabilities: Json
-          capabilities_version: number
-          created_at: string
-          id: string
-          model_name: string
-          slug: string
-          updated_at: string
-        }
-        Insert: {
-          brand: string
-          capabilities?: Json
-          capabilities_version?: number
-          created_at?: string
-          id?: string
-          model_name: string
-          slug: string
-          updated_at?: string
-        }
-        Update: {
-          brand?: string
-          capabilities?: Json
-          capabilities_version?: number
-          created_at?: string
-          id?: string
-          model_name?: string
-          slug?: string
-          updated_at?: string
-        }
-        Relationships: []
-      }
       profiles: {
         Row: {
           created_at: string
-          default_machine_id: string | null
           display_name: string | null
           id: string
           is_anonymous: boolean
@@ -560,7 +513,6 @@ export type Database = {
         }
         Insert: {
           created_at?: string
-          default_machine_id?: string | null
           display_name?: string | null
           id: string
           is_anonymous?: boolean
@@ -571,7 +523,6 @@ export type Database = {
         }
         Update: {
           created_at?: string
-          default_machine_id?: string | null
           display_name?: string | null
           id?: string
           is_anonymous?: boolean
@@ -580,15 +531,7 @@ export type Database = {
           updated_at?: string
           username?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "profiles_default_machine_fk"
-            columns: ["default_machine_id"]
-            isOneToOne: false
-            referencedRelation: "user_machines"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       user_brew_equipment: {
         Row: {
@@ -641,47 +584,6 @@ export type Database = {
         }
         Relationships: []
       }
-      user_machines: {
-        Row: {
-          created_at: string
-          id: string
-          is_default: boolean
-          machine_model_id: string
-          nickname: string | null
-          settings: Json
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          created_at?: string
-          id?: string
-          is_default?: boolean
-          machine_model_id: string
-          nickname?: string | null
-          settings?: Json
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          created_at?: string
-          id?: string
-          is_default?: boolean
-          machine_model_id?: string
-          nickname?: string | null
-          settings?: Json
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "user_machines_machine_model_id_fkey"
-            columns: ["machine_model_id"]
-            isOneToOne: false
-            referencedRelation: "machine_models"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
     }
     Views: {
       [_ in never]: never
@@ -724,25 +626,6 @@ export type Database = {
         SetofOptions: {
           from: "*"
           to: "user_grinders"
-          isOneToOne: true
-          isSetofReturn: false
-        }
-      }
-      set_default_machine: {
-        Args: { p_machine_model_id: string; p_nickname?: string }
-        Returns: {
-          created_at: string
-          id: string
-          is_default: boolean
-          machine_model_id: string
-          nickname: string | null
-          settings: Json
-          updated_at: string
-          user_id: string
-        }
-        SetofOptions: {
-          from: "*"
-          to: "user_machines"
           isOneToOne: true
           isSetofReturn: false
         }
