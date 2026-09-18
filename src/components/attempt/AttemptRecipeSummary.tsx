@@ -119,7 +119,10 @@ export function AttemptRecipeSummary({ attempt }: { attempt: BrewAttemptRow }) {
       <dl className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-3">
         {metrics.map((m) => (
           <div key={m.label}>
-            <dt className="text-xs text-ink-muted">{m.label}</dt>
+            {/* Two lines' worth, so a label that wraps — "Tiempo de
+                extracción" does, on every espresso — doesn't push its
+                number below the one sitting next to it. */}
+            <dt className="min-h-8 text-xs text-ink-muted">{m.label}</dt>
             <dd className="text-lg font-semibold tabular-nums text-ink">{m.value}</dd>
             {m.caption && <p className="text-xs text-ink-muted">{m.caption}</p>}
           </div>
