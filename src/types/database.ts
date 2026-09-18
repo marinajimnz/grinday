@@ -86,7 +86,6 @@ export type Database = {
           attempt_no: number
           balance: number | null
           basket_size: string | null
-          basket_wall: string | null
           bitterness: number | null
           body: number | null
           coffee_bag_id: string
@@ -113,12 +112,9 @@ export type Database = {
           method: string
           moka_cup_size: number | null
           notes: string | null
-          output_volume_ml: number | null
           output_weight_g: number | null
           overall_rating: number | null
           parent_attempt_id: string | null
-          preinfusion_ms: number | null
-          pressure_observation: string | null
           shot_mode: string | null
           sweetness: number | null
           target_time_ms: number | null
@@ -128,7 +124,6 @@ export type Database = {
           temperature_offset_c: number | null
           updated_at: string
           upper_burr_setting: number | null
-          used_bit_more: boolean
           user_id: string
           water_g: number | null
           would_brew_again: boolean | null
@@ -138,7 +133,6 @@ export type Database = {
           attempt_no?: number
           balance?: number | null
           basket_size?: string | null
-          basket_wall?: string | null
           bitterness?: number | null
           body?: number | null
           coffee_bag_id: string
@@ -165,12 +159,9 @@ export type Database = {
           method?: string
           moka_cup_size?: number | null
           notes?: string | null
-          output_volume_ml?: number | null
           output_weight_g?: number | null
           overall_rating?: number | null
           parent_attempt_id?: string | null
-          preinfusion_ms?: number | null
-          pressure_observation?: string | null
           shot_mode?: string | null
           sweetness?: number | null
           target_time_ms?: number | null
@@ -180,7 +171,6 @@ export type Database = {
           temperature_offset_c?: number | null
           updated_at?: string
           upper_burr_setting?: number | null
-          used_bit_more?: boolean
           user_id: string
           water_g?: number | null
           would_brew_again?: boolean | null
@@ -190,7 +180,6 @@ export type Database = {
           attempt_no?: number
           balance?: number | null
           basket_size?: string | null
-          basket_wall?: string | null
           bitterness?: number | null
           body?: number | null
           coffee_bag_id?: string
@@ -217,12 +206,9 @@ export type Database = {
           method?: string
           moka_cup_size?: number | null
           notes?: string | null
-          output_volume_ml?: number | null
           output_weight_g?: number | null
           overall_rating?: number | null
           parent_attempt_id?: string | null
-          preinfusion_ms?: number | null
-          pressure_observation?: string | null
           shot_mode?: string | null
           sweetness?: number | null
           target_time_ms?: number | null
@@ -232,7 +218,6 @@ export type Database = {
           temperature_offset_c?: number | null
           updated_at?: string
           upper_burr_setting?: number | null
-          used_bit_more?: boolean
           user_id?: string
           water_g?: number | null
           would_brew_again?: boolean | null
