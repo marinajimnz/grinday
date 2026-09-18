@@ -114,6 +114,28 @@ button:not(:disabled),
   transform-origin: 50% 50%;
 }
 
+/* The three wisps over the timer cup once it's full. Each path sets its own
+   duration and delay inline so they drift apart instead of puffing in
+   unison. Under reduced motion BrewCup renders them still rather than
+   letting the global animation killswitch freeze them at opacity 0. */
+@keyframes brew-steam {
+  0% {
+    opacity: 0;
+    transform: translate(0, 1.3px);
+  }
+  28% {
+    opacity: 0.8;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(0, -3.6px);
+  }
+}
+
+.animate-brew-steam {
+  animation: brew-steam 2.2s ease-in-out infinite;
+}
+
 /* The bean spins on every route transition and never stops on its own, which
    is exactly the kind of motion that triggers vestibular symptoms. Keep the
    icon, drop the movement. */

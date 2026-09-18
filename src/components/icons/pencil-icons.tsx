@@ -188,6 +188,13 @@ export const IconFlecha = pencilIcon(
   </>,
 );
 
+// Back, in the step line of the Preparar flow. A bare chevron, not the
+// full arrow of IconFlecha: at 16px the shaft and head of that one collapse
+// into a smudge.
+export const IconChevronIzq = pencilIcon("pencil-c", <path d="M14.5 5 L7.5 12 L14.5 19" />, {
+  strokeWidth: 2.4,
+});
+
 export const IconBalanza = pencilIcon(
   "pencil-c",
   <>

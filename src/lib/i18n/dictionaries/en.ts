@@ -447,6 +447,9 @@ const en: Dictionary = {
     chooseMethodTitle: "Which method are you brewing with?",
     chooseMethodSubtitle: "Only methods with saved equipment are shown.",
     chooseCoffeeTitle: "Which coffee are you using?",
+    stepNameMethod: "Method",
+    stepNameCoffee: "Coffee",
+    stepNameRecipe: "Recipe",
     stepRecipeTitle: "Set up your recipe",
     recipeRememberedNote:
       "Next time you brew this coffee with this method, it'll start from these same settings. If anything changes while you brew, you can correct it on the result screen.",
@@ -483,6 +486,7 @@ const en: Dictionary = {
     running: "Running",
     paused: "Paused",
     targetCaption: "Target",
+    overTargetCaption: "over the target",
     go: "Start",
     targetReached: "On target",
     saveRecipe: "Save recipe",

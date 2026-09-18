@@ -450,6 +450,9 @@ const es = {
     chooseMethodTitle: "¿Con qué método vas a preparar?",
     chooseMethodSubtitle: "Solo se muestran los métodos con máquina guardada.",
     chooseCoffeeTitle: "¿Qué café vas a usar?",
+    stepNameMethod: "Método",
+    stepNameCoffee: "Café",
+    stepNameRecipe: "Receta",
     stepRecipeTitle: "Configura tu receta",
     recipeRememberedNote:
       "La próxima vez que prepares este café con este método, partirás de estos mismos ajustes. Si algo varía durante la preparación, podrás corregirlo en la pantalla de resultado.",
@@ -486,6 +489,7 @@ const es = {
     running: "En marcha",
     paused: "En pausa",
     targetCaption: "Objetivo",
+    overTargetCaption: "sobre el objetivo",
     go: "Empezar",
     targetReached: "En objetivo",
     saveRecipe: "Guardar receta",
