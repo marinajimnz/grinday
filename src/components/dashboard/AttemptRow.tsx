@@ -4,17 +4,16 @@ import { useEffect, useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { MoreVertical } from "lucide-react";
-import { cn } from "@/lib/cn";
 import { METHOD_ICONS } from "@/features/equipment/methodIcons";
 import {
   IconAnadir,
   IconArchivar,
   IconCafe,
   IconEliminar,
-  IconFavorita,
   IconPreparar,
 } from "@/components/icons/pencil-icons";
 import { BrewSummary } from "@/components/attempt/BrewSummary";
+import { StarRating } from "@/components/ui/StarRating";
 import type { RecentAttempt } from "@/features/dashboard/queries";
 import type { BrewMethod } from "@/features/equipment/constants";
 import { useDictionary, useLocale } from "@/components/i18n/LocaleProvider";
@@ -25,17 +24,6 @@ import { useLongPress } from "@/components/ui/useLongPress";
 import { buildDraftFromRecipe, saveDraft } from "@/features/brew/draft";
 import { startBrewFromAttemptAction } from "@/features/brew/actions";
 import { deleteAttemptAction, setAttemptDashboardVisibilityAction } from "@/features/attempts/actions";
-
-function StarRow({ rating }: { rating: number | null }) {
-  if (rating == null) return null;
-  return (
-    <div className="flex justify-end gap-0.5 text-coffee">
-      {[1, 2, 3, 4, 5].map((n) => (
-        <IconFavorita key={n} aria-hidden className={cn("size-3", n > rating && "fill-none")} />
-      ))}
-    </div>
-  );
-}
 
 export function AttemptRow({ attempt }: { attempt: RecentAttempt }) {
   const dict = useDictionary();
@@ -154,7 +142,7 @@ export function AttemptRow({ attempt }: { attempt: RecentAttempt }) {
                 })}
               </span>
               <span className="ml-auto shrink-0">
-                <StarRow rating={attempt.overall_rating} />
+                <StarRating value={attempt.overall_rating} size="sm" />
               </span>
             </div>
             {attempt.coffee?.name && (
