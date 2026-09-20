@@ -195,6 +195,15 @@ export const IconChevronIzq = pencilIcon("pencil-c", <path d="M14.5 5 L7.5 12 L1
   strokeWidth: 2.4,
 });
 
+// IconBalanza, IconBuscar, IconHervidor and IconMetodo are not drawn
+// anywhere right now, and deleting them costs more than keeping them: the
+// four together are under a kilobyte, but removing them drops this module
+// below the size at which the bundler keeps a shared chunk, and clsx +
+// tailwind-merge (7.8 kB) get copied into five route entries instead of
+// being fetched once. Measured: -0.9 kB of source, +14 kB downloaded on
+// /, /coffees, /attempts/new and /offline. They also belong to a synced
+// icon set, so the set staying whole is worth something on its own.
+
 export const IconBalanza = pencilIcon(
   "pencil-c",
   <>
