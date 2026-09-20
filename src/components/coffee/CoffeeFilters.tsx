@@ -3,7 +3,8 @@
 import { useEffect, useRef, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Search } from "lucide-react";
-import { inputClassName } from "@/components/ui/Field";
+import { inputClassName, noZoomTextClassName } from "@/components/ui/Field";
+import { cn } from "@/lib/cn";
 import {
   BAG_STATUSES,
   PROCESS_OPTIONS,
@@ -63,7 +64,10 @@ export function CoffeeFilters() {
       <div className="flex flex-wrap gap-2">
         <select
           aria-label={dict.coffees.filterProcess}
-          className="min-h-11 rounded-input border border-border bg-surface px-3 text-sm text-ink"
+          className={cn(
+            "min-h-11 rounded-input border border-border bg-surface px-3 text-ink",
+            noZoomTextClassName,
+          )}
           value={searchParams.get("process") ?? ""}
           onChange={(e) => updateParam("process", e.target.value)}
         >
@@ -77,7 +81,10 @@ export function CoffeeFilters() {
 
         <select
           aria-label={dict.coffees.filterRoast}
-          className="min-h-11 rounded-input border border-border bg-surface px-3 text-sm text-ink"
+          className={cn(
+            "min-h-11 rounded-input border border-border bg-surface px-3 text-ink",
+            noZoomTextClassName,
+          )}
           value={searchParams.get("roastLevel") ?? ""}
           onChange={(e) => updateParam("roastLevel", e.target.value)}
         >
@@ -91,7 +98,10 @@ export function CoffeeFilters() {
 
         <select
           aria-label={dict.coffees.filterBagStatus}
-          className="min-h-11 rounded-input border border-border bg-surface px-3 text-sm text-ink"
+          className={cn(
+            "min-h-11 rounded-input border border-border bg-surface px-3 text-ink",
+            noZoomTextClassName,
+          )}
           value={searchParams.get("bagStatus") ?? ""}
           onChange={(e) => updateParam("bagStatus", e.target.value)}
         >

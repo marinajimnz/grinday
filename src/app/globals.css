@@ -87,6 +87,23 @@ label {
   user-select: none;
 }
 
+/* The other way a phone magnifies a page you're trying to use: double-tap
+   to zoom. The +/- steppers on the recipe step are tapped in quick
+   succession by design, and two taps inside 300ms are exactly what the
+   gesture listens for — so adjusting a dose by a gram could leave the page
+   blown up. This only opts these elements out of that one gesture; pinch to
+   zoom keeps working everywhere, which is the part anyone actually relies
+   on to read. */
+button,
+[role="button"],
+a,
+label,
+input,
+select,
+textarea {
+  touch-action: manipulation;
+}
+
 /* Browsers don't give <button> a pointer cursor by default (unlike <a>),
    so every button in the app showed the plain arrow on hover. */
 button:not(:disabled),

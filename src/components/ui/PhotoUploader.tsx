@@ -7,6 +7,8 @@ import { createClient } from "@/lib/supabase/client";
 import { compressImage } from "@/lib/media/compressImage";
 import { useDictionary } from "@/components/i18n/LocaleProvider";
 import { Button } from "@/components/ui/Button";
+import { noZoomTextClassName } from "@/components/ui/Field";
+import { cn } from "@/lib/cn";
 
 export function PhotoUploader<K extends string>({
   kinds,
@@ -69,7 +71,10 @@ export function PhotoUploader<K extends string>({
       <select
         value={kind}
         onChange={(e) => setKind(e.target.value as K)}
-        className="min-h-11 rounded-input border border-border bg-surface px-3 text-sm text-ink"
+        className={cn(
+          "min-h-11 rounded-input border border-border bg-surface px-3 text-ink",
+          noZoomTextClassName,
+        )}
         aria-label={dict.ui.photoType}
       >
         {kinds.map((k) => (
