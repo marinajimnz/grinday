@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { X } from "lucide-react";
 import { useDictionary } from "@/components/i18n/LocaleProvider";
+import { noZoomTextClassName } from "@/components/ui/Field";
+import { cn } from "@/lib/cn";
 
 export function TagInput({
   value,
@@ -62,7 +64,10 @@ export function TagInput({
         }}
         onBlur={commitDraft}
         placeholder={value.length ? "" : placeholder}
-        className="min-w-24 flex-1 bg-transparent px-1 py-1 text-sm text-ink outline-none placeholder:text-ink-muted"
+        className={cn(
+          "min-w-24 flex-1 bg-transparent px-1 py-1 text-ink outline-none placeholder:text-ink-muted",
+          noZoomTextClassName,
+        )}
       />
     </div>
   );
