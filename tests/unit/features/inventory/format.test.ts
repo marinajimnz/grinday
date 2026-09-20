@@ -1,16 +1,18 @@
 import { describe, expect, it } from "vitest";
 import { formatRemaining } from "@/features/inventory/format";
+import es from "@/lib/i18n/dictionaries/es";
+import en from "@/lib/i18n/dictionaries/en";
 
 describe("formatRemaining", () => {
   it("shows 'Sin seguimiento' when inventory_mode is none", () => {
     expect(
-      formatRemaining({ inventory_mode: "none", remaining_g: 100, estimated_dose_g: null }),
+      formatRemaining({ inventory_mode: "none", remaining_g: 100, estimated_dose_g: null }, es),
     ).toBe("Sin seguimiento");
   });
 
   it("shows 'Sin seguimiento' when remaining_g hasn't been seeded yet", () => {
     expect(
-      formatRemaining({ inventory_mode: "manual_grams", remaining_g: null, estimated_dose_g: null }),
+      formatRemaining({ inventory_mode: "manual_grams", remaining_g: null, estimated_dose_g: null }, es),
     ).toBe("Sin seguimiento");
   });
 
@@ -19,7 +21,7 @@ describe("formatRemaining", () => {
       inventory_mode: "manual_grams",
       remaining_g: 187.4,
       estimated_dose_g: null,
-    });
+    }, es);
     expect(result).toBe("187 g");
     expect(result).not.toContain("aprox");
   });
@@ -29,7 +31,7 @@ describe("formatRemaining", () => {
       inventory_mode: "approximate_shots",
       remaining_g: 144,
       estimated_dose_g: 18,
-    });
+    }, es);
     expect(result).toContain("aprox.");
     expect(result).toBe("aprox. 8 shots (~144 g)");
   });
@@ -39,8 +41,18 @@ describe("formatRemaining", () => {
       inventory_mode: "approximate_shots",
       remaining_g: 144,
       estimated_dose_g: null,
-    });
+    }, es);
     expect(result).toBe("aprox. 144 g");
+  });
+
+  it("speaks the language it's handed", () => {
+    // The dictionary used to default to Spanish, so an English viewer's
+    // bag read "Sin seguimiento" the moment a call site forgot to pass one
+    // — and passing it became optional, which is how that stays unnoticed.
+    const bag = { inventory_mode: "none", remaining_g: 100, estimated_dose_g: null };
+    expect(formatRemaining(bag, es)).toBe("Sin seguimiento");
+    expect(formatRemaining(bag, en)).toBe(en.inventory.noTracking);
+    expect(en.inventory.noTracking).not.toBe(es.inventory.noTracking);
   });
 
   it("uses singular 'shot' for exactly one remaining", () => {
@@ -48,7 +60,7 @@ describe("formatRemaining", () => {
       inventory_mode: "approximate_shots",
       remaining_g: 18,
       estimated_dose_g: 18,
-    });
+    }, es);
     expect(result).toContain("1 shot ");
     expect(result).not.toContain("1 shots");
   });

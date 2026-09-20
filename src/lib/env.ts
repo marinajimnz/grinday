@@ -1,35 +1,25 @@
-import { z } from "zod";
-
-const clientEnvSchema = z.object({
-  NEXT_PUBLIC_SUPABASE_URL: z.url(),
-  NEXT_PUBLIC_SUPABASE_ANON_KEY: z.string().min(1),
-});
-
-const serverEnvSchema = clientEnvSchema.extend({
-  SUPABASE_SERVICE_ROLE_KEY: z.string().min(1),
-});
-
-function parseEnv() {
-  const isServer = typeof window === "undefined";
-  const schema = isServer ? serverEnvSchema : clientEnvSchema;
-  // Reference each NEXT_PUBLIC_* var explicitly: bundlers inline them per-reference,
-  // not by iterating process.env, so a dynamic lookup would be undefined on the client.
-  const raw = {
-    NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
-    NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-    SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY,
-  };
-  const result = schema.safeParse(raw);
-
-  if (!result.success) {
+/**
+ * The four Supabase clients used to read their configuration as
+ * `process.env.X!` — an assertion that says "this is always set" while
+ * doing nothing to make it true. When it isn't set, Supabase is handed
+ * `undefined` and fails somewhere inside itself, with a message about a
+ * URL rather than about the variable nobody defined.
+ *
+ * There was a zod-schema version of this file, but nothing ever imported
+ * it, so it never validated anything. This is the same guard without the
+ * schema: the check has to be reachable from the browser bundle and from
+ * middleware, and a schema in either of those is weight for a string test.
+ *
+ * Takes the value, not just the name: bundlers inline `process.env.NEXT_PUBLIC_*`
+ * per literal reference, so reading it dynamically would come back
+ * undefined on the client — which is exactly the failure this is here to
+ * prevent.
+ */
+export function requireEnv(name: string, value: string | undefined): string {
+  if (!value) {
     throw new Error(
-      `Variables de entorno inválidas o ausentes:\n${result.error.issues
-        .map((issue) => `- ${issue.path.join(".")}: ${issue.message}`)
-        .join("\n")}`,
+      `Falta la variable de entorno ${name}. Defínela en .env.local (desarrollo) o en la configuración del despliegue.`,
     );
   }
-
-  return result.data;
+  return value;
 }
-
-export const env = parseEnv();

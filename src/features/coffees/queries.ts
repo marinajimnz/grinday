@@ -155,24 +155,6 @@ export async function listMediaForBags(supabase: Client, bagIds: string[]) {
   return byBag;
 }
 
-export async function findSimilarCoffee(
-  supabase: Client,
-  name: string,
-  roaster: string,
-  userId: string,
-) {
-  const { data, error } = await supabase
-    .from("coffees")
-    .select("id, name, roaster")
-    .eq("user_id", userId)
-    .ilike("name", name.trim())
-    .ilike("roaster", roaster.trim())
-    .is("archived_at", null)
-    .maybeSingle();
-  if (error) throw error;
-  return data;
-}
-
 export async function getBagDetail(supabase: Client, bagId: string) {
   const { data: bag, error } = await supabase
     .from("coffee_bags")
