@@ -1,5 +1,5 @@
 import { cn } from "@/lib/cn";
-import { IconCafe, IconFlecha, IconGrano } from "@/components/icons/pencil-icons";
+import { IconCafe, IconFlecha, IconGrano, IconPreparar } from "@/components/icons/pencil-icons";
 import { computeRatios, formatRatio, getRecipeFieldConfig } from "@/features/brew/recipeFieldConfig";
 import { formatDuration } from "@/features/brew/formatTime";
 import type { BrewMethod } from "@/features/equipment/constants";
@@ -51,39 +51,66 @@ export function BrewSummary({
   const text = big ? "text-xl font-semibold text-ink" : "text-sm text-ink-muted";
   const icon = big ? "size-5" : "size-3.5";
 
-  const groups = [
-    attempt.cup_count != null && (
-      <span key="cups" className="inline-flex items-center gap-1">
-        <span className="sr-only">{dict.brew.cupCount}</span>
-        <span className="tabular-nums">{attempt.cup_count}</span>
-        <IconCafe aria-hidden className={icon} />
-      </span>
-    ),
-    attempt.dose_g != null && (
-      <span key="dose" className="inline-flex items-center gap-1">
-        <span className="sr-only">{dict.dashboard.dose}</span>
-        <IconGrano aria-hidden className={icon} />
-        <span className="tabular-nums">{attempt.dose_g} g</span>
-        {ratio !== undefined && (
-          <>
-            <IconFlecha aria-hidden className={cn(icon, "text-ink-muted")} />
-            <span className="sr-only">{dict.brew.ratio}</span>
-            <span className="tabular-nums">{formatRatio(ratio)}</span>
-          </>
-        )}
-      </span>
-    ),
-    attempt.extraction_ms != null && (
-      <span key="time" className="inline-flex items-center gap-1">
-        <span className="sr-only">{dict.dashboard.extraction}</span>
-        <span className="tabular-nums">{formatDuration(attempt.extraction_ms)}</span>
-      </span>
-    ),
-  ].filter(Boolean);
+  const cups = attempt.cup_count != null && (
+    <>
+      <span className="sr-only">{dict.brew.cupCount}</span>
+      <IconCafe aria-hidden className={icon} />
+      <span className="tabular-nums">{attempt.cup_count}</span>
+    </>
+  );
 
-  if (!groups.length) {
+  const dose = attempt.dose_g != null && (
+    <>
+      <span className="sr-only">{dict.dashboard.dose}</span>
+      <IconGrano aria-hidden className={icon} />
+      <span className="tabular-nums">{attempt.dose_g} g</span>
+      {ratio !== undefined && (
+        <>
+          <IconFlecha aria-hidden className={cn(icon, "text-ink-muted")} />
+          <span className="sr-only">{dict.brew.ratio}</span>
+          <span className="tabular-nums">{formatRatio(ratio)}</span>
+        </>
+      )}
+    </>
+  );
+
+  const time = attempt.extraction_ms != null && (
+    <>
+      <span className="sr-only">{dict.dashboard.extraction}</span>
+      <IconPreparar aria-hidden className={icon} />
+      <span className="tabular-nums">{formatDuration(attempt.extraction_ms)}</span>
+    </>
+  );
+
+  if (!cups && !dose && !time) {
     return <p className={cn("text-sm text-ink-muted", className)}>{dict.dashboard.noRecipeData}</p>;
   }
 
-  return <div className={cn("flex flex-wrap items-center gap-x-2.5 gap-y-0.5", text, className)}>{groups}</div>;
+  const cell = "inline-flex items-center gap-1 whitespace-nowrap";
+
+  // justify-between over three cells, rather than three equal thirds: the
+  // free space splits evenly into the two gaps, so the clock sits against
+  // the left edge and the cups against the right with the dose the same
+  // distance from each — thirds put it in the middle of the box instead,
+  // which is only the middle of the gaps when the two outer groups happen
+  // to be the same width, and they never are.
+  //
+  // All three cells render even when empty, so a brew with no cup count —
+  // every method but espresso, and every attempt logged before the column
+  // existed — keeps the other two where they were instead of sliding out
+  // to the edges.
+  return (
+    <div
+      className={cn(
+        "flex items-center justify-between gap-2 rounded-input bg-canvas px-3",
+        big ? "py-2.5" : "py-1.5",
+        text,
+        className,
+      )}
+    >
+      <span className={cell}>{time}</span>
+      <span className={cell}>{dose}</span>
+      <span className={cell}>{cups}</span>
+    </div>
+  );
 }

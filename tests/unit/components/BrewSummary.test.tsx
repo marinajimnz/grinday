@@ -28,8 +28,8 @@ function groups(attempt: BrewSummaryAttempt) {
 }
 
 describe("BrewSummary", () => {
-  it("reads cups, then dose against ratio, then the clock", () => {
-    expect(groups(make())).toEqual(["2", "18 g1:2", "27 s"]);
+  it("reads the clock, then dose against ratio, then cups", () => {
+    expect(groups(make())).toEqual(["27 s", "18 g1:2", "2"]);
   });
 
   it("measures an espresso against the cup and a pour-over against the water", () => {
@@ -37,7 +37,7 @@ describe("BrewSummary", () => {
     // is 1:16.7 — the denominator is the method's, not a constant.
     expect(groups(make())[1]).toContain("1:2");
     expect(
-      groups(make({ method: "v60", cup_count: null, water_g: 300, target_weight_g: null, output_weight_g: null }))[0],
+      groups(make({ method: "v60", cup_count: null, water_g: 300, target_weight_g: null, output_weight_g: null }))[1],
     ).toContain("1:16.7");
   });
 
@@ -55,16 +55,17 @@ describe("BrewSummary", () => {
           target_weight_g: null,
           output_weight_g: null,
         }),
-      )[0],
+      )[1],
     ).toContain("1:10");
   });
 
-  it("leaves out what the brew doesn't have rather than printing a dash", () => {
+  it("empties the cell rather than printing a dash, and keeps the others put", () => {
     // Every attempt logged before cup_count existed has none, and most
-    // methods never ask; a blank cup icon would be a worse answer.
-    expect(groups(make({ cup_count: null }))).toEqual(["18 g1:2", "27 s"]);
-    expect(groups(make({ extraction_ms: null }))).toEqual(["2", "18 g1:2"]);
-    expect(groups(make({ dose_g: null }))).toEqual(["2", "27 s"]);
+    // methods never ask. The cell still renders so the two that remain
+    // don't slide out to the edges of the box.
+    expect(groups(make({ cup_count: null }))).toEqual(["27 s", "18 g1:2", ""]);
+    expect(groups(make({ extraction_ms: null }))).toEqual(["", "18 g1:2", "2"]);
+    expect(groups(make({ dose_g: null }))).toEqual(["27 s", "", "2"]);
   });
 
   it("says so when there is nothing to show", () => {
