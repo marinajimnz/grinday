@@ -469,7 +469,7 @@ const es = {
     brewRatioCaption: "ratio de infusión",
     targetWeightG: "Peso de bebida",
     temperatureC: "Temperatura",
-    extractionTime: "Tiempo de extracción",
+    extractionTime: "Extracción",
     brewTime: "Tiempo de infusión",
     steepTime: "Tiempo de inmersión",
     mokaCupSize: "Tamaño (tazas)",

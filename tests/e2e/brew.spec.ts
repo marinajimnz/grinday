@@ -1,5 +1,6 @@
 import { test, expect } from "./fixtures";
 import { createCoffeeBasic } from "./helpers";
+import es from "../../src/lib/i18n/dictionaries/es";
 
 // Drives two wizards (equipment, then coffee) before the six brew steps
 // themselves — more than the default 30s budget once any of the hydration
@@ -126,7 +127,7 @@ test("guided brew: recipe, timer, photo step, and result", async ({ page, testUs
   await expect(page.getByRole("button", { name: /^Café/ })).toContainText("21g");
 
   // The stopped timer pre-filled the extraction time.
-  const extractionCard = page.getByRole("button", { name: /^Tiempo de extracción/ });
+  const extractionCard = page.getByRole("button", { name: /^Extracción/ });
   const extractionSeconds = Number((await extractionCard.textContent())?.match(/([\d.]+)s/)?.[1]);
   expect(extractionSeconds).toBeGreaterThan(0.5);
 
@@ -149,8 +150,12 @@ test("guided brew: recipe, timer, photo step, and result", async ({ page, testUs
   await expect(page.getByText("21 g")).toBeVisible();
   await expect(page.getByText("42 g")).toBeVisible();
   // And the cup count came with it, so the journal can tell a 42 g double
-  // apart from a 42 g single later on.
-  await expect(page.getByText("Dos tazas")).toBeVisible();
+  // apart from a 42 g single later on. It rides the method line as a badge
+  // now — the digit and the cup — rather than spelling "Dos tazas" out in
+  // the grid below.
+  const methodLine = page.getByText("Espresso", { exact: true }).locator("xpath=..");
+  await expect(methodLine.getByText("2", { exact: true })).toBeVisible();
+  await expect(methodLine.getByText(es.brew.cupCount)).toBeAttached();
 
   // The dashboard summarises the same brew the same way in both of its
   // cards: cups, dose against ratio, and the clock. These are the numbers
