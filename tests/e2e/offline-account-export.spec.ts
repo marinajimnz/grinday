@@ -32,7 +32,14 @@ test("offline page shows the saved dashboard snapshot and pending draft notice",
   await expect(page.getByRole("heading", { name: "Sin conexión" })).toBeVisible();
   await expect(page.getByText("Café de prueba")).toBeVisible();
   await expect(page.getByText("Tostador de prueba")).toBeVisible();
-  await expect(page.getByText("Último intento: #4 · 5/5")).toBeVisible();
+  // The score is five stars now, not the text "5/5" — the number survives
+  // only for screen readers, so this checks both: the line reads right, and
+  // a perfect score leaves no hollow star in the row.
+  const lastAttempt = page.getByText("Último intento: #4");
+  await expect(lastAttempt).toBeVisible();
+  await expect(lastAttempt.locator("svg")).toHaveCount(5);
+  await expect(lastAttempt.locator("svg.fill-none")).toHaveCount(0);
+  await expect(lastAttempt.getByText("5/5")).toBeAttached();
   await expect(
     page.getByText("Tienes un borrador de intento guardado en este dispositivo."),
   ).toBeVisible();
