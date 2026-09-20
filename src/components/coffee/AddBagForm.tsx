@@ -29,7 +29,6 @@ export function AddBagForm({
 
   const {
     register,
-    control,
     watch,
     setValue,
     handleSubmit,
@@ -61,7 +60,7 @@ export function AddBagForm({
       onSubmit={handleSubmit(onSubmit)}
       className="space-y-6 rounded-card border border-border bg-surface p-5"
     >
-      <BagFieldsFieldset register={register} control={control} watch={watch} autoStatus errors={errors.bag} />
+      <BagFieldsFieldset register={register} watch={watch} autoStatus errors={errors.bag} />
       {formError && (
         <p role="alert" className="text-sm text-danger">
           {formError}
