@@ -1,7 +1,9 @@
 export const STATS_PERIODS = ["week", "month", "year"] as const;
 export type StatsPeriod = (typeof STATS_PERIODS)[number];
 
-export const DEFAULT_STATS_PERIOD: StatsPeriod = "year";
+// The week is what you can still act on: a year opens on a number you
+// can only look at, a week opens on the one you are still filling.
+export const DEFAULT_STATS_PERIOD: StatsPeriod = "week";
 
 export function isStatsPeriod(value: string | undefined): value is StatsPeriod {
   return STATS_PERIODS.includes(value as StatsPeriod);

@@ -44,10 +44,11 @@ test("dashboard shows the active coffee and stats aggregate once there's enough 
   if (!bagId) throw new Error("Expected a bag panel with data-bag-id");
 
   // One attempt, no cup count recorded — the manual form doesn't ask — so
-  // the year reads it as the one cup it must have been.
+  // the period reads it as the one cup it must have been. The page opens on
+  // the week, which is where an attempt logged a second ago lands.
   await logRatedAttempt(page, bagId, "4");
   await page.goto("/stats");
-  await expect(page.getByText("Tu año en café", { exact: false })).toBeVisible();
+  await expect(page.getByText("Tu semana en café")).toBeVisible();
   await expect(page.getByText("1", { exact: true }).first()).toBeVisible();
   await expect(page.getByText("taza preparada")).toBeVisible();
 
@@ -92,8 +93,11 @@ test("dashboard shows the active coffee and stats aggregate once there's enough 
   await expect(page.getByText("28 s")).toBeVisible();
 
   // Switching period re-cuts everything: the three brews were logged just
-  // now, so they're in this week too.
-  await page.getByRole("tab", { name: "Semana" }).click();
-  await expect(page.getByText("Tu semana en café")).toBeVisible();
+  // now, so they're in this year too — and the year is the one heading that
+  // carries its own label, so this also checks the eyebrow's year suffix.
+  await page.getByRole("tab", { name: "Año" }).click();
+  await expect(
+    page.getByText(new RegExp(`Tu año en café · ${new Date().getFullYear()}`, "i")),
+  ).toBeVisible();
   await expect(page.getByText("tazas preparadas")).toBeVisible();
 });
