@@ -30,7 +30,6 @@ export function EditBagForm({
 
   const {
     register,
-    control,
     handleSubmit,
     formState: { errors },
   } = useForm({
@@ -67,7 +66,7 @@ export function EditBagForm({
       onSubmit={handleSubmit(onSubmit)}
       className="space-y-6 rounded-card border border-border bg-surface p-5"
     >
-      <BagFieldsFieldset register={register} control={control} errors={errors.bag} />
+      <BagFieldsFieldset register={register} errors={errors.bag} />
       {formError && (
         <p role="alert" className="text-sm text-danger">
           {formError}
