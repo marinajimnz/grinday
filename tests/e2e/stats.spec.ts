@@ -43,10 +43,13 @@ test("dashboard shows the active coffee and stats aggregate once there's enough 
   const bagId = await page.locator("[data-bag-id]").first().getAttribute("data-bag-id");
   if (!bagId) throw new Error("Expected a bag panel with data-bag-id");
 
-  // Below the n>=3 threshold: the page-level empty state must show.
+  // One attempt, no cup count recorded — the manual form doesn't ask — so
+  // the year reads it as the one cup it must have been.
   await logRatedAttempt(page, bagId, "4");
   await page.goto("/stats");
-  await expect(page.getByText("Puntúa tus próximos intentos", { exact: false })).toBeVisible();
+  await expect(page.getByText("Tu año en café", { exact: false })).toBeVisible();
+  await expect(page.getByText("1", { exact: true }).first()).toBeVisible();
+  await expect(page.getByText("taza preparada")).toBeVisible();
 
   await logRatedAttempt(page, bagId, "5");
   await logRatedAttempt(page, bagId, "3");
@@ -61,20 +64,36 @@ test("dashboard shows the active coffee and stats aggregate once there's enough 
   await expect(recentRows).toHaveCount(3);
   await expect(recentRows.first()).toBeVisible();
 
-  // Stats: 3 rated attempts clears the threshold. The page-level empty
-  // state is gone (this test only fills country and roaster, so the
-  // process/roast_level/notes cards legitimately still show their own
-  // per-card "insuficiente" — that's correct, not asserted away here).
+  // The count leads the page and needs no ratings at all: three brews,
+  // three cups, whatever they scored.
   await page.goto("/stats");
-  await expect(page.getByText("Puntúa tus próximos intentos", { exact: false })).toHaveCount(0);
-  await expect(page.getByRole("heading", { name: "Top cafés" })).toBeVisible();
-  await expect(page.getByText(name, { exact: false })).toBeVisible();
-  await expect(page.getByRole("heading", { name: "Por tostador" })).toBeVisible();
+  await expect(page.getByText("3", { exact: true }).first()).toBeVisible();
+  await expect(page.getByText("tazas preparadas")).toBeVisible();
+
+  // The breakdowns are behind their own headings now, and stay closed
+  // until asked — that's the point of the redesign, so the count isn't
+  // buried under six lists you didn't come for.
+  const topCoffees = page.getByRole("button", { name: "Top cafés" });
+  await expect(topCoffees).toHaveAttribute("aria-expanded", "false");
+  // Checked by the panel's own caption, not by the coffee's name: the name
+  // is up in the highlights too ("Mejor puntuación", "Café más repetido"),
+  // so its absence would never have meant the panel was shut.
+  await expect(page.getByText("Por puntuación media", { exact: false })).toHaveCount(0);
+
+  await topCoffees.click();
+  await expect(topCoffees).toHaveAttribute("aria-expanded", "true");
+  await expect(page.getByText("Por puntuación media", { exact: false })).toBeVisible();
+  await expect(page.getByText(name, { exact: false }).first()).toBeVisible();
+
+  await page.getByRole("button", { name: "Por tostador" }).click();
   await expect(page.getByText("E2E Stats Roaster")).toBeVisible();
-  await expect(page.getByRole("heading", { name: "Distribución de extracción" })).toBeVisible();
+
+  await page.getByRole("button", { name: "Distribución de extracción" }).click();
   await expect(page.getByText("28 s")).toBeVisible();
 
-  // A date range that excludes every attempt falls back to "insuficiente".
-  await page.getByLabel("Desde").fill("2099-01-01");
-  await expect(page.getByText("Puntúa tus próximos intentos", { exact: false })).toBeVisible();
+  // Switching period re-cuts everything: the three brews were logged just
+  // now, so they're in this week too.
+  await page.getByRole("tab", { name: "Semana" }).click();
+  await expect(page.getByText("Tu semana en café")).toBeVisible();
+  await expect(page.getByText("tazas preparadas")).toBeVisible();
 });

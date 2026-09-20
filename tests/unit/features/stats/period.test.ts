@@ -19,9 +19,32 @@ describe("getPeriodRange", () => {
   it("pulls Sunday back to the week it ends, not the one it starts", () => {
     // getUTCDay calls Sunday 0, so the naive `1 - weekday` jumps forward a
     // day instead of back six, and a Sunday brew lands in next week.
-    const sunday = new Date("2026-09-20T23:00:00.000Z");
-    expect(getPeriodRange("week", sunday).from).toBe("2026-09-14");
-    expect(getPeriodRange("week", sunday).to).toBe("2026-09-20");
+    const sundayAfternoon = new Date("2026-09-20T12:00:00.000Z");
+    expect(getPeriodRange("week", sundayAfternoon).from).toBe("2026-09-14");
+    expect(getPeriodRange("week", sundayAfternoon).to).toBe("2026-09-20");
+  });
+
+  it("reads the clock in Madrid, not in UTC", () => {
+    // 23:00 UTC on Sunday is 01:00 on Monday in Spain, and Monday starts a
+    // new week. Under UTC this instant reported the week that had just
+    // ended, which is the whole reason the zone is threaded through.
+    const mondayNight = new Date("2026-09-20T23:00:00.000Z");
+    expect(getPeriodRange("week", mondayNight).from).toBe("2026-09-21");
+    expect(getPeriodRange("week", mondayNight).to).toBe("2026-09-27");
+
+    // And it follows summer time: the same wall clock in January is only
+    // one hour ahead, so 23:00 UTC is still the same day.
+    const januaryNight = new Date("2026-01-14T23:00:00.000Z");
+    expect(getPeriodRange("month", januaryNight).from).toBe("2026-01-01");
+    expect(getPeriodRange("year", januaryNight).from).toBe("2026-01-01");
+    expect(getPeriodRange("week", januaryNight).from).toBe("2026-01-12");
+  });
+
+  it("rolls the year over at Spanish midnight, not at UTC midnight", () => {
+    // 23:30 on 31 December in UTC is already 00:30 on 1 January in Spain.
+    const newYear = new Date("2026-12-31T23:30:00.000Z");
+    expect(getPeriodRange("year", newYear).from).toBe("2027-01-01");
+    expect(getPeriodRange("year", newYear).to).toBe("2027-12-31");
   });
 
   it("carries the week across a month boundary", () => {

@@ -640,7 +640,7 @@ export type Database = {
         }
       }
       stats_by_coffee: {
-        Args: { p_from?: string; p_to?: string }
+        Args: { p_from?: string; p_to?: string; p_tz?: string }
         Returns: {
           avg_rating: number
           coffee_id: string
@@ -651,7 +651,12 @@ export type Database = {
         }[]
       }
       stats_by_dimension: {
-        Args: { p_dimension: string; p_from?: string; p_to?: string }
+        Args: {
+          p_dimension: string
+          p_from?: string
+          p_to?: string
+          p_tz?: string
+        }
         Returns: {
           avg_rating: number
           label: string
@@ -659,32 +664,66 @@ export type Database = {
         }[]
       }
       stats_by_method: {
-        Args: { p_from?: string; p_to?: string }
+        Args: { p_from?: string; p_to?: string; p_tz?: string }
         Returns: {
           avg_rating: number
           method: string
           rated_count: number
         }[]
       }
+      stats_cup_totals: {
+        Args: { p_from?: string; p_to?: string; p_tz?: string }
+        Returns: {
+          brews: number
+          cups: number
+        }[]
+      }
+      stats_cups_by_bucket: {
+        Args: { p_bucket?: string; p_from: string; p_to: string; p_tz?: string }
+        Returns: {
+          bucket_start: string
+          cups: number
+        }[]
+      }
       stats_extraction_seconds_distribution: {
-        Args: { p_from?: string; p_to?: string }
+        Args: { p_from?: string; p_to?: string; p_tz?: string }
         Returns: {
           attempt_count: number
           bucket_seconds: number
         }[]
       }
       stats_frequent_notes: {
-        Args: { p_from?: string; p_min_rating?: number; p_to?: string }
+        Args: {
+          p_from?: string
+          p_min_rating?: number
+          p_to?: string
+          p_tz?: string
+        }
         Returns: {
           coffee_count: number
           note: string
         }[]
       }
       stats_grind_setting_distribution: {
-        Args: { p_from?: string; p_to?: string }
+        Args: { p_from?: string; p_to?: string; p_tz?: string }
         Returns: {
           attempt_count: number
           grind_setting: number
+        }[]
+      }
+      stats_period_highlights: {
+        Args: { p_from?: string; p_to?: string; p_tz?: string }
+        Returns: {
+          best_coffee_id: string
+          best_coffee_name: string
+          best_coffee_rating: number
+          top_coffee_brews: number
+          top_coffee_id: string
+          top_coffee_name: string
+          top_method: string
+          top_method_brews: number
+          top_roast: string
+          top_roast_brews: number
         }[]
       }
     }

@@ -19,24 +19,47 @@ export type PeriodRange = {
   buckets: string[];
 };
 
-// Everything here is UTC, which is what `created_at::date` compares
-// against in the SQL and what Vercel's clock runs on. The cost is that a
-// brew logged between midnight and 02:00 Spanish time lands on the
-// previous day's bar, and at the very edge of a period can fall outside
-// it. Fixing that properly means carrying the browser's timezone to the
-// server; it isn't worth the machinery until a 1 a.m. coffee happens.
+/**
+ * The zone every date in the stats is read in — passed to the SQL on
+ * every call so the period's boundaries and the bars inside it agree, and
+ * so a coffee made at 00:30 is filed under the day it felt like rather
+ * than the UTC day before. One journal, one brewer, one kitchen; if that
+ * ever stops being true this becomes a profile field.
+ */
+export const STATS_TIME_ZONE = "Europe/Madrid";
+
 function toISODate(date: Date): string {
   return date.toISOString().slice(0, 10);
 }
 
+// Calendar arithmetic only. Once a Y/M/D has been read off the clock in
+// the right zone, a UTC Date is just a convenient way to add days and
+// roll over month ends — it is never turned back into an instant, so no
+// offset can creep in.
 function utc(year: number, monthIndex: number, day: number): Date {
   return new Date(Date.UTC(year, monthIndex, day));
 }
 
-export function getPeriodRange(period: StatsPeriod, now: Date): PeriodRange {
-  const year = now.getUTCFullYear();
-  const month = now.getUTCMonth();
-  const day = now.getUTCDate();
+// What the calendar on the kitchen wall says right now.
+function todayIn(timeZone: string, now: Date): { year: number; month: number; day: number } {
+  // "en-CA" is the shortest route to YYYY-MM-DD; the parts are what we
+  // actually want, and formatToParts avoids depending on that format.
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(now);
+  const get = (type: string) => Number(parts.find((p) => p.type === type)!.value);
+  return { year: get("year"), month: get("month") - 1, day: get("day") };
+}
+
+export function getPeriodRange(
+  period: StatsPeriod,
+  now: Date,
+  timeZone: string = STATS_TIME_ZONE,
+): PeriodRange {
+  const { year, month, day } = todayIn(timeZone, now);
 
   if (period === "year") {
     return {
@@ -60,9 +83,10 @@ export function getPeriodRange(period: StatsPeriod, now: Date): PeriodRange {
     };
   }
 
-  // The week runs Monday to Sunday, as it does in Spain — getUTCDay puts
-  // Sunday at 0, so it needs pulling back six days rather than one.
-  const weekday = now.getUTCDay();
+  // The week runs Monday to Sunday, as it does in Spain. getUTCDay on a
+  // date built from the local Y/M/D gives that date's weekday, and it
+  // puts Sunday at 0 — so Sunday needs pulling back six days, not one.
+  const weekday = utc(year, month, day).getUTCDay();
   const mondayOffset = weekday === 0 ? -6 : 1 - weekday;
   const monday = utc(year, month, day + mondayOffset);
   return {
