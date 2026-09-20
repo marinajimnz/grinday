@@ -4,6 +4,7 @@
 // lost" true — nothing here ever depends on a network round trip.
 
 import type { BrewMethod } from "@/features/equipment/constants";
+import { MAX_CUP_COUNT } from "@/features/attempts/constants";
 import type { AttemptMediaKind, CupCount } from "@/features/attempts/constants";
 import { getRecipeFieldConfig } from "@/features/brew/recipeFieldConfig";
 
@@ -203,7 +204,8 @@ export type RecipeSourceAttempt = {
 };
 
 function cupCountFrom(value: number | null | undefined): CupCount | undefined {
-  return value === 1 || value === 2 ? value : undefined;
+  if (value == null || !Number.isInteger(value)) return undefined;
+  return value >= 1 && value <= MAX_CUP_COUNT ? value : undefined;
 }
 
 type SnapshotNames = { equipmentModelName?: string; grinderModelName?: string };
@@ -273,7 +275,8 @@ export function buildDraftFromRecipe(params: {
       // this step: one cup is what an espresso is unless you say otherwise,
       // and the twenty-five attempts logged before the column existed have
       // nothing to recall.
-      cupCount: cupCountFrom(p?.cup_count) ?? (config.hasCupCount ? 1 : undefined),
+      cupCount:
+        cupCountFrom(p?.cup_count) ?? (config.cupCountMode === "pot" ? undefined : 1),
       heatIntensity: (p?.heat_intensity as BrewDraftRecipe["heatIntensity"]) ?? undefined,
       equipmentId: params.defaultEquipment?.id ?? p?.equipment_id ?? undefined,
       equipmentModelName: params.defaultEquipment?.model_name ?? names.equipmentModelName,

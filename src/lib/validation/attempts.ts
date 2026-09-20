@@ -2,7 +2,7 @@ import { z } from "zod";
 import {
   ATTEMPT_MEDIA_KINDS,
   BASKET_SIZES,
-  CUP_COUNTS,
+  MAX_CUP_COUNT,
   DOSE_FEEDBACKS,
   DOSE_MODES,
   HEAT_INTENSITIES,
@@ -30,7 +30,9 @@ export const attemptFieldsSchema = z.object({
   tdsPercent: optionalPositiveNumber,
   wouldBrewAgain: z.boolean().optional(),
   mokaCupSize: optionalInt,
-  cupCount: z.literal(CUP_COUNTS).optional(),
+  // Was literally 1 or 2, which is all espresso can be. Any method can
+  // record cups now, so the range matches the column's own check.
+  cupCount: z.number().int().min(1).max(MAX_CUP_COUNT).optional(),
   heatIntensity: optionalEnum(HEAT_INTENSITIES),
   equipmentId: z.uuid().optional(),
   grinderId: z.uuid().optional(),

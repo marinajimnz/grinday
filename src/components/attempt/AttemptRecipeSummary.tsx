@@ -54,7 +54,7 @@ export function AttemptRecipeSummary({ attempt }: { attempt: BrewAttemptRow }) {
     brewWeightG,
   });
 
-  const cupCount = config.hasCupCount ? attempt.cup_count : null;
+  const cupCount = config.cupCountMode === "pot" ? null : attempt.cup_count;
   // Annotated rather than inferred: with `icon` optional, the union TS
   // builds from these branches has a variant per shape, and the one for
   // the single iconless metric pins `icon` to undefined, which the

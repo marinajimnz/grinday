@@ -55,11 +55,16 @@ describe("AttemptRecipeSummary", () => {
     expect(container.querySelector("dl")!.textContent).not.toContain(es.brew.cupCount);
   });
 
-  it("asks for cups only where the method has them", () => {
-    // Espresso is the only one that counts cups; a pour-over answers the
-    // same question with its water.
-    const { container } = renderCard(makeAttempt({ method: "v60", water_g: 300, cup_count: 2 }));
-    expect(container.querySelector("div > div")!.textContent).not.toContain(es.brew.cupCount);
+  it("badges the cups on a pour-over too, but never on a moka pot", () => {
+    // Every method records cups now. The moka pot is the exception: its
+    // "Tamaño moka" cell is already that number, so a badge would say the
+    // same thing twice on the same card.
+    const pourOver = renderCard(makeAttempt({ method: "v60", water_g: 300, cup_count: 2 }));
+    expect(pourOver.container.querySelector("div > div")!.textContent).toContain("2");
+    pourOver.unmount();
+
+    const moka = renderCard(makeAttempt({ method: "moka", moka_cup_size: 3, cup_count: 3 }));
+    expect(moka.container.querySelector("div > div")!.textContent).not.toContain(es.brew.cupCount);
   });
 
   it("leaves a metric the icon set has nothing for with its name alone", () => {
