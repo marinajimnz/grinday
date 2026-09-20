@@ -79,7 +79,13 @@ export function AttemptsTimeline({
                   {isPreferred && (
                     <IconFavorita aria-label={dict.attempts.preferred} className="size-4 text-coffee" />
                   )}
-                  <StarRating value={attempt.overall_rating} size="sm" />
+                  {/* The score goes to the far edge, as it does on the
+                      dashboard row. Left beside the title it landed against
+                      the "preferida" star — the same filled star, in the
+                      same colour — and the two read as one row of six. */}
+                  <span className="ml-auto shrink-0">
+                    <StarRating value={attempt.overall_rating} size="sm" />
+                  </span>
                 </div>
                 <p className="mt-0.5 truncate text-xs text-ink-muted">
                   {formatDate(attempt.created_at, locale)}
