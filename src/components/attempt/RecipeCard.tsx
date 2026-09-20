@@ -1,9 +1,9 @@
 import { IconFavorita } from "@/components/icons/pencil-icons";
+import { BrewSummary } from "./BrewSummary";
 import { PrepareWithRecipeButton } from "@/components/brew/PrepareWithRecipeButton";
 import { Button } from "@/components/ui/Button";
 import type { BrewAttemptRow } from "@/features/attempts/queries";
 import type { RecipeSourceAttempt } from "@/features/brew/draft";
-import { formatDuration } from "@/features/brew/formatTime";
 import { getLocale } from "@/lib/i18n/locale";
 import { getDictionary } from "@/lib/i18n/get-dictionary";
 
@@ -13,8 +13,6 @@ import { getDictionary } from "@/lib/i18n/get-dictionary";
 // every taste score and snapshot on the row.
 export type RecipeCardAttempt = RecipeSourceAttempt &
   Pick<BrewAttemptRow, "grind_seconds" | "extraction_ms" | "output_weight_g">;
-
-const GRID_COLS = { 1: "grid-cols-1", 2: "grid-cols-2", 3: "grid-cols-3" } as const;
 
 export async function RecipeCard({
   attempt,
@@ -37,36 +35,6 @@ export async function RecipeCard({
 }) {
   const dict = getDictionary(await getLocale());
 
-  // The guided brew flow never writes grind_setting or grind_seconds — only
-  // the manual attempt form does (features/attempts/actions.ts) — so a card
-  // hard-wired to those two showed "— —s" for every brew logged the normal
-  // way. Show the three values this attempt actually has instead, in the
-  // order a person would read a recipe back, and keep the time anchored in
-  // the last slot because it's the one number you watch while brewing.
-  const brewWeight = attempt.target_weight_g ?? attempt.output_weight_g;
-  const candidates = [
-    attempt.grind_setting != null && {
-      value: String(attempt.grind_setting),
-      label: dict.dashboard.grindSetting,
-    },
-    attempt.grind_seconds != null && {
-      value: `${attempt.grind_seconds}s`,
-      label: dict.dashboard.grindTime,
-    },
-    attempt.dose_g != null && { value: `${attempt.dose_g} g`, label: dict.dashboard.dose },
-    attempt.water_g != null && { value: `${attempt.water_g} g`, label: dict.dashboard.water },
-    brewWeight != null && { value: `${brewWeight} g`, label: dict.dashboard.brewWeight },
-  ].filter((m): m is { value: string; label: string } => Boolean(m));
-
-  const time =
-    attempt.extraction_ms != null
-      ? {
-          value: formatDuration(attempt.extraction_ms),
-          label: dict.dashboard.extraction,
-        }
-      : null;
-  const metrics = time ? [...candidates.slice(0, 2), time] : candidates.slice(0, 3);
-
   return (
     <div className="rounded-card border border-coffee/40 bg-surface p-5">
       <div className="flex items-center gap-1.5 text-coffee">
@@ -76,16 +44,13 @@ export async function RecipeCard({
         </span>
       </div>
 
-      {metrics.length > 0 && (
-        <div className={`mt-3 grid gap-3 ${GRID_COLS[metrics.length as 1 | 2 | 3]}`}>
-          {metrics.map((m) => (
-            <div key={m.label}>
-              <p className="text-2xl font-semibold tabular-nums text-ink">{m.value}</p>
-              <p className="text-xs text-ink-muted">{m.label}</p>
-            </div>
-          ))}
-        </div>
-      )}
+      {/* It used to pick whichever three of five numbers this attempt
+          happened to have, labelled underneath — which meant the same
+          recipe showed different numbers depending on how it was logged,
+          and a guided brew showed "— —s" because it never writes the
+          grind. These are the three that say what a brew was, always the
+          same three, in the same shape the attempt rows use. */}
+      <BrewSummary attempt={attempt} dict={dict} size="lg" className="mt-3" />
 
       <div className="mt-4 flex gap-2">
         <Button href={`/attempts/${attempt.id}`} variant="secondary" className="flex-1">

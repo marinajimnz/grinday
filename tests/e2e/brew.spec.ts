@@ -152,6 +152,25 @@ test("guided brew: recipe, timer, photo step, and result", async ({ page, testUs
   // apart from a 42 g single later on.
   await expect(page.getByText("Dos tazas")).toBeVisible();
 
+  // The dashboard summarises the same brew the same way in both of its
+  // cards: cups, dose against ratio, and the clock. These are the numbers
+  // that say what a preparation was, so they have to survive the trip from
+  // the guided flow to the two places you read it back.
+  const attemptUrl = page.url();
+  await page.goto("/");
+  // Both cards, so each value appears exactly twice. The cups group is
+  // checked through its screen-reader label, since a bare "2" on a
+  // dashboard could be almost anything.
+  await expect(page.getByText("21 g", { exact: true })).toHaveCount(2);
+  await expect(page.getByText("1:2", { exact: true })).toHaveCount(2);
+  await expect(page.getByText("Tazas", { exact: true })).toHaveCount(2);
+  // And the row still opens the attempt it summarises.
+  await expect(page.getByRole("link", { name: new RegExp(name) }).first()).toHaveAttribute(
+    "href",
+    /\/attempts\/[0-9a-f-]+$/,
+  );
+  await page.goto(attemptUrl);
+
   // "Duplicar y ajustar" is a preparation like any other, so it has to land
   // on the same live brew flow — step 3/6, recipe card grid — seeded from
   // this attempt, not on the plain manual form at /attempts/new.

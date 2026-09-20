@@ -13,6 +13,8 @@ export type RecentAttempt = {
   created_at: string;
   dose_g: number | null;
   water_g: number | null;
+  dilution_water_g: number | null;
+  cup_count: number | null;
   target_weight_g: number | null;
   output_weight_g: number | null;
   extraction_ms: number | null;
@@ -22,7 +24,7 @@ export type RecentAttempt = {
 };
 
 const RECENT_ATTEMPT_FIELDS =
-  "id, attempt_no, method, created_at, dose_g, water_g, target_weight_g, output_weight_g, extraction_ms, overall_rating, hidden_from_dashboard, coffee:coffees!brew_attempts_coffee_id_fkey(id, name, roaster)";
+  "id, attempt_no, method, created_at, dose_g, water_g, dilution_water_g, cup_count, target_weight_g, output_weight_g, extraction_ms, overall_rating, hidden_from_dashboard, coffee:coffees!brew_attempts_coffee_id_fkey(id, name, roaster)";
 
 // The dashboard's own "recent" list respects "Quitar del inicio" (a
 // per-attempt opt-out that keeps the attempt everywhere else — its coffee's
