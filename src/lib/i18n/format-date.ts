@@ -43,3 +43,40 @@ export function formatRelativeDay(
   }
   return formatDate(date, locale);
 }
+
+// The stats bars: a bucket is a bare "YYYY-MM-DD" with no time and no
+// zone, so it is parsed as UTC and must be read back as UTC — otherwise
+// "2026-01-01" west of Greenwich prints as 31 December.
+const BUCKET_LOCALE_OPTIONS = { timeZone: "UTC" } as const;
+
+/** "ene", "feb" — the month a year's bar stands for. */
+export function formatBucketMonth(isoDate: string, locale: Locale) {
+  return new Date(isoDate).toLocaleDateString(INTL_LOCALE[locale], {
+    ...BUCKET_LOCALE_OPTIONS,
+    month: "short",
+  });
+}
+
+/** "enero de 2026" — the month named in full, for the busiest-month line. */
+export function formatBucketMonthLong(isoDate: string, locale: Locale) {
+  return new Date(isoDate).toLocaleDateString(INTL_LOCALE[locale], {
+    ...BUCKET_LOCALE_OPTIONS,
+    month: "long",
+  });
+}
+
+/** "L", "M"… — the single letter under a week's bar. */
+export function formatBucketWeekday(isoDate: string, locale: Locale) {
+  return new Date(isoDate)
+    .toLocaleDateString(INTL_LOCALE[locale], { ...BUCKET_LOCALE_OPTIONS, weekday: "narrow" })
+    .toUpperCase();
+}
+
+/** "14 de septiembre" — a day named in full, for the busiest-day line. */
+export function formatBucketDayLong(isoDate: string, locale: Locale) {
+  return new Date(isoDate).toLocaleDateString(INTL_LOCALE[locale], {
+    ...BUCKET_LOCALE_OPTIONS,
+    day: "numeric",
+    month: "long",
+  });
+}

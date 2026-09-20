@@ -25,6 +25,7 @@ describe("buildDraftFromRecipe", () => {
       targetWeightG: 40,
       temperatureC: 94,
       targetTimeMs: 27000,
+      cupCount: 1,
     });
     expect(draft.parentAttemptId).toBeUndefined();
     expect(draft.startedAtEpochMs).toBeNull();
@@ -33,15 +34,17 @@ describe("buildDraftFromRecipe", () => {
     expect(draft.draftId).toMatch(/^[0-9a-f-]{36}$/);
   });
 
-  it("proposes one cup for espresso and asks nothing of the other methods", () => {
+  it("proposes one cup everywhere except the moka pot", () => {
     // Pre-selected, not blank: the recipe step proposes 20 g and 94 °C the
     // same way. Every attempt logged before the column existed has nothing
     // to recall, so without this the control would start empty for every
-    // coffee already in the journal.
-    expect(
-      buildDraftFromRecipe({ ...baseParams, method: "espresso" }).recipe.cupCount,
-    ).toBe(1);
-    expect(buildDraftFromRecipe({ ...baseParams, method: "v60" }).recipe.cupCount).toBeUndefined();
+    // coffee already in the journal — and one cup is the honest guess,
+    // which is also what the year's count reads a blank as.
+    for (const method of ["espresso", "v60", "chemex", "aeropress", "prensa"] as const) {
+      expect(buildDraftFromRecipe({ ...baseParams, method }).recipe.cupCount).toBe(1);
+    }
+    // The moka pot is asked once, as mokaCupSize, and not again here.
+    expect(buildDraftFromRecipe({ ...baseParams, method: "moka" }).recipe.cupCount).toBeUndefined();
   });
 
   it("copies the recipe fields from the source attempt but not the outcome", () => {
@@ -77,6 +80,7 @@ describe("buildDraftFromRecipe", () => {
       targetWeightG: 240,
       temperatureC: 94,
       targetTimeMs: 180000,
+      cupCount: 1,
       grinderUpperBurr: 8,
       grinderLowerBurr: 3,
       equipmentId: "equip-1",

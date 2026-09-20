@@ -4,7 +4,7 @@ import { cn } from "@/lib/cn";
 import { SteppableFieldGrid, type SteppableField } from "./SteppableFieldGrid";
 import { SettingsAccordionCard } from "@/components/settings/SettingsAccordionCard";
 import { computeRatios, getRecipeFieldConfig, formatRatio } from "@/features/brew/recipeFieldConfig";
-import { CUP_COUNTS, HEAT_INTENSITIES } from "@/features/attempts/constants";
+import { CUP_COUNTS, HEAT_INTENSITIES, MAX_CUP_COUNT } from "@/features/attempts/constants";
 import { IconCafe } from "@/components/icons/pencil-icons";
 import type { BrewDraftRecipe } from "@/features/brew/draft";
 import { useDictionary } from "@/components/i18n/LocaleProvider";
@@ -122,6 +122,21 @@ export function RecipeFields({
       sublabel: config.brewWeightMode === "optional" ? dict.brew.optional : undefined,
     });
   }
+  // Espresso answers this with the two cups below the grid; the moka pot
+  // answers it with its own size. Everyone else types it here, among the
+  // other numbers, because "four cups" is as much a part of a French press
+  // recipe as the water is.
+  if (config.cupCountMode === "manual") {
+    fields.push({
+      key: "cupCount",
+      label: dict.brew.cupCount,
+      value: value.cupCount,
+      onChange: (v) => set("cupCount", v),
+      step: 1,
+      min: 1,
+      max: MAX_CUP_COUNT,
+    });
+  }
 
   return (
     <div className="space-y-6">
@@ -137,7 +152,7 @@ export function RecipeFields({
           basket, not a single with the dose doubled, and the dose you want
           is the one you already set. With the labels gone, aria-label is
           now the only name these buttons have. */}
-      {config.hasCupCount && (
+      {config.cupCountMode === "choice" && (
         <div className="border-t border-border pt-6">
           <div className="flex gap-2">
             {CUP_COUNTS.map((count) => {
