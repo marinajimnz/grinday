@@ -90,7 +90,7 @@ const en: Dictionary = {
     emptyDescription: "Add your first coffee to start logging attempts.",
     addCoffee: "Add coffee",
     lastAttempt: "Last attempt",
-    prepareWithRecipe: "Brew with this recipe",
+    prepareWithRecipe: "Brew recipe",
     prepare: "Brew",
     preferredRecipe: "Preferred recipe",
     grindSetting: "Grind",
