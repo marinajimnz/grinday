@@ -5,7 +5,6 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { MoreVertical } from "lucide-react";
 import { cn } from "@/lib/cn";
-import { formatDuration } from "@/features/brew/formatTime";
 import { METHOD_ICONS } from "@/features/equipment/methodIcons";
 import {
   IconAnadir,
@@ -15,6 +14,7 @@ import {
   IconFavorita,
   IconPreparar,
 } from "@/components/icons/pencil-icons";
+import { BrewSummary } from "@/components/attempt/BrewSummary";
 import type { RecentAttempt } from "@/features/dashboard/queries";
 import type { BrewMethod } from "@/features/equipment/constants";
 import { useDictionary, useLocale } from "@/components/i18n/LocaleProvider";
@@ -25,24 +25,6 @@ import { useLongPress } from "@/components/ui/useLongPress";
 import { buildDraftFromRecipe, saveDraft } from "@/features/brew/draft";
 import { startBrewFromAttemptAction } from "@/features/brew/actions";
 import { deleteAttemptAction, setAttemptDashboardVisibilityAction } from "@/features/attempts/actions";
-
-// The ratio used to be printed here too, between the two weights it's
-// computed from and the coffee's name. It cost about fifty pixels on a line
-// that was already twenty short of fitting, and it said nothing the "18 g →
-// 36 g" beside it didn't: the name is what got cut instead. It also printed
-// "1:2.0" where every other ratio in the app reads "1:2" — one fewer place
-// to keep in step.
-function formatSummary(attempt: RecentAttempt, noRecipeData: string) {
-  const parts: string[] = [];
-  if (attempt.dose_g != null) {
-    const weight = attempt.output_weight_g ?? attempt.target_weight_g ?? attempt.water_g;
-    parts.push(
-      weight != null && weight > 0 ? `${attempt.dose_g} g → ${weight} g` : `${attempt.dose_g} g`,
-    );
-  }
-  if (attempt.coffee?.name) parts.push(attempt.coffee.name);
-  return parts.length ? parts.join(" · ") : noRecipeData;
-}
 
 function StarRow({ rating }: { rating: number | null }) {
   if (rating == null) return null;
@@ -78,8 +60,6 @@ export function AttemptRow({ attempt }: { attempt: RecentAttempt }) {
 
   const method = (attempt.method as BrewMethod) ?? "espresso";
   const Icon = METHOD_ICONS[method] ?? IconCafe;
-  const duration =
-    attempt.extraction_ms != null ? formatDuration(attempt.extraction_ms) : null;
 
   function openMenu() {
     setError(null);
@@ -159,6 +139,10 @@ export function AttemptRow({ attempt }: { attempt: RecentAttempt }) {
             <Icon aria-hidden className="size-5" />
           </span>
           <div className="min-w-0 flex-1">
+            {/* The stars sit up here with the method and the day rather
+                than in a column of their own: down the right they squeezed
+                the line that carries the actual numbers, and they read as a
+                heading for the row anyway. */}
             <div className="flex items-baseline gap-2">
               <span className="font-semibold text-ink">
                 {dict.equipment.methodLabels[method] ?? attempt.method}
@@ -169,14 +153,19 @@ export function AttemptRow({ attempt }: { attempt: RecentAttempt }) {
                   yesterday: dict.dashboard.yesterday,
                 })}
               </span>
+              <span className="ml-auto shrink-0">
+                <StarRow rating={attempt.overall_rating} />
+              </span>
             </div>
-            <p className="mt-0.5 truncate text-sm text-ink-muted">
-              {formatSummary(attempt, dict.dashboard.noRecipeData)}
-            </p>
-          </div>
-          <div className="shrink-0 text-right">
-            <StarRow rating={attempt.overall_rating} />
-            {duration && <p className="mt-0.5 text-xs text-ink-muted">{duration}</p>}
+            {attempt.coffee?.name && (
+              <p className="mt-0.5 truncate text-sm text-ink-muted">{attempt.coffee.name}</p>
+            )}
+            {/* Cups, dose against ratio, and the clock — the three numbers
+                that say what this brew was, in the same shape the preferred
+                recipe card shows them. The time moves here from the right
+                column, where it sat under the stars as if it were part of
+                the rating. */}
+            <BrewSummary attempt={attempt} dict={dict} className="mt-1" />
           </div>
         </Link>
         <button

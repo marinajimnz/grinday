@@ -66,7 +66,7 @@ test("logs an attempt manually, marks it preferred, duplicates it, and compares 
   await page.goto("/");
   await expect(page.getByText("Receta preferida")).toBeVisible();
   await expect(page.getByRole("link", { name: "Ver intento #1" })).toBeVisible();
-  await expect(page.getByRole("button", { name: "Preparar con esta receta" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Preparar receta" })).toBeVisible();
 
   // Preparar / quitar del inicio / eliminar used to need a held finger and
   // carried no mark saying so, which left them unreachable from a keyboard

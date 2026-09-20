@@ -88,7 +88,10 @@ const es = {
     emptyDescription: "Añade tu primer café para empezar a registrar intentos.",
     addCoffee: "Añadir café",
     lastAttempt: "Último intento",
-    prepareWithRecipe: "Preparar con esta receta",
+    // Two words, because the card is half a phone wide and the button
+    // shares that width with "Ver intento #n" — "Preparar con esta
+    // receta" wrapped to two lines and made the pair uneven.
+    prepareWithRecipe: "Preparar receta",
     prepare: "Preparar",
     preferredRecipe: "Receta preferida",
     grindSetting: "Molido",

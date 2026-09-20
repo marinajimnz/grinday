@@ -27,6 +27,8 @@ function makeAttempt(overrides: Partial<RecentAttempt> = {}): RecentAttempt {
     created_at: new Date().toISOString(),
     dose_g: 18,
     water_g: null,
+    dilution_water_g: null,
+    cup_count: 2,
     target_weight_g: 36,
     output_weight_g: 36,
     extraction_ms: 27000,
