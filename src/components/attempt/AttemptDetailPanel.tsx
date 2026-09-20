@@ -11,6 +11,7 @@ import { SettingsAccordionCard } from "@/components/settings/SettingsAccordionCa
 import { Button } from "@/components/ui/Button";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { TASTE_DIMENSIONS } from "@/features/attempts/constants";
+import { StarRating } from "@/components/ui/StarRating";
 import { deleteAttemptAction, setPreferredAttemptAction } from "@/features/attempts/actions";
 import type { BrewAttemptRow } from "@/features/attempts/queries";
 import { useDictionary, useLocale } from "@/components/i18n/LocaleProvider";
@@ -141,12 +142,12 @@ export function AttemptDetailPanel({
               <Stat
                 key={dim}
                 label={dict.enums.tasteDimension[dim]}
-                value={attempt[dim] ? `${attempt[dim]}/5` : null}
+                value={attempt[dim] ? <StarRating value={attempt[dim]} /> : null}
               />
             ))}
             <Stat
               label={dict.brew.overallRating}
-              value={attempt.overall_rating ? `${attempt.overall_rating}/5` : null}
+              value={attempt.overall_rating ? <StarRating value={attempt.overall_rating} /> : null}
             />
           </dl>
         </div>

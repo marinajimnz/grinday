@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { IconFavorita } from "@/components/icons/pencil-icons";
 import { cn } from "@/lib/cn";
+import { StarRating } from "@/components/ui/StarRating";
 import { MAX_COMPARE_ATTEMPTS, MIN_COMPARE_ATTEMPTS } from "@/features/attempts/constants";
 import type { BrewAttemptRow } from "@/features/attempts/queries";
 import { useDictionary, useLocale } from "@/components/i18n/LocaleProvider";
@@ -78,11 +79,7 @@ export function AttemptsTimeline({
                   {isPreferred && (
                     <IconFavorita aria-label={dict.attempts.preferred} className="size-4 text-coffee" />
                   )}
-                  {attempt.overall_rating && (
-                    <span className="rounded-full bg-canvas px-2 py-0.5 text-xs text-ink-muted">
-                      {attempt.overall_rating}/5
-                    </span>
-                  )}
+                  <StarRating value={attempt.overall_rating} size="sm" />
                 </div>
                 <p className="mt-0.5 truncate text-xs text-ink-muted">
                   {formatDate(attempt.created_at, locale)}

@@ -1,6 +1,6 @@
 "use client";
 
-import { cn } from "@/lib/cn";
+import { StarRatingInput } from "@/components/ui/StarRating";
 import { useDictionary } from "@/components/i18n/LocaleProvider";
 
 export function TasteScale({
@@ -31,25 +31,7 @@ export function TasteScale({
           </button>
         )}
       </div>
-      <div id={id} role="radiogroup" aria-label={label} className="flex gap-2">
-        {[1, 2, 3, 4, 5].map((n) => (
-          <button
-            key={n}
-            type="button"
-            role="radio"
-            aria-checked={value === n}
-            onClick={() => onChange(n)}
-            className={cn(
-              "flex size-11 flex-1 items-center justify-center rounded-input border text-sm font-medium transition-colors",
-              value === n
-                ? "border-ink bg-ink text-surface"
-                : "border-border bg-surface text-ink-muted",
-            )}
-          >
-            {n}
-          </button>
-        ))}
-      </div>
+      <StarRatingInput id={id} label={label} value={value} onChange={onChange} />
     </div>
   );
 }
