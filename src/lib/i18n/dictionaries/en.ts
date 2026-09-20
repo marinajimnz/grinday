@@ -463,7 +463,7 @@ const en: Dictionary = {
     brewRatioCaption: "brew ratio",
     targetWeightG: "Brew weight",
     temperatureC: "Temperature",
-    extractionTime: "Extraction time",
+    extractionTime: "Extraction",
     brewTime: "Brew time",
     steepTime: "Steep time",
     mokaCupSize: "Size (cups)",

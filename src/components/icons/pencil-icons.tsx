@@ -359,3 +359,71 @@ export const IconFavorita = pencilIcon(
   <path d="M12 3.4 L14.8 9.2 L21.1 10.1 L16.5 14.5 L17.6 20.7 L12 17.7 L6.4 20.7 L7.5 14.5 L2.9 10.1 L9.2 9.2 Z" />,
   { fill: "currentColor", strokeWidth: 1.7 },
 );
+
+// Four icons Marina added to the "Pencil Icon Set" board after the sprite
+// in icons/ was exported, so they exist only on the board — copied from it
+// verbatim, with the board's filter per icon mapped by turbulence seed
+// (pencil→a/11, pencil2→b/4, pencil3→c/23). Stroke stays at the set's 1.8
+// rather than the board's display 2.0, as every icon above does.
+
+// The two-stage grinder's burrs: the same adjustment ring as IconAjustes,
+// with an arrow that points up for the upper burr and down for the lower
+// one. The arrow is the whole difference between the pair at 16px, which
+// is why it sits outside the ring rather than inside it.
+const muelaRing = (
+  <>
+    <path d="M6.2 14 a5.8 5.8 0 1 0 11.6 0 a5.8 5.8 0 1 0 -11.6 0" />
+    <path d="M9.7 14 a2.3 2.3 0 1 0 4.6 0 a2.3 2.3 0 1 0 -4.6 0" />
+    <g strokeWidth={3.1}>
+      <path d="M17.6 14 H19.9" />
+      <path d="M14.8 18.9 L15.9 20.9" />
+      <path d="M9.2 18.9 L8.1 20.9" />
+      <path d="M6.4 14 H4.1" />
+      <path d="M9.2 9.1 L8.1 7.1" />
+      <path d="M14.8 9.1 L15.9 7.1" />
+    </g>
+  </>
+);
+
+export const IconMuelaSuperior = pencilIcon(
+  "pencil-c",
+  <>
+    {muelaRing}
+    <path d="M12 5.6 V2.2" />
+    <path d="M10.1 4.1 L12 2.2 L13.9 4.1" />
+  </>,
+);
+
+// The board draws this one with the ring four units higher so the arrow
+// below it fits; the translate is that same shift, reusing the ring above.
+export const IconMuelaInferior = pencilIcon(
+  "pencil-a",
+  <g transform="translate(0 -4)">
+    {muelaRing}
+    <path d="M12 22.4 V25.8" />
+    <path d="M10.1 23.9 L12 25.8 L13.9 23.9" />
+  </g>,
+);
+
+export const IconTemperatura = pencilIcon(
+  "pencil-b",
+  <>
+    <path d="M8.8 17.4 a3.2 3.2 0 1 0 6.4 0 a3.2 3.2 0 1 0 -6.4 0" />
+    <path d="M9.8 15.4 V6.2 c0 -1.2 1 -2.2 2.2 -2.2 1.2 0 2.2 1 2.2 2.2 V15.4" />
+    <path d="M12 17.4 V10.6" />
+    <path d="M17.2 6.6 H19.8" />
+    <path d="M17.2 10.2 H19.2" />
+  </>,
+);
+
+export const IconMolinillo = pencilIcon(
+  "pencil-a",
+  <>
+    <path d="M6.4 8.6 H17.6 L16.4 14.4 H7.6 Z" />
+    <path d="M8.6 14.4 L9.2 20.4 H14.8 L15.4 14.4" />
+    <path d="M9.2 20.4 H14.8" />
+    <path d="M12 8.6 V5.4" />
+    <path d="M12 5.4 H16.8 c1 0 1.6 0.9 1.1 1.8" />
+    <path d="M10.2 11.4 H13.8" />
+  </>,
+);
