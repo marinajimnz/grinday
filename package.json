@@ -9,7 +9,7 @@
     "lint": "eslint",
     "typecheck": "tsc --noEmit && tsc --noEmit -p tsconfig.worker.json",
     "test:unit": "vitest run",
-    "test:e2e": "playwright test; status=$?; node scripts/cleanup-test-users.mjs; exit $status",
+    "test:e2e": "playwright test",
     "db:push": "supabase db push --linked --include-seed"
   },
   "dependencies": {
