@@ -1,8 +1,21 @@
-// Every Playwright test creates its own throwaway `e2e-*@grinday.test`
-// account (see tests/e2e/fixtures.ts) and deletes it again in its own
-// teardown — this is only a safety net for the case where a test crashes
-// before that teardown runs. Only ever touches that email pattern, so it's
-// safe to run unattended after every local test run.
+// Every Playwright test creates its own throwaway account under
+// @grinday.test (see tests/e2e/fixtures.ts) and deletes it again in its own
+// teardown; this is the safety net for every case where that teardown does
+// not run. It is not a rare case: teardown is skipped whenever a run is
+// interrupted, and the accounts pile up in the hosted project — 109 of them
+// had collected before anyone looked.
+//
+// Playwright's globalTeardown runs this now (see playwright.config.ts), so
+// it happens however the suite was started, including a bare `npx playwright
+// test`. It used to hang off the test:e2e npm script alone, which meant
+// anyone calling Playwright directly left their accounts behind.
+//
+// .test is a reserved TLD (RFC 2606): no real person can hold an address
+// there, which is what makes deleting the whole domain unattended safe.
+// Matching one prefix was not enough — `test-*` and `debugtester.inv@` had
+// both been used and both survived the sweep.
+//
+// CLEANUP_DRY_RUN=1 reports what it would delete and touches nothing.
 import { createClient } from "@supabase/supabase-js";
 import { readFileSync } from "node:fs";
 
@@ -34,7 +47,7 @@ const supabase = createClient(url, serviceKey, {
   auth: { autoRefreshToken: false, persistSession: false },
 });
 
-const TEST_EMAIL_PATTERN = /^e2e-.+@grinday\.test$/;
+const TEST_EMAIL_PATTERN = /@grinday\.test$/;
 
 let testUsers = [];
 let page = 1;
@@ -74,6 +87,15 @@ async function clearChildRows(id) {
 async function deleteUser(id) {
   const { error } = await supabase.auth.admin.deleteUser(id);
   return error;
+}
+
+if (process.env.CLEANUP_DRY_RUN) {
+  console.log(
+    `[cleanup-test-users] dry run: ${testUsers.length} test user(s) would be deleted:`,
+  );
+  for (const u of testUsers.slice(0, 5)) console.log(`  ${u.email}`);
+  if (testUsers.length > 5) console.log(`  … y ${testUsers.length - 5} más`);
+  process.exit(0);
 }
 
 let deleted = 0;

@@ -76,7 +76,6 @@ export function AttemptDetailPanel({
   // machine — they don't belong in front of the recipe, and for anything
   // logged through the guided flow they're empty anyway.
   const machineFields = [
-    attempt.upper_burr_setting,
     attempt.dose_mode,
     attempt.dose_feedback,
     attempt.basket_size,
@@ -164,7 +163,6 @@ export function AttemptDetailPanel({
         <div className="mt-6">
           <SettingsAccordionCard title={dict.attempts.machineSettings}>
             <dl className="grid grid-cols-2 gap-4 sm:grid-cols-3">
-              <Stat label={dict.brew.upperBurr} value={attempt.upper_burr_setting} />
               <Stat
                 label={dict.brew.doseMode}
                 value={

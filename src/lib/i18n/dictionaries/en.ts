@@ -427,7 +427,6 @@ const en: Dictionary = {
     timerNote: "The time will be saved to this attempt automatically.",
     grindSetting: "Grind",
     grindSeconds: "Grind time (s)",
-    upperBurr: "Upper burr",
     doseMode: "Dosing",
     shotMode: "Shot mode",
     basketSize: "Basket",

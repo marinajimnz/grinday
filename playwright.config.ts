@@ -6,6 +6,7 @@ export default defineConfig({
   retries: process.env.CI ? 2 : 0,
   reporter: "html",
   globalSetup: "./tests/e2e/global-setup.ts",
+  globalTeardown: "./tests/e2e/global-teardown.ts",
   // Generous, but the suite runs against a production build now (see
   // webServer) so nothing should actually need it — it's headroom for a slow
   // machine, not for a server still compiling the page under test.

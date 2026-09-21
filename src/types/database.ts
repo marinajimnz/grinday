@@ -124,7 +124,6 @@ export type Database = {
           temperature_c: number | null
           temperature_offset_c: number | null
           updated_at: string
-          upper_burr_setting: number | null
           user_id: string
           water_g: number | null
           would_brew_again: boolean | null
@@ -172,7 +171,6 @@ export type Database = {
           temperature_c?: number | null
           temperature_offset_c?: number | null
           updated_at?: string
-          upper_burr_setting?: number | null
           user_id: string
           water_g?: number | null
           would_brew_again?: boolean | null
@@ -220,7 +218,6 @@ export type Database = {
           temperature_c?: number | null
           temperature_offset_c?: number | null
           updated_at?: string
-          upper_burr_setting?: number | null
           user_id?: string
           water_g?: number | null
           would_brew_again?: boolean | null
