@@ -45,6 +45,25 @@ describe("AttemptRecipeSummary", () => {
     }
   });
 
+  it("draws the two burr icons larger than the rest", () => {
+    // They are the same toothed ring with a small arrow above or below it.
+    // At the 16px every other icon uses, that arrow is barely a mark and the
+    // pair reads as one icon drawn twice, so the card looks like it is
+    // showing the same thing under two different numbers.
+    const { container } = renderCard(
+      makeAttempt({ temperature_c: 94, grinder_upper_burr: 5, grinder_lower_burr: 2 }),
+    );
+
+    const sizeOf = (label: string) =>
+      [...container.querySelectorAll("dl > div")]
+        .find((c) => c.textContent?.includes(label))!
+        .querySelector("dt svg")!.classList;
+
+    expect(sizeOf(es.brew.grinderUpperBurr)).toContain("size-5");
+    expect(sizeOf(es.brew.grinderLowerBurr)).toContain("size-5");
+    expect(sizeOf(es.brew.temperatureC)).toContain("size-4");
+  });
+
   it("puts the cup count on the method line, not in the grid", () => {
     const { container } = renderCard(makeAttempt({ dose_g: 20, cup_count: 2 }));
 
