@@ -67,7 +67,6 @@ function makeAttempt(overrides: Partial<BrewAttemptRow> = {}): BrewAttemptRow {
     tds_percent: null,
     temperature_c: null,
     temperature_offset_c: null,
-    upper_burr_setting: null,
     water_g: null,
     would_brew_again: null,
     ...overrides,
@@ -137,7 +136,7 @@ describe("AttemptDetailPanel recipe", () => {
 describe("AttemptDetailPanel machine settings", () => {
   it("keeps the legacy machine columns behind a disclosure instead of in front of the recipe", () => {
     renderPanel(
-      makeAttempt({ dose_g: 18, output_weight_g: 36, temperature_offset_c: 1, upper_burr_setting: 3 }),
+      makeAttempt({ dose_g: 18, output_weight_g: 36, temperature_offset_c: 1 }),
     );
 
     expect(screen.queryByText(es.attempts.temperatureOffsetShort)).not.toBeInTheDocument();

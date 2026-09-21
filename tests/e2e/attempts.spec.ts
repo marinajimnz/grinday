@@ -21,6 +21,17 @@ test("logs an attempt manually, marks it preferred, duplicates it, and compares 
   await page.getByRole("link", { name: "Registrar manual" }).click();
   await expect(page).toHaveURL(/\/attempts\/new/);
 
+  // "Muela" belongs to the guided flow's grinder card and nowhere else.
+  // This form used to carry a second field of the same name writing a
+  // different column (upper_burr_setting, dropped in 0035), so the word
+  // meant one thing here and another over there.
+  //
+  // The visible-field wait is what makes the count mean anything: this
+  // page renders its form after the bag loads, and "no muela field" is
+  // true of every empty page in the world.
+  await expect(page.getByLabel("Molido")).toBeVisible();
+  await expect(page.getByLabel(/muela/i)).toHaveCount(0);
+
   await page.getByLabel("Molido").fill("12");
   await page.getByLabel("Segundos de molienda").fill("14.8");
   await page.getByLabel("Dosificación").selectOption("auto");

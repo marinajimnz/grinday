@@ -433,7 +433,6 @@ const es = {
     timerNote: "El tiempo se guardará en este intento automáticamente.",
     grindSetting: "Molido",
     grindSeconds: "Molienda (s)",
-    upperBurr: "Muela superior",
     doseMode: "Dosificación",
     shotMode: "Modo de shot",
     basketSize: "Cesta",
