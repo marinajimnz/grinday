@@ -49,16 +49,15 @@ export const attemptFieldsSchema = z.object({
 
   // Configuración del molinillo (opcional, todos los métodos): molinillos
   // de doble muela (p. ej. Sage) exponen un dial en el molinillo y otro en
-  // la máquina. Independiente de upperBurrSetting (legado, solo espresso).
+  // la máquina. Única definición de "muela" desde 0035.
   grinderUpperBurr: optionalBurrSetting,
   grinderLowerBurr: optionalBurrSetting,
 
   // Cesta (legado, solo espresso Sage)
   basketSize: optionalEnum(BASKET_SIZES),
 
-  // Temperatura / muela (legado, solo espresso Sage)
+  // Temperatura (legado, solo espresso Sage)
   temperatureOffsetC: optionalInt,
-  upperBurrSetting: optionalInt,
 
   // Extracción
   shotMode: optionalEnum(SHOT_MODES),

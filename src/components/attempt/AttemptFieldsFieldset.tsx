@@ -116,14 +116,6 @@ export function AttemptFieldsFieldset({
               {...register("attempt.temperatureOffsetC", { valueAsNumber: true })}
             />
           </Field>
-          <Field label={dict.brew.upperBurr} htmlFor="attempt.upperBurrSetting" hint={dict.brew.optional}>
-            <input
-              id="attempt.upperBurrSetting"
-              type="number"
-              className={inputClassName}
-              {...register("attempt.upperBurrSetting", { valueAsNumber: true })}
-            />
-          </Field>
         </div>
       </fieldset>
 
