@@ -28,6 +28,24 @@ type Metric = {
   // metric with nothing that fits keeps its label bare rather than
   // borrowing an icon that means something else.
   icon?: typeof IconCafe;
+  iconSize?: IconSize;
+};
+
+// The two burr icons are the same toothed ring, told apart only by a small
+// arrow above it or below it. At 16px that arrow is barely a mark and the
+// pair reads as one icon drawn twice; 20px is where superior and inferior
+// separate. The negative margin keeps the bigger glyph optically centred on
+// its label instead of hanging below the line.
+type IconSize = "base" | "large";
+const ICON_CLASS: Record<IconSize, string> = {
+  base: "mt-px size-4",
+  large: "-mt-0.5 size-5",
+};
+// A caption lines up under the label, not under the icon: the icon's width
+// plus the gap-1.5 between them.
+const CAPTION_INDENT: Record<IconSize, string> = {
+  base: "ps-[22px]",
+  large: "ps-[26px]",
 };
 
 // Everything this attempt needs to be brewed again, in the order a recipe
@@ -101,11 +119,13 @@ export function AttemptRecipeSummary({ attempt }: { attempt: BrewAttemptRow }) {
       label: dict.brew.grinderUpperBurr,
       value: String(attempt.grinder_upper_burr),
       icon: IconMuelaSuperior,
+      iconSize: "large",
     },
     attempt.grinder_lower_burr != null && {
       label: dict.brew.grinderLowerBurr,
       value: String(attempt.grinder_lower_burr),
       icon: IconMuelaInferior,
+      iconSize: "large",
     },
     attempt.temperature_c != null && {
       label: dict.brew.temperatureC,
@@ -169,30 +189,35 @@ export function AttemptRecipeSummary({ attempt }: { attempt: BrewAttemptRow }) {
       )}
 
       <dl className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-3">
-        {metrics.map((m) => (
-          <div key={m.label} className="flex flex-col">
-            {/* The number leads and its name sits underneath with its
-                icon. The DOM keeps dt before dd, which is what a <dl>
-                requires and what a screen reader wants to hear ("Temperatura,
-                94 °C"); `order` is what puts the value on top for the eye.
-                This also drops the old min-h-8 on the label: with the
-                numbers first, every cell's number starts on the same line
-                whether or not the name below it wraps. */}
-            <dt className="order-2 mt-0.5 flex items-start gap-1.5 text-xs text-ink-muted">
-              {m.icon && <m.icon aria-hidden className="mt-px size-4 shrink-0" />}
-              <span>{m.label}</span>
-            </dt>
-            <dd className="order-1 text-lg font-semibold tabular-nums text-ink">{m.value}</dd>
-            {/* Indented to the icon's width so it lines up under the
-                label rather than hanging off the left edge of the cell —
-                size-4 plus the gap-1.5 above it. */}
-            {m.caption && (
-              <p className={cn("order-3 text-xs text-ink-muted", m.icon && "ps-[22px]")}>
-                {m.caption}
-              </p>
-            )}
-          </div>
-        ))}
+        {metrics.map((m) => {
+          const iconSize = m.iconSize ?? "base";
+          return (
+            <div key={m.label} className="flex flex-col">
+              {/* The number leads and its name sits underneath with its
+                  icon. The DOM keeps dt before dd, which is what a <dl>
+                  requires and what a screen reader wants to hear ("Temperatura,
+                  94 °C"); `order` is what puts the value on top for the eye.
+                  This also drops the old min-h-8 on the label: with the
+                  numbers first, every cell's number starts on the same line
+                  whether or not the name below it wraps. */}
+              <dt className="order-2 mt-0.5 flex items-start gap-1.5 text-xs text-ink-muted">
+                {m.icon && <m.icon aria-hidden className={cn(ICON_CLASS[iconSize], "shrink-0")} />}
+                <span>{m.label}</span>
+              </dt>
+              <dd className="order-1 text-lg font-semibold tabular-nums text-ink">{m.value}</dd>
+              {m.caption && (
+                <p
+                  className={cn(
+                    "order-3 text-xs text-ink-muted",
+                    m.icon && CAPTION_INDENT[iconSize],
+                  )}
+                >
+                  {m.caption}
+                </p>
+              )}
+            </div>
+          );
+        })}
       </dl>
     </div>
   );
