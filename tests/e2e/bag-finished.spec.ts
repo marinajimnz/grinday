@@ -1,0 +1,82 @@
+import { test, expect } from "./fixtures";
+import { createCoffeeBasic, createCoffeeComplete } from "./helpers";
+
+test.setTimeout(120_000);
+
+test("finishing a bag dates it, counts its cups, and sinks the coffee down the list", async ({
+  page,
+  testUser,
+}) => {
+  void testUser;
+  const stamp = Date.now();
+  // Two coffees, oldest first: the library is ordered by most recently
+  // touched, so `second` sits above `first` until something changes.
+  const first = `Primero ${stamp}`;
+  const second = `Segundo ${stamp}`;
+
+  await createCoffeeBasic(page, { name: first });
+  await expect(page).toHaveURL(/\/coffees\/[0-9a-f-]+$/);
+
+  await createCoffeeComplete(page, { name: second, roaster: "Tostador E2E", country: "Colombia" });
+  await expect(page).toHaveURL(/\/coffees\/[0-9a-f-]+$/);
+
+  await page.getByRole("tab", { name: "Bolsas" }).click();
+  const bagId = await page.locator("[data-bag-id]").first().getAttribute("data-bag-id");
+  if (!bagId) throw new Error("Expected a bag panel with data-bag-id");
+
+  // Two brews from this bag. The manual form records no cup count, so each
+  // one counts as the single cup it must have been.
+  for (const ms of ["28000", "30000"]) {
+    await page.goto(`/attempts/new?coffeeBagId=${bagId}`);
+    await page.getByLabel("Molido").fill("12");
+    await page.getByLabel("Segundos de molienda").fill("14.8");
+    await page.getByLabel("Tiempo de extracción (ms)").fill(ms);
+    await page.getByRole("button", { name: "Guardar intento" }).click();
+    await expect(page).toHaveURL(/\/attempts\/[0-9a-f-]+$/);
+  }
+
+  // Before: the newer coffee leads the library.
+  await page.goto("/coffees");
+  const names = page.getByRole("link", { name: new RegExp(`(${first}|${second})`) });
+  await expect(names.first()).toContainText(second);
+
+  const bag = page.locator(`[data-bag-id="${bagId}"]`);
+  await page.goto(`/bags/${bagId}`);
+
+  // The count is there before the bag is finished — it is what the bag has
+  // poured so far, not a closing ceremony.
+  await expect(bag.getByText("Tazas")).toBeVisible();
+  await expect(bag.locator("dd").filter({ hasText: "aprox." })).toContainText("2");
+  // Exact: getByText matches substrings case-insensitively, and the button
+  // that does the finishing says "Marcar como terminada".
+  await expect(bag.getByText("Terminada", { exact: true })).toHaveCount(0);
+
+  // One tap: no trip through the edit form's status picker, and no date to
+  // remember to fill in underneath it.
+  await page.getByRole("button", { name: "Marcar como terminada" }).click();
+  await expect(bag.getByText("Terminada", { exact: true })).toBeVisible();
+
+  // The finish date is today, written by the app rather than typed.
+  const today = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Europe/Madrid",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(new Date());
+  await page.getByRole("button", { name: "Editar" }).first().click();
+  await expect(page.locator("input#bag\\.finishedAt")).toHaveValue(today);
+  await page.getByRole("button", { name: "Cancelar" }).first().click();
+
+  // After: nothing left to brew, so the coffee drops below the one that
+  // still has a bag — even though it was touched more recently.
+  await page.goto("/coffees");
+  await expect(names.first()).toContainText(first);
+  await expect(names.last()).toContainText(second);
+
+  // And it comes back: the same button reopens the bag and clears the date.
+  await page.goto(`/bags/${bagId}`);
+  await page.getByRole("button", { name: "Reabrir bolsa" }).click();
+  await expect(bag.getByText("Sin abrir", { exact: true })).toBeVisible();
+  await page.goto("/coffees");
+  await expect(names.first()).toContainText(second);
+});

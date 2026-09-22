@@ -1,3 +1,5 @@
+import { APP_TIME_ZONE, todayParts } from "@/lib/time";
+
 export const STATS_PERIODS = ["week", "month", "year"] as const;
 export type StatsPeriod = (typeof STATS_PERIODS)[number];
 
@@ -22,13 +24,11 @@ export type PeriodRange = {
 };
 
 /**
- * The zone every date in the stats is read in — passed to the SQL on
- * every call so the period's boundaries and the bars inside it agree, and
- * so a coffee made at 00:30 is filed under the day it felt like rather
- * than the UTC day before. One journal, one brewer, one kitchen; if that
- * ever stops being true this becomes a profile field.
+ * Passed to the SQL on every call, so a period's boundaries and the bars
+ * inside it are read off the same clock. It is the app's one zone (see
+ * lib/time), not a second opinion about what day it is.
  */
-export const STATS_TIME_ZONE = "Europe/Madrid";
+export const STATS_TIME_ZONE = APP_TIME_ZONE;
 
 function toISODate(date: Date): string {
   return date.toISOString().slice(0, 10);
@@ -42,26 +42,12 @@ function utc(year: number, monthIndex: number, day: number): Date {
   return new Date(Date.UTC(year, monthIndex, day));
 }
 
-// What the calendar on the kitchen wall says right now.
-function todayIn(timeZone: string, now: Date): { year: number; month: number; day: number } {
-  // "en-CA" is the shortest route to YYYY-MM-DD; the parts are what we
-  // actually want, and formatToParts avoids depending on that format.
-  const parts = new Intl.DateTimeFormat("en-CA", {
-    timeZone,
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  }).formatToParts(now);
-  const get = (type: string) => Number(parts.find((p) => p.type === type)!.value);
-  return { year: get("year"), month: get("month") - 1, day: get("day") };
-}
-
 export function getPeriodRange(
   period: StatsPeriod,
   now: Date,
   timeZone: string = STATS_TIME_ZONE,
 ): PeriodRange {
-  const { year, month, day } = todayIn(timeZone, now);
+  const { year, month, day } = todayParts(timeZone, now);
 
   if (period === "year") {
     return {

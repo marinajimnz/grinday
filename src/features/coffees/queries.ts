@@ -2,6 +2,8 @@ import "server-only";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/types/database";
 import { attachSignedUrls } from "@/lib/supabase/storage";
+import { sumCups } from "@/features/attempts/cups";
+import { hasBrewableBag } from "./brewable";
 
 type Client = SupabaseClient<Database>;
 
@@ -13,6 +15,40 @@ export type CoffeeListItem = CoffeeRow & {
   bags: Pick<CoffeeBagRow, "id" | "status" | "roast_date">[];
   coverPhotoUrl: string | null;
 };
+
+/**
+ * How many cups came out of each bag, counted from the attempts logged
+ * against it. Approximate by nature — it knows about the brews you wrote
+ * down, not the ones you didn't — which is why the UI says "aprox.".
+ *
+ * Deliberately not derived from grams: inventory_mode is "none" on plenty
+ * of bags, and on the rest remaining_g only moves when a brew goes through
+ * the path that writes an inventory event. Counting the attempts is the
+ * one measure that works the same on every bag.
+ */
+export async function countCupsByBag(
+  supabase: Client,
+  bagIds: string[],
+): Promise<Map<string, number>> {
+  const byBag = new Map<string, number>();
+  if (!bagIds.length) return byBag;
+
+  const { data, error } = await supabase
+    .from("brew_attempts")
+    .select("coffee_bag_id, cup_count, moka_cup_size")
+    .in("coffee_bag_id", bagIds);
+  if (error) throw error;
+
+  const grouped = new Map<string, { cup_count: number | null; moka_cup_size: number | null }[]>();
+  for (const attempt of data ?? []) {
+    if (!attempt.coffee_bag_id) continue;
+    const list = grouped.get(attempt.coffee_bag_id) ?? [];
+    list.push(attempt);
+    grouped.set(attempt.coffee_bag_id, list);
+  }
+  for (const id of bagIds) byBag.set(id, sumCups(grouped.get(id) ?? []));
+  return byBag;
+}
 
 export type CoffeeLibraryFilters = {
   q?: string;
@@ -108,7 +144,14 @@ export async function listCoffees(
     );
   }
 
-  return items;
+  // A coffee you can still brew comes first. Once every bag is finished or
+  // archived — or there were never any — the coffee is history, and history
+  // shouldn't sit at the top of a list you open to decide what to make.
+  // Within each group the order is unchanged (most recently touched first),
+  // which is what makes this a stable partition rather than a second sort.
+  const brewable = items.filter(hasBrewableBag);
+  const spent = items.filter((item) => !hasBrewableBag(item));
+  return [...brewable, ...spent];
 }
 
 export async function getCoffeeWithBags(supabase: Client, coffeeId: string, userId: string) {
