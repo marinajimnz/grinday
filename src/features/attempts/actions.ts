@@ -12,6 +12,7 @@ import {
   updateAttemptSchema,
 } from "@/lib/validation/attempts";
 import type { Database, Json } from "@/types/database";
+import { todayISO } from "@/lib/time";
 
 type ActionResult<T = undefined> =
   | { success: true; data: T }
@@ -140,7 +141,7 @@ export async function createAttemptAction(
 
   const { data: bag, error: bagError } = await supabase
     .from("coffee_bags")
-    .select("id, coffee_id, inventory_mode, estimated_dose_g")
+    .select("id, coffee_id, inventory_mode, estimated_dose_g, status, opened_at, first_brew_at")
     .eq("id", coffeeBagId)
     .maybeSingle();
   if (bagError) return { success: false, message: bagError.message };
@@ -207,7 +208,34 @@ export async function createAttemptAction(
     }
   }
 
+  // Brewing from a bag opens it. You cannot take coffee out of a sealed
+  // bag, so a bag still marked "Sin abrir" after a brew is the app
+  // disagreeing with something that already happened — and the opening
+  // date was being left to whoever remembered to type it in, which is
+  // nobody. Same for the first brew: this is that brew.
+  //
+  // Only ever forward: a bag already open keeps the date it was opened on,
+  // and a finished bag is not resurrected by a late-logged attempt.
+  const bagUpdate: { status?: "open"; opened_at?: string; first_brew_at?: string } = {};
+  const today = todayISO();
+  if (bag.status === "sealed") bagUpdate.status = "open";
+  if (!bag.opened_at) bagUpdate.opened_at = today;
+  if (!bag.first_brew_at) bagUpdate.first_brew_at = today;
+  if (Object.keys(bagUpdate).length) {
+    // Best-effort, like the inventory event above: the attempt is saved,
+    // and a stale badge is a wrong label rather than lost data.
+    const { error: bagUpdateError } = await supabase
+      .from("coffee_bags")
+      .update(bagUpdate)
+      .eq("id", bag.id);
+    if (bagUpdateError) {
+      console.error("[coffees] failed to open bag on brew:", bagUpdateError.message);
+    }
+  }
+
   revalidatePath(`/coffees/${bag.coffee_id}`);
+  revalidatePath(`/bags/${bag.id}`);
+  revalidatePath("/coffees");
   revalidatePath("/inventory");
   return { success: true, data: { attemptId: inserted.id } };
 }
