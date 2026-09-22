@@ -2,6 +2,7 @@ import "server-only";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/types/database";
 import { attachSignedUrls } from "@/lib/supabase/storage";
+import { pickTargetBag } from "./brewTarget";
 
 type Client = SupabaseClient<Database>;
 
@@ -132,10 +133,11 @@ export async function listBrewableCoffees(supabase: Client, userId: string): Pro
   const targetBagByCoffee = new Map<string, { id: string; coffee_id: string }>();
   for (const coffee of coffees) {
     const coffeeBags = (bags ?? []).filter((b) => b.coffee_id === coffee.id);
-    const target =
-      coffeeBags.find((b) => b.status === "open") ??
-      coffeeBags.find((b) => b.status === "sealed") ??
-      coffeeBags[0];
+    // Open first, then sealed — and then nothing. The fallback used to be
+    // "whatever bag exists", which put coffees whose every bag was finished
+    // or archived in the picker, pointed at a bag with nothing left in it.
+    // A coffee with no bag to brew from is dropped below (`if (!target)`).
+    const target = pickTargetBag(coffeeBags);
     if (target) targetBagByCoffee.set(coffee.id, target);
   }
 

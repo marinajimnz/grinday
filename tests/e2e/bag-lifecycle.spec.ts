@@ -73,10 +73,53 @@ test("finishing a bag dates it, counts its cups, and sinks the coffee down the l
   await expect(names.first()).toContainText(first);
   await expect(names.last()).toContainText(second);
 
-  // And it comes back: the same button reopens the bag and clears the date.
+  // And it comes back: the same button reopens the bag and clears the
+  // finish date. It returns to "Abierta", not "Sin abrir" — the two brews
+  // above opened this bag and wrote its opening date, and reopening
+  // restores the state it was actually in, not a factory default.
   await page.goto(`/bags/${bagId}`);
   await page.getByRole("button", { name: "Reabrir bolsa" }).click();
-  await expect(bag.getByText("Sin abrir", { exact: true })).toBeVisible();
+  await expect(bag.getByText("Abierta", { exact: true })).toBeVisible();
   await page.goto("/coffees");
   await expect(names.first()).toContainText(second);
+});
+
+test("brewing from a sealed bag opens it and dates it", async ({ page, testUser }) => {
+  void testUser;
+  const name = `Sellada ${Date.now()}`;
+
+  await createCoffeeBasic(page, { name });
+  await expect(page).toHaveURL(/\/coffees\/[0-9a-f-]+$/);
+  await page.getByRole("tab", { name: "Bolsas" }).click();
+  const bagId = await page.locator("[data-bag-id]").first().getAttribute("data-bag-id");
+  if (!bagId) throw new Error("Expected a bag panel with data-bag-id");
+
+  const bag = page.locator(`[data-bag-id="${bagId}"]`);
+  await page.goto(`/bags/${bagId}`);
+  await expect(bag.getByText("Sin abrir", { exact: true })).toBeVisible();
+
+  // You cannot take coffee out of a sealed bag. Logging a brew from one
+  // used to leave it sealed, with no opening date, until somebody typed
+  // one in — which is to say never.
+  await page.goto(`/attempts/new?coffeeBagId=${bagId}`);
+  await page.getByLabel("Molido").fill("12");
+  await page.getByLabel("Segundos de molienda").fill("14.8");
+  await page.getByLabel("Tiempo de extracción (ms)").fill("28000");
+  await page.getByRole("button", { name: "Guardar intento" }).click();
+  await expect(page).toHaveURL(/\/attempts\/[0-9a-f-]+$/);
+
+  await page.goto(`/bags/${bagId}`);
+  await expect(bag.getByText("Abierta", { exact: true })).toBeVisible();
+
+  const today = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Europe/Madrid",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(new Date());
+  await page.getByRole("button", { name: "Editar" }).first().click();
+  await expect(page.locator("input#bag\\.openedAt")).toHaveValue(today);
+  // The same brew is this bag's first, and that date was never written
+  // either.
+  await expect(page.locator("input#bag\\.firstBrewAt")).toHaveValue(today);
 });
