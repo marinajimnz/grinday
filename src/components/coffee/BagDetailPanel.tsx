@@ -8,15 +8,19 @@ import { BagStatusBadge } from "./BagStatusBadge";
 import { InventoryAdjustPanel } from "@/components/inventory/InventoryAdjustPanel";
 import { Button } from "@/components/ui/Button";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
-import { IconEliminar } from "@/components/icons/pencil-icons";
+import { IconCafe, IconEliminar } from "@/components/icons/pencil-icons";
 import { formatRemaining } from "@/features/inventory/format";
-import { deleteBagAction, getBagDeletionImpactAction } from "@/features/coffees/actions";
+import {
+  deleteBagAction,
+  getBagDeletionImpactAction,
+  setBagFinishedAction,
+} from "@/features/coffees/actions";
 import { formatDeletionImpact, type DeletionImpact } from "@/features/coffees/deletionImpact";
 import type { CoffeeBagRow } from "@/features/coffees/queries";
 import { useDictionary, useLocale } from "@/components/i18n/LocaleProvider";
 import { formatDate } from "@/lib/i18n/format-date";
 
-export function BagDetailPanel({ bag }: { bag: CoffeeBagRow }) {
+export function BagDetailPanel({ bag, cups = 0 }: { bag: CoffeeBagRow; cups?: number }) {
   const router = useRouter();
   const dict = useDictionary();
   const locale = useLocale();
@@ -24,6 +28,8 @@ export function BagDetailPanel({ bag }: { bag: CoffeeBagRow }) {
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
   const [isDeleting, startDelete] = useTransition();
+  const [isFinishing, startFinish] = useTransition();
+  const [finishError, setFinishError] = useState<string | null>(null);
   const [impact, setImpact] = useState<DeletionImpact | null>(null);
 
   // Deleting a bag takes the attempts brewed from it with it, so the
@@ -41,6 +47,20 @@ export function BagDetailPanel({ bag }: { bag: CoffeeBagRow }) {
 
   function fmt(value: string | null) {
     return value ? formatDate(value, locale) : dict.coffees.noDate;
+  }
+
+  const isFinished = bag.status === "finished";
+
+  function handleToggleFinished() {
+    setFinishError(null);
+    startFinish(async () => {
+      const result = await setBagFinishedAction(bag.id, !isFinished);
+      if (!result.success) {
+        setFinishError(result.message);
+        return;
+      }
+      router.refresh();
+    });
   }
 
   function handleDelete() {
@@ -71,19 +91,38 @@ export function BagDetailPanel({ bag }: { bag: CoffeeBagRow }) {
 
   return (
     <div className="rounded-card border border-border bg-surface p-5" data-bag-id={bag.id}>
-      <div className="flex items-start justify-between gap-4">
+      {/* Three actions do not fit beside the badge on a phone — the third
+          one pushed the other two off the edge. The badge keeps its own
+          line there and the buttons wrap underneath; from sm up they go
+          back to sharing the row. */}
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
         <div className="flex items-center gap-2">
           <BagStatusBadge status={bag.status} dict={dict} />
           {bag.lot_label && <span className="text-xs text-ink-muted">{bag.lot_label}</span>}
         </div>
-        <div className="flex shrink-0 gap-2">
+        <div className="flex flex-wrap gap-2 sm:shrink-0">
+          {/* Finishing a bag is the thing you actually do to a bag, so it
+              sits out here with edit and delete rather than three taps deep
+              inside the edit form's status picker. */}
+          <Button
+            variant="secondary"
+            className="px-3"
+            disabled={isFinishing}
+            onClick={handleToggleFinished}
+          >
+            <IconCafe aria-hidden className="size-4" />
+            {isFinished ? dict.coffees.reopenBag : dict.coffees.markFinished}
+          </Button>
           <Button variant="secondary" className="px-3" onClick={() => setEditing(true)}>
             <Pencil aria-hidden className="size-4" />
             {dict.common.edit}
           </Button>
           <Button
             variant="destructive"
-            className="px-3"
+            // Pushed to the far edge of the wrapped row so the red button
+            // isn't what leads the second line. On a wide screen the group
+            // is already right-aligned and the margin would only stretch it.
+            className="ms-auto px-3 sm:ms-0"
             disabled={isDeleting}
             onClick={() => {
               setDeleteError(null);
@@ -97,9 +136,9 @@ export function BagDetailPanel({ bag }: { bag: CoffeeBagRow }) {
         </div>
       </div>
 
-      {deleteError && (
+      {(deleteError || finishError) && (
         <p role="alert" className="mt-2 text-sm text-danger">
-          {deleteError}
+          {deleteError ?? finishError}
         </p>
       )}
 
@@ -131,7 +170,18 @@ export function BagDetailPanel({ bag }: { bag: CoffeeBagRow }) {
           <dt className="text-ink-muted">{dict.coffees.finishedShort}</dt>
           <dd className="text-ink">{fmt(bag.finished_at)}</dd>
         </div>
+        <div>
+          <dt className="text-ink-muted">{dict.coffees.cupsFromBag}</dt>
+          <dd className="flex items-baseline gap-1 text-ink">
+            <span className="font-display text-lg tabular-nums">{cups}</span>
+            <span className="text-xs text-ink-muted">{dict.coffees.cupsApprox}</span>
+          </dd>
+        </div>
       </dl>
+
+      {/* Said once, under the number: it counts the brews you wrote down,
+          which is not the same as the brews you made. */}
+      <p className="mt-2 text-xs text-ink-muted">{dict.coffees.cupsFromBagHint}</p>
 
       <div className="mt-5 border-t border-border pt-4">
         <div className="flex items-center justify-between gap-3">
