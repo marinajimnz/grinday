@@ -43,6 +43,16 @@ test("guided brew: recipe, timer, photo step, and result", async ({ page, testUs
   await createCoffeeBasic(page, { name });
   await expect(page).toHaveURL(/\/coffees\/[0-9a-f-]+$/);
 
+  // A second coffee, finished: nothing left to brew from it. It rides
+  // along on this test's equipment setup rather than paying for its own.
+  const spent = `Terminado ${Date.now()}`;
+  await createCoffeeBasic(page, { name: spent });
+  await expect(page).toHaveURL(/\/coffees\/[0-9a-f-]+$/);
+  await page.getByRole("tab", { name: "Bolsas" }).click();
+  await page.locator("button[data-bag-id]").first().click();
+  await page.getByRole("button", { name: "Marcar como terminada" }).click();
+  await expect(page.getByText("Terminada", { exact: true })).toBeVisible();
+
   // Step 1/6 — method.
   await page.goto("/brew/new");
   await expect(page.getByText("Paso 1 de 6")).toBeVisible();
@@ -50,6 +60,11 @@ test("guided brew: recipe, timer, photo step, and result", async ({ page, testUs
 
   // Step 2/6 — coffee. Picking one starts the draft and moves to /brew/live.
   await expect(page.getByText("Paso 2 de 6")).toBeVisible();
+  // The picker offers coffees you can actually brew. It used to fall back
+  // to "whatever bag exists", so a coffee down to finished bags appeared
+  // here pointing at an empty one.
+  await expect(page.getByRole("button", { name: new RegExp(name) })).toBeVisible();
+  await expect(page.getByRole("button", { name: new RegExp(spent) })).toHaveCount(0);
   await page.getByRole("button", { name: new RegExp(name) }).click();
   await expect(page).toHaveURL(/\/brew\/live\/[0-9a-f-]+$/);
   await expect(page.getByRole("heading", { name })).toBeVisible();
