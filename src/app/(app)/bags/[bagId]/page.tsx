@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ChevronLeft } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
-import { getBagDetail } from "@/features/coffees/queries";
+import { countCupsByBag, getBagDetail } from "@/features/coffees/queries";
 import { BagDetailPanel } from "@/components/coffee/BagDetailPanel";
 import { BagMediaSection } from "@/components/coffee/BagMediaSection";
 import { getLocale } from "@/lib/i18n/locale";
@@ -20,6 +20,7 @@ export default async function BagDetailPage({
   if (!result) notFound();
   const { bag, media } = result;
   const dict = getDictionary(await getLocale());
+  const cups = (await countCupsByBag(supabase, [bag.id])).get(bag.id) ?? 0;
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-8 md:px-8">
@@ -32,7 +33,7 @@ export default async function BagDetailPage({
       </Link>
 
       <div className="mt-4">
-        <BagDetailPanel bag={bag} />
+        <BagDetailPanel bag={bag} cups={cups} />
       </div>
 
       <div className="mt-8">

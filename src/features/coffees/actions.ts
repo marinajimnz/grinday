@@ -15,6 +15,7 @@ import {
   updateCoffeeSchema,
 } from "@/lib/validation/coffees";
 import type { Database } from "@/types/database";
+import { todayISO } from "@/lib/time";
 
 type Client = SupabaseClient<Database>;
 
@@ -210,6 +211,44 @@ export async function updateBagAction(rawInput: unknown): Promise<ActionResult> 
 
   revalidatePath(`/bags/${bagId}`);
   if (updated) revalidatePath(`/coffees/${updated.coffee_id}`);
+  revalidatePath("/coffees");
+  return { success: true, data: undefined };
+}
+
+/**
+ * Finishing a bag is one tap, not a trip through the edit form to pick a
+ * status and then remember to fill the date underneath it. The date is the
+ * whole reason it was easy to get wrong: you finish a bag on the day you
+ * finish it, so the app can just know.
+ *
+ * The same call reopens one, because a tap that is this easy to make is
+ * one somebody will make by accident. Reopening restores the status the
+ * bag would have had — open if it was ever opened, sealed if not — and
+ * clears the date rather than leaving a finish date on a bag in use.
+ */
+export async function setBagFinishedAction(
+  bagId: string,
+  finished: boolean,
+): Promise<ActionResult> {
+  const supabase = await createClient();
+
+  const { data: bag, error: readError } = await supabase
+    .from("coffee_bags")
+    .select("id, coffee_id, opened_at")
+    .eq("id", bagId)
+    .maybeSingle();
+  if (readError) return { success: false, message: readError.message };
+  if (!bag) return { success: false, message: "Bolsa no encontrada" };
+
+  const update = finished
+    ? { status: "finished" as const, finished_at: todayISO() }
+    : { status: bag.opened_at ? ("open" as const) : ("sealed" as const), finished_at: null };
+
+  const { error } = await supabase.from("coffee_bags").update(update).eq("id", bagId);
+  if (error) return { success: false, message: error.message };
+
+  revalidatePath(`/bags/${bagId}`);
+  revalidatePath(`/coffees/${bag.coffee_id}`);
   revalidatePath("/coffees");
   return { success: true, data: undefined };
 }

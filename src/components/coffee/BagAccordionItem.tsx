@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { ChevronRight, ChevronUp } from "lucide-react";
+import { IconCafe } from "@/components/icons/pencil-icons";
 import { BagStatusBadge } from "./BagStatusBadge";
 import { BagDetailPanel } from "./BagDetailPanel";
 import { BagMediaSection } from "./BagMediaSection";
@@ -12,9 +13,11 @@ import { formatDate } from "@/lib/i18n/format-date";
 export function BagAccordionItem({
   bag,
   media,
+  cups = 0,
 }: {
   bag: CoffeeBagRow;
   media: (CoffeeMediaRow & { url: string | null })[];
+  cups?: number;
 }) {
   const dict = useDictionary();
   const locale = useLocale();
@@ -32,7 +35,7 @@ export function BagAccordionItem({
           <ChevronUp aria-hidden className="size-3.5" />
           {dict.coffees.bagLabel}
         </button>
-        <BagDetailPanel bag={bag} />
+        <BagDetailPanel bag={bag} cups={cups} />
         <div className="mt-6">
           <h3 className="font-display text-lg text-ink">{dict.inventoryPage.gallery}</h3>
           <div className="mt-3">
@@ -54,11 +57,18 @@ export function BagAccordionItem({
         <p className="text-xs font-medium uppercase tracking-wide text-ink-muted">
           {dict.coffees.bagLabel}
         </p>
-        <div className="mt-1.5 flex items-center gap-2">
+        <div className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1">
           <BagStatusBadge status={bag.status} dict={dict} />
           <span className="text-sm text-ink">
             {purchase ? `${dict.coffees.purchaseOn} ${purchase}` : dict.coffees.noDate}
           </span>
+          {/* What the bag actually gave you, without opening it. */}
+          {cups > 0 && (
+            <span className="inline-flex items-center gap-1 text-sm text-ink-muted">
+              <IconCafe aria-hidden className="size-3.5" />
+              <span className="tabular-nums">{cups}</span>
+            </span>
+          )}
         </div>
       </div>
       <ChevronRight aria-hidden className="size-4 shrink-0 text-ink-muted" />
