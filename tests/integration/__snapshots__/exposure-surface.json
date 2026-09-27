@@ -1,0 +1,748 @@
+{
+  "policies": [
+    {
+      "tablename": "attempt_media",
+      "policyname": "attempt_media_all_own",
+      "cmd": "ALL",
+      "roles": [
+        "public"
+      ],
+      "qual": "(auth.uid() = user_id)",
+      "with_check": "(auth.uid() = user_id)"
+    },
+    {
+      "tablename": "brew_attempts",
+      "policyname": "brew_attempts_all_own",
+      "cmd": "ALL",
+      "roles": [
+        "public"
+      ],
+      "qual": "(auth.uid() = user_id)",
+      "with_check": "(auth.uid() = user_id)"
+    },
+    {
+      "tablename": "coffee_bags",
+      "policyname": "coffee_bags_all_own",
+      "cmd": "ALL",
+      "roles": [
+        "public"
+      ],
+      "qual": "(auth.uid() = user_id)",
+      "with_check": "(auth.uid() = user_id)"
+    },
+    {
+      "tablename": "coffee_media",
+      "policyname": "coffee_media_all_own",
+      "cmd": "ALL",
+      "roles": [
+        "public"
+      ],
+      "qual": "(auth.uid() = user_id)",
+      "with_check": "(auth.uid() = user_id)"
+    },
+    {
+      "tablename": "coffees",
+      "policyname": "coffees_all_own",
+      "cmd": "ALL",
+      "roles": [
+        "public"
+      ],
+      "qual": "(auth.uid() = user_id)",
+      "with_check": "(auth.uid() = user_id)"
+    },
+    {
+      "tablename": "inventory_events",
+      "policyname": "inventory_events_all_own",
+      "cmd": "ALL",
+      "roles": [
+        "public"
+      ],
+      "qual": "(auth.uid() = user_id)",
+      "with_check": "(auth.uid() = user_id)"
+    },
+    {
+      "tablename": "moderation_events",
+      "policyname": "moderation_events_select_admin",
+      "cmd": "SELECT",
+      "roles": [
+        "authenticated"
+      ],
+      "qual": "( SELECT is_admin() AS is_admin)",
+      "with_check": null
+    },
+    {
+      "tablename": "profiles",
+      "policyname": "profiles_select_own",
+      "cmd": "SELECT",
+      "roles": [
+        "public"
+      ],
+      "qual": "(auth.uid() = id)",
+      "with_check": null
+    },
+    {
+      "tablename": "profiles",
+      "policyname": "profiles_update_own",
+      "cmd": "UPDATE",
+      "roles": [
+        "public"
+      ],
+      "qual": "(auth.uid() = id)",
+      "with_check": "(auth.uid() = id)"
+    },
+    {
+      "tablename": "roaster_applications",
+      "policyname": "roaster_applications_select_own",
+      "cmd": "SELECT",
+      "roles": [
+        "authenticated"
+      ],
+      "qual": "(user_id = ( SELECT auth.uid() AS uid))",
+      "with_check": null
+    },
+    {
+      "tablename": "user_brew_equipment",
+      "policyname": "user_brew_equipment_all_own",
+      "cmd": "ALL",
+      "roles": [
+        "public"
+      ],
+      "qual": "(auth.uid() = user_id)",
+      "with_check": "(auth.uid() = user_id)"
+    },
+    {
+      "tablename": "user_grinders",
+      "policyname": "user_grinders_all_own",
+      "cmd": "ALL",
+      "roles": [
+        "public"
+      ],
+      "qual": "(auth.uid() = user_id)",
+      "with_check": "(auth.uid() = user_id)"
+    },
+    {
+      "tablename": "objects",
+      "policyname": "coffee_photos_owner_delete",
+      "cmd": "DELETE",
+      "roles": [
+        "public"
+      ],
+      "qual": "((bucket_id = 'coffee-photos'::text) AND ((storage.foldername(name))[1] = (auth.uid())::text))",
+      "with_check": null
+    },
+    {
+      "tablename": "objects",
+      "policyname": "coffee_photos_owner_insert",
+      "cmd": "INSERT",
+      "roles": [
+        "public"
+      ],
+      "qual": null,
+      "with_check": "((bucket_id = 'coffee-photos'::text) AND ((storage.foldername(name))[1] = (auth.uid())::text))"
+    },
+    {
+      "tablename": "objects",
+      "policyname": "coffee_photos_owner_select",
+      "cmd": "SELECT",
+      "roles": [
+        "public"
+      ],
+      "qual": "((bucket_id = 'coffee-photos'::text) AND ((storage.foldername(name))[1] = (auth.uid())::text))",
+      "with_check": null
+    },
+    {
+      "tablename": "objects",
+      "policyname": "coffee_photos_owner_update",
+      "cmd": "UPDATE",
+      "roles": [
+        "public"
+      ],
+      "qual": "((bucket_id = 'coffee-photos'::text) AND ((storage.foldername(name))[1] = (auth.uid())::text))",
+      "with_check": null
+    }
+  ],
+  "functions": [
+    {
+      "signature": "admin_guard()",
+      "security_definer": true,
+      "callable_by": []
+    },
+    {
+      "signature": "admin_list_moderation_events()",
+      "security_definer": true,
+      "callable_by": [
+        "authenticated"
+      ]
+    },
+    {
+      "signature": "admin_list_reports()",
+      "security_definer": true,
+      "callable_by": [
+        "authenticated"
+      ]
+    },
+    {
+      "signature": "admin_list_reserved_handles()",
+      "security_definer": true,
+      "callable_by": [
+        "authenticated"
+      ]
+    },
+    {
+      "signature": "admin_list_roaster_applications(p_status text)",
+      "security_definer": true,
+      "callable_by": [
+        "authenticated"
+      ]
+    },
+    {
+      "signature": "admin_list_roasters()",
+      "security_definer": true,
+      "callable_by": [
+        "authenticated"
+      ]
+    },
+    {
+      "signature": "admin_open_report_count()",
+      "security_definer": true,
+      "callable_by": [
+        "authenticated"
+      ]
+    },
+    {
+      "signature": "admin_reason(p_reason text)",
+      "security_definer": false,
+      "callable_by": []
+    },
+    {
+      "signature": "admin_reassign_username(p_username text, p_reason text)",
+      "security_definer": true,
+      "callable_by": [
+        "authenticated"
+      ]
+    },
+    {
+      "signature": "admin_reserve_handle(p_handle text, p_reason text)",
+      "security_definer": true,
+      "callable_by": [
+        "authenticated"
+      ]
+    },
+    {
+      "signature": "admin_resolve_reports(p_username text, p_action text, p_reason text)",
+      "security_definer": true,
+      "callable_by": [
+        "authenticated"
+      ]
+    },
+    {
+      "signature": "admin_review_roaster_application(p_application_id uuid, p_approve boolean, p_reason text)",
+      "security_definer": true,
+      "callable_by": [
+        "authenticated"
+      ]
+    },
+    {
+      "signature": "admin_revoke_roaster(p_username text, p_reason text)",
+      "security_definer": true,
+      "callable_by": [
+        "authenticated"
+      ]
+    },
+    {
+      "signature": "admin_set_suspended(p_username text, p_suspended boolean, p_reason text)",
+      "security_definer": true,
+      "callable_by": [
+        "authenticated"
+      ]
+    },
+    {
+      "signature": "admin_target(p_username text)",
+      "security_definer": true,
+      "callable_by": []
+    },
+    {
+      "signature": "admin_unreserve_handle(p_handle text, p_reason text)",
+      "security_definer": true,
+      "callable_by": [
+        "authenticated"
+      ]
+    },
+    {
+      "signature": "attempt_grind_label(p_grind_setting numeric, p_upper smallint, p_lower smallint)",
+      "security_definer": false,
+      "callable_by": []
+    },
+    {
+      "signature": "check_preferred_attempt_belongs_to_coffee()",
+      "security_definer": false,
+      "callable_by": [
+        "anon",
+        "authenticated"
+      ]
+    },
+    {
+      "signature": "get_my_favourites()",
+      "security_definer": true,
+      "callable_by": [
+        "authenticated"
+      ]
+    },
+    {
+      "signature": "get_my_moderation_notices()",
+      "security_definer": true,
+      "callable_by": [
+        "authenticated"
+      ]
+    },
+    {
+      "signature": "get_public_attempt(p_username text, p_attempt_id uuid)",
+      "security_definer": true,
+      "callable_by": [
+        "authenticated"
+      ]
+    },
+    {
+      "signature": "get_public_coffee(p_username text, p_coffee_id uuid)",
+      "security_definer": true,
+      "callable_by": [
+        "authenticated"
+      ]
+    },
+    {
+      "signature": "get_public_coffee_attempts(p_username text, p_coffee_id uuid)",
+      "security_definer": true,
+      "callable_by": [
+        "authenticated"
+      ]
+    },
+    {
+      "signature": "get_public_coffees(p_username text)",
+      "security_definer": true,
+      "callable_by": [
+        "authenticated"
+      ]
+    },
+    {
+      "signature": "get_public_equipment(p_username text)",
+      "security_definer": true,
+      "callable_by": [
+        "authenticated"
+      ]
+    },
+    {
+      "signature": "get_public_profile(p_username text)",
+      "security_definer": true,
+      "callable_by": [
+        "authenticated"
+      ]
+    },
+    {
+      "signature": "get_public_recent_attempts(p_username text)",
+      "security_definer": true,
+      "callable_by": [
+        "authenticated"
+      ]
+    },
+    {
+      "signature": "get_recipe_source(p_attempt_id uuid)",
+      "security_definer": true,
+      "callable_by": [
+        "authenticated"
+      ]
+    },
+    {
+      "signature": "guard_profile_identity()",
+      "security_definer": true,
+      "callable_by": []
+    },
+    {
+      "signature": "handle_new_user()",
+      "security_definer": true,
+      "callable_by": []
+    },
+    {
+      "signature": "is_admin()",
+      "security_definer": true,
+      "callable_by": [
+        "authenticated"
+      ]
+    },
+    {
+      "signature": "is_profile_saved(p_username text)",
+      "security_definer": true,
+      "callable_by": [
+        "authenticated"
+      ]
+    },
+    {
+      "signature": "profile_is_visible_to_me(p_profile_id uuid)",
+      "security_definer": true,
+      "callable_by": []
+    },
+    {
+      "signature": "recompute_bag_remaining()",
+      "security_definer": false,
+      "callable_by": [
+        "anon",
+        "authenticated"
+      ]
+    },
+    {
+      "signature": "remove_favourite(p_bookmark_id uuid)",
+      "security_definer": true,
+      "callable_by": [
+        "authenticated"
+      ]
+    },
+    {
+      "signature": "report_profile(p_username text, p_reason text, p_details text)",
+      "security_definer": true,
+      "callable_by": [
+        "authenticated"
+      ]
+    },
+    {
+      "signature": "save_profile(p_username text)",
+      "security_definer": true,
+      "callable_by": [
+        "authenticated"
+      ]
+    },
+    {
+      "signature": "search_profiles(p_query text, p_kind text)",
+      "security_definer": true,
+      "callable_by": [
+        "authenticated"
+      ]
+    },
+    {
+      "signature": "set_attempt_no()",
+      "security_definer": false,
+      "callable_by": [
+        "anon",
+        "authenticated"
+      ]
+    },
+    {
+      "signature": "set_default_equipment(p_equipment_id uuid)",
+      "security_definer": false,
+      "callable_by": [
+        "anon",
+        "authenticated"
+      ]
+    },
+    {
+      "signature": "set_default_grinder(p_grinder_id uuid)",
+      "security_definer": false,
+      "callable_by": [
+        "anon",
+        "authenticated"
+      ]
+    },
+    {
+      "signature": "set_preferred_attempt(p_coffee_id uuid, p_attempt_id uuid)",
+      "security_definer": false,
+      "callable_by": [
+        "anon",
+        "authenticated"
+      ]
+    },
+    {
+      "signature": "set_profile_role(p_profile_id uuid, p_role text, p_reason text)",
+      "security_definer": true,
+      "callable_by": [
+        "authenticated"
+      ]
+    },
+    {
+      "signature": "set_updated_at()",
+      "security_definer": false,
+      "callable_by": [
+        "anon",
+        "authenticated"
+      ]
+    },
+    {
+      "signature": "social_enabled_for_me()",
+      "security_definer": true,
+      "callable_by": [
+        "authenticated"
+      ]
+    },
+    {
+      "signature": "start_roaster_application(p_business_name text, p_website text, p_instagram text, p_city text, p_contact_email text)",
+      "security_definer": true,
+      "callable_by": [
+        "authenticated"
+      ]
+    },
+    {
+      "signature": "stats_by_coffee(p_from date, p_to date, p_tz text)",
+      "security_definer": false,
+      "callable_by": [
+        "anon",
+        "authenticated"
+      ]
+    },
+    {
+      "signature": "stats_by_dimension(p_dimension text, p_from date, p_to date, p_tz text)",
+      "security_definer": false,
+      "callable_by": [
+        "anon",
+        "authenticated"
+      ]
+    },
+    {
+      "signature": "stats_by_method(p_from date, p_to date, p_tz text)",
+      "security_definer": false,
+      "callable_by": [
+        "anon",
+        "authenticated"
+      ]
+    },
+    {
+      "signature": "stats_cup_totals(p_from date, p_to date, p_tz text)",
+      "security_definer": false,
+      "callable_by": [
+        "anon",
+        "authenticated"
+      ]
+    },
+    {
+      "signature": "stats_cups_by_bucket(p_from date, p_to date, p_bucket text, p_tz text)",
+      "security_definer": false,
+      "callable_by": [
+        "anon",
+        "authenticated"
+      ]
+    },
+    {
+      "signature": "stats_extraction_seconds_distribution(p_from date, p_to date, p_tz text)",
+      "security_definer": false,
+      "callable_by": [
+        "anon",
+        "authenticated"
+      ]
+    },
+    {
+      "signature": "stats_frequent_notes(p_min_rating numeric, p_from date, p_to date, p_tz text)",
+      "security_definer": false,
+      "callable_by": [
+        "anon",
+        "authenticated"
+      ]
+    },
+    {
+      "signature": "stats_grind_setting_distribution(p_from date, p_to date, p_tz text)",
+      "security_definer": false,
+      "callable_by": [
+        "anon",
+        "authenticated"
+      ]
+    },
+    {
+      "signature": "stats_period_highlights(p_from date, p_to date, p_tz text)",
+      "security_definer": false,
+      "callable_by": [
+        "anon",
+        "authenticated"
+      ]
+    },
+    {
+      "signature": "submit_roaster_application()",
+      "security_definer": true,
+      "callable_by": [
+        "authenticated"
+      ]
+    },
+    {
+      "signature": "unsave_profile(p_username text)",
+      "security_definer": true,
+      "callable_by": [
+        "authenticated"
+      ]
+    }
+  ],
+  "tables": [
+    {
+      "table": "app_settings",
+      "rls": true,
+      "table_grants": [],
+      "authenticated_column_grants": []
+    },
+    {
+      "table": "attempt_media",
+      "rls": true,
+      "table_grants": [
+        "anon:DELETE",
+        "anon:INSERT",
+        "anon:SELECT",
+        "anon:UPDATE",
+        "authenticated:DELETE",
+        "authenticated:INSERT",
+        "authenticated:SELECT",
+        "authenticated:UPDATE"
+      ],
+      "authenticated_column_grants": []
+    },
+    {
+      "table": "brew_attempts",
+      "rls": true,
+      "table_grants": [
+        "anon:DELETE",
+        "anon:INSERT",
+        "anon:SELECT",
+        "anon:UPDATE",
+        "authenticated:DELETE",
+        "authenticated:INSERT",
+        "authenticated:SELECT",
+        "authenticated:UPDATE"
+      ],
+      "authenticated_column_grants": []
+    },
+    {
+      "table": "coffee_bags",
+      "rls": true,
+      "table_grants": [
+        "anon:DELETE",
+        "anon:INSERT",
+        "anon:SELECT",
+        "anon:UPDATE",
+        "authenticated:DELETE",
+        "authenticated:INSERT",
+        "authenticated:SELECT",
+        "authenticated:UPDATE"
+      ],
+      "authenticated_column_grants": []
+    },
+    {
+      "table": "coffee_media",
+      "rls": true,
+      "table_grants": [
+        "anon:DELETE",
+        "anon:INSERT",
+        "anon:SELECT",
+        "anon:UPDATE",
+        "authenticated:DELETE",
+        "authenticated:INSERT",
+        "authenticated:SELECT",
+        "authenticated:UPDATE"
+      ],
+      "authenticated_column_grants": []
+    },
+    {
+      "table": "coffees",
+      "rls": true,
+      "table_grants": [
+        "anon:DELETE",
+        "anon:INSERT",
+        "anon:SELECT",
+        "anon:UPDATE",
+        "authenticated:DELETE",
+        "authenticated:INSERT",
+        "authenticated:SELECT",
+        "authenticated:UPDATE"
+      ],
+      "authenticated_column_grants": []
+    },
+    {
+      "table": "inventory_events",
+      "rls": true,
+      "table_grants": [
+        "anon:DELETE",
+        "anon:INSERT",
+        "anon:SELECT",
+        "anon:UPDATE",
+        "authenticated:DELETE",
+        "authenticated:INSERT",
+        "authenticated:SELECT",
+        "authenticated:UPDATE"
+      ],
+      "authenticated_column_grants": []
+    },
+    {
+      "table": "moderation_events",
+      "rls": true,
+      "table_grants": [
+        "authenticated:SELECT"
+      ],
+      "authenticated_column_grants": []
+    },
+    {
+      "table": "profile_bookmarks",
+      "rls": true,
+      "table_grants": [],
+      "authenticated_column_grants": []
+    },
+    {
+      "table": "profile_reports",
+      "rls": true,
+      "table_grants": [],
+      "authenticated_column_grants": []
+    },
+    {
+      "table": "profiles",
+      "rls": true,
+      "table_grants": [
+        "anon:DELETE",
+        "anon:INSERT",
+        "anon:SELECT",
+        "authenticated:DELETE",
+        "authenticated:INSERT",
+        "authenticated:SELECT"
+      ],
+      "authenticated_column_grants": [
+        "bio:UPDATE",
+        "display_name:UPDATE",
+        "locale:UPDATE",
+        "username:UPDATE",
+        "visibility:UPDATE"
+      ]
+    },
+    {
+      "table": "reserved_handles",
+      "rls": true,
+      "table_grants": [],
+      "authenticated_column_grants": []
+    },
+    {
+      "table": "roaster_applications",
+      "rls": true,
+      "table_grants": [
+        "authenticated:SELECT"
+      ],
+      "authenticated_column_grants": []
+    },
+    {
+      "table": "user_brew_equipment",
+      "rls": true,
+      "table_grants": [
+        "anon:DELETE",
+        "anon:INSERT",
+        "anon:SELECT",
+        "anon:UPDATE",
+        "authenticated:DELETE",
+        "authenticated:INSERT",
+        "authenticated:SELECT",
+        "authenticated:UPDATE"
+      ],
+      "authenticated_column_grants": []
+    },
+    {
+      "table": "user_grinders",
+      "rls": true,
+      "table_grants": [
+        "anon:DELETE",
+        "anon:INSERT",
+        "anon:SELECT",
+        "anon:UPDATE",
+        "authenticated:DELETE",
+        "authenticated:INSERT",
+        "authenticated:SELECT",
+        "authenticated:UPDATE"
+      ],
+      "authenticated_column_grants": []
+    }
+  ]
+}

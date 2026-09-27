@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Bookmark, Search } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { IconCafe, IconFavorito, IconPreparar } from "@/components/icons/pencil-icons";
 import { getDashboardRecipe, getRecentAttempts, hasAnyCoffee } from "@/features/dashboard/queries";
@@ -23,7 +24,10 @@ export default async function DashboardPage() {
     ? await supabase.from("profiles").select("display_name").eq("id", user.id).single()
     : { data: null };
 
-  const hasCoffee = user ? await hasAnyCoffee(supabase, user.id) : false;
+  const [hasCoffee, { data: socialEnabled }] = await Promise.all([
+    user ? hasAnyCoffee(supabase, user.id) : Promise.resolve(false),
+    supabase.rpc("social_enabled_for_me"),
+  ]);
 
   const [recipe, recentAttempts] =
     hasCoffee && user
@@ -37,17 +41,41 @@ export default async function DashboardPage() {
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-8 md:px-8">
-      <h1 className="flex flex-wrap items-center gap-x-2 font-display text-4xl break-words text-ink">
-        {profile?.display_name ? (
-          <>
-            {profile.display_name}
-            <IconFavorito aria-hidden className="size-6 text-coffee" />
-            grindaily
-          </>
-        ) : (
-          dict.dashboard.title
+      <div className="flex items-center justify-between gap-3">
+        {/* Smaller on a phone so the name, the heart and "grindaily" fit on
+            one line next to the two buttons. */}
+        <h1 className="flex min-w-0 flex-wrap items-center gap-x-1.5 font-display text-2xl break-words text-ink sm:gap-x-2 sm:text-4xl">
+          {profile?.display_name ? (
+            <>
+              {profile.display_name}
+              <IconFavorito aria-hidden className="size-4 text-coffee sm:size-6" />
+              grindaily
+            </>
+          ) : (
+            dict.dashboard.title
+          )}
+        </h1>
+        {/* Only once the public side is on for this account: until then
+            there's nobody to find. */}
+        {socialEnabled && (
+          <nav aria-label={dict.search.headerNav} className="flex shrink-0 gap-2">
+            <Link
+              href="/search"
+              aria-label={dict.search.openSearch}
+              className="inline-flex size-11 items-center justify-center rounded-input border border-border bg-surface text-ink"
+            >
+              <Search aria-hidden className="size-5" />
+            </Link>
+            <Link
+              href="/favorites"
+              aria-label={dict.favorites.open}
+              className="inline-flex size-11 items-center justify-center rounded-input border border-border bg-surface text-ink"
+            >
+              <Bookmark aria-hidden className="size-5" />
+            </Link>
+          </nav>
         )}
-      </h1>
+      </div>
 
       {!hasCoffee ? (
         <>

@@ -39,11 +39,14 @@ export async function changeUsernameAction(input: unknown): Promise<ActionResult
   const { error } = await supabase.from("profiles").update({ username: newUsername }).eq("id", user.id);
   if (error) {
     if (error.code === "23505") return { success: false, message: dict.register.usernameTaken };
+    // Reserved names (reserved_handles): the username is also the public @.
+    if (error.code === "P0001") return { success: false, message: dict.register.usernameReserved };
     return { success: false, message: error.message };
   }
 
   revalidatePath("/settings/account");
   revalidatePath("/settings/profile");
+  revalidatePath("/settings");
   return { success: true };
 }
 

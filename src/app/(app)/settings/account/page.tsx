@@ -6,6 +6,7 @@ import { ChangeUsernameForm } from "@/components/settings/ChangeUsernameForm";
 import { ChangeEmailForm } from "@/components/settings/ChangeEmailForm";
 import { ChangePasswordForm } from "@/components/settings/ChangePasswordForm";
 import { SettingsAccordionCard } from "@/components/settings/SettingsAccordionCard";
+import { TwoFactorCard } from "@/components/settings/TwoFactorCard";
 import { buttonClassName } from "@/components/ui/Button";
 import { getLocale } from "@/lib/i18n/locale";
 import { getDictionary } from "@/lib/i18n/get-dictionary";
@@ -27,7 +28,7 @@ export default async function AccountSettingsPage() {
   // and was never meant to be user-visible.
   const { data: profile } = await supabase
     .from("profiles")
-    .select("username")
+    .select("username, role, visibility")
     .eq("id", user.id)
     .single();
   const loginIdentifier = profile?.username ?? user?.email;
@@ -45,8 +46,17 @@ export default async function AccountSettingsPage() {
         </div>
       </div>
 
+      {profile?.role === "admin" && (
+        <div className="mt-6">
+          <TwoFactorCard />
+        </div>
+      )}
+
       <div className="mt-6 space-y-3">
         <SettingsAccordionCard title={dict.settings.changeUsernameTitle}>
+          {profile?.visibility === "public" && (
+            <p className="mb-3 text-sm text-ink-muted">{dict.settings.usernamePublicHint}</p>
+          )}
           <ChangeUsernameForm currentUsername={profile?.username ?? null} />
         </SettingsAccordionCard>
         <SettingsAccordionCard title={dict.settings.changeEmailTitle}>

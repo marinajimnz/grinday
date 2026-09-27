@@ -2,6 +2,7 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import { isLocale, LOCALE_COOKIE } from "@/lib/i18n/types";
 import { requireEnv } from "@/lib/env";
+import { assuranceLevelOf, needsMfaStepUp } from "@/lib/supabase/mfa";
 
 // /offline has to work without a session: it's the Service Worker's
 // no-network fallback, reached with no server round-trip at all when it
@@ -51,6 +52,28 @@ export async function updateSession(request: NextRequest) {
 
   if (user && (pathname === "/login" || pathname === "/register")) {
     return redirectCarryingCookies(request, response, "/");
+  }
+
+  // Two-step verification: a session that signed in with the password but
+  // hasn't entered its code yet gets /mfa and nothing else — no page, no
+  // API route. Only accounts that turned it on (admins, for now) ever have
+  // a factor; for everyone else this is a no-op. The session's level comes
+  // from the same access token getUser() just had the server validate, so
+  // it costs no extra round-trip.
+  if (user && pathname !== "/offline") {
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+    const stepUpPending = needsMfaStepUp(user, assuranceLevelOf(session?.access_token));
+    if (stepUpPending && pathname.startsWith("/api/")) {
+      return NextResponse.json({ error: "mfa_required" }, { status: 401 });
+    }
+    if (stepUpPending && pathname !== "/mfa") {
+      return redirectCarryingCookies(request, response, "/mfa");
+    }
+    if (!stepUpPending && pathname === "/mfa") {
+      return redirectCarryingCookies(request, response, "/");
+    }
   }
 
   // profiles.locale is the source of truth once logged in, but querying it

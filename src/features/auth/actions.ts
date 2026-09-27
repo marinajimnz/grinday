@@ -104,6 +104,10 @@ export async function registerAction(input: unknown): Promise<RegisterResult> {
     if (profileError.code === "23505") {
       return { success: false, field: "username", message: dict.register.usernameTaken };
     }
+    // A reserved name (reserved_handles) — the username is also the public @.
+    if (profileError.code === "P0001") {
+      return { success: false, field: "username", message: dict.register.usernameReserved };
+    }
     return { success: false, message: dict.register.genericError };
   }
 

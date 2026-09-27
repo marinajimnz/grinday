@@ -8,6 +8,7 @@ import { useDictionary } from "@/components/i18n/LocaleProvider";
 import { IconGrano } from "@/components/icons/pencil-icons";
 import { LoadingLabel } from "@/components/ui/LoadingLabel";
 import { Button } from "@/components/ui/Button";
+import { BIO_MAX_LENGTH } from "@/lib/validation/profile";
 
 const ROLE_LABELS: Record<string, string> = { admin: "Admin", coffee_lover: "Coffee lover" };
 const ROLE_ICONS: Record<string, React.ComponentType<React.SVGProps<SVGSVGElement>>> = {
@@ -19,13 +20,18 @@ export function ProfileForm({
   initialDisplayName,
   role,
   loginIdentifier,
+  publicFields,
 }: {
   initialDisplayName: string;
   role: string;
   loginIdentifier: string;
+  // The bio, shown only once the public side is on for this account.
+  publicFields?: { bio: string | null };
 }) {
   const dict = useDictionary();
   const [displayName, setDisplayName] = useState(initialDisplayName);
+  const [bio, setBio] = useState(publicFields?.bio ?? "");
+  const [errorField, setErrorField] = useState<"bio" | null>(null);
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
@@ -37,13 +43,18 @@ export function ProfileForm({
       onSubmit={(e) => {
         e.preventDefault();
         setError(null);
+        setErrorField(null);
         setSaved(false);
         startTransition(async () => {
-          const result = await updateProfileAction({ displayName });
+          const result = await updateProfileAction(
+            publicFields ? { displayName, bio } : { displayName },
+          );
           if (!result.success) {
             setError(result.message);
+            setErrorField(result.field ?? null);
             return;
           }
+          setErrorField(null);
           setSaved(true);
         });
       }}
@@ -71,7 +82,30 @@ export function ProfileForm({
         />
       </Field>
 
-      {error && (
+      {publicFields && (
+        <>
+          <Field
+            label={dict.settings.bio}
+            htmlFor="profile-bio"
+            hint={`${dict.settings.bioHint} ${bio.length}/${BIO_MAX_LENGTH}`}
+            error={errorField === "bio" ? error ?? undefined : undefined}
+          >
+            <textarea
+              id="profile-bio"
+              rows={3}
+              className={`${inputClassName} py-2.5`}
+              value={bio}
+              maxLength={BIO_MAX_LENGTH}
+              onChange={(e) => {
+                setBio(e.target.value);
+                setSaved(false);
+              }}
+            />
+          </Field>
+        </>
+      )}
+
+      {error && !errorField && (
         <p role="alert" className="text-sm text-danger">
           {error}
         </p>

@@ -1,5 +1,5 @@
 import { defaultCache } from "@serwist/next/worker";
-import { Serwist } from "serwist";
+import { NetworkOnly, Serwist } from "serwist";
 import type { PrecacheEntry, SerwistGlobalConfig } from "serwist";
 
 declare global {
@@ -15,7 +15,23 @@ const serwist = new Serwist({
   skipWaiting: true,
   clientsClaim: true,
   navigationPreload: true,
-  runtimeCaching: defaultCache,
+  // Other accounts' public pages (profiles, search, favourites) are never kept on the device: a profile
+  // that goes private or gets suspended must stop showing at once, and on a
+  // shared phone the next person signed in mustn't find the last one's
+  // browsing in the cache. Checked before defaultCache, which would
+  // otherwise keep them like any page.
+  runtimeCaching: [
+    {
+      matcher: ({ sameOrigin, url }) =>
+        sameOrigin &&
+        (url.pathname.startsWith("/u/") ||
+          url.pathname === "/search" ||
+          url.pathname === "/favorites" ||
+          url.pathname.startsWith("/admin")),
+      handler: new NetworkOnly(),
+    },
+    ...defaultCache,
+  ],
   // Fase 7: when a navigation can't be served from network or cache, show
   // the offline shell (café activo snapshot + pending drafts) instead of
   // the browser's own error page.

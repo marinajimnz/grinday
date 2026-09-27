@@ -60,6 +60,15 @@ npx supabase gen types typescript --linked > src/types/database.ts
 - `npm run typecheck` — TypeScript estricto (app + service worker).
 - `npm run test:unit` — Vitest.
 - `npm run test:e2e` — Playwright (390×844 y 1440×900).
+- `npm run test:integration` — tests contra la base de datos real enlazada
+  (grants, RLS, funciones de admin y la foto fija de lo que cada cuenta puede
+  alcanzar). Cada test corre en una transacción que siempre se deshace, así
+  que no deja nada detrás. Necesita `SUPABASE_DB_PASSWORD` en `.env.local` y
+  el proyecto enlazado (o `SUPABASE_DB_URL`). Para probar una migración antes
+  de aplicarla:
+  `DRY_RUN_MIGRATION=supabase/migrations/00xx_nombre.sql npm run test:integration`.
+  Si cambia a propósito lo que queda expuesto, se actualiza la foto con
+  `npm run test:integration -- -u` y el diff se revisa en el PR.
 
 ## Estado del roadmap
 
@@ -71,6 +80,39 @@ npx supabase gen types typescript --linked > src/types/database.ts
 - [x] Fase 5 — Inventario (este commit).
 - [x] Fase 6 — Estadísticas y dashboard (este commit).
 - [x] Fase 7 — Hardening PWA, offline, cuenta y release (este commit).
+- [x] Perfiles públicos (F0–F9) — perfiles, tostadoras, buscador, favoritos,
+  probar recetas ajenas, moderación y denuncias. Ver «Perfiles públicos» abajo.
+
+## Perfiles públicos
+
+Cada cuenta elige si su perfil es público (popup la primera vez; tarjeta
+«Privacidad del perfil» arriba del todo en Ajustes). Hasta que elige, cuenta
+como privada. El @ público es el nombre de usuario.
+
+- **Qué se comparte:** nombre, @usuario, bio, cafés no archivados con su
+  ficha (origen, proceso, tueste, notas de cata), modelos de equipo, intentos
+  (día, receta y puntuación). **Nunca:** notas, fotos, bolsas, inventario,
+  hora del intento, intentos quitados del inicio ni ids de cuenta.
+- **Cómo:** el RLS de las tablas no cambia; otra cuenta solo lee a través de
+  funciones `security definer` con columnas explícitas que pasan por
+  `profile_is_visible_to_me()` (perfil público, con usuario, no suspendido e
+  interruptor encendido). `tests/integration/exposure-surface.test.ts` guarda
+  una foto fija de policies, funciones y permisos: cualquier cambio en lo que
+  una cuenta puede alcanzar aparece como diff.
+- **Interruptor:** `app_settings.social_enabled` (`off`, `admins`, `all`).
+  Apagarlo oculta todo lo público al momento, sin desplegar:
+
+  ```sql
+  update public.app_settings set social_enabled = 'off';
+  ```
+
+- **Moderación:** `/admin` (rol admin **y** sesión con verificación en dos
+  pasos) — solicitudes de tostadora con código publicado en su web o
+  Instagram, tostadoras, perfiles (suspender, reasignar usuario), handles
+  reservados, denuncias y registro. Toda acción pide motivo y queda en
+  `moderation_events`; la cuenta afectada ve qué y por qué, nunca quién.
+- **Caché:** el Service Worker nunca guarda `/u/*`, `/search`, `/favorites`
+  ni `/admin`.
 
 ## Offline y PWA
 
