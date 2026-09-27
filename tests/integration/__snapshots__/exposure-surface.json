@@ -153,6 +153,11 @@
   ],
   "functions": [
     {
+      "signature": "attempt_grind_label(p_grind_setting numeric, p_upper smallint, p_lower smallint)",
+      "security_definer": false,
+      "callable_by": []
+    },
+    {
       "signature": "check_preferred_attempt_belongs_to_coffee()",
       "security_definer": false,
       "callable_by": [
@@ -161,7 +166,28 @@
       ]
     },
     {
+      "signature": "get_public_coffees(p_username text)",
+      "security_definer": true,
+      "callable_by": [
+        "authenticated"
+      ]
+    },
+    {
+      "signature": "get_public_equipment(p_username text)",
+      "security_definer": true,
+      "callable_by": [
+        "authenticated"
+      ]
+    },
+    {
       "signature": "get_public_profile(p_username text)",
+      "security_definer": true,
+      "callable_by": [
+        "authenticated"
+      ]
+    },
+    {
+      "signature": "get_public_recent_attempts(p_username text)",
       "security_definer": true,
       "callable_by": [
         "authenticated"
