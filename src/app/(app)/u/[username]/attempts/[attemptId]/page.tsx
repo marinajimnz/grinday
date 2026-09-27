@@ -7,6 +7,7 @@ import { getPublicAttempt, isUuid } from "@/features/profile/publicQueries";
 import { AttemptRecipeSummary } from "@/components/attempt/AttemptRecipeSummary";
 import { StarRating } from "@/components/ui/StarRating";
 import { BackButton } from "@/components/ui/BackButton";
+import { TryRecipeButton } from "@/components/profile/TryRecipeButton";
 import { formatDate } from "@/lib/i18n/format-date";
 import type { BrewMethod } from "@/features/equipment/constants";
 import { getLocale } from "@/lib/i18n/locale";
@@ -31,8 +32,12 @@ export default async function PublicAttemptPage({
   } = await supabase.auth.getUser();
   if (!user) notFound();
 
-  const attempt = await getPublicAttempt(supabase, username, attemptId);
+  const [attempt, { data: me }] = await Promise.all([
+    getPublicAttempt(supabase, username, attemptId),
+    supabase.from("profiles").select("username").eq("id", user.id).single(),
+  ]);
   if (!attempt) notFound();
+  const isMe = me?.username === username;
 
   const locale = await getLocale();
   const dict = getDictionary(locale);
@@ -83,6 +88,8 @@ export default async function PublicAttemptPage({
           <AttemptRecipeSummary attempt={attempt.recipe} />
         </div>
       </section>
+
+      {!isMe && <TryRecipeButton username={username} attemptId={attemptId} className="mt-6" />}
 
       {equipment.length > 0 && (
         <section className="mt-8">

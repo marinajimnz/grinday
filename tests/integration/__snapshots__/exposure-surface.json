@@ -324,6 +324,13 @@
       ]
     },
     {
+      "signature": "get_recipe_source(p_attempt_id uuid)",
+      "security_definer": true,
+      "callable_by": [
+        "authenticated"
+      ]
+    },
+    {
       "signature": "guard_profile_identity()",
       "security_definer": true,
       "callable_by": []

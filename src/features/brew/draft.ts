@@ -82,6 +82,16 @@ export type BrewDraft = {
   roaster: string;
   parentAttemptId?: string;
   parentAttemptNo?: number;
+  // Brewed from someone else's public recipe ("Try this recipe"): which
+  // attempt it came from, saved with the new attempt, plus what the brew
+  // screen says about it — the author, and their grind on their grinder,
+  // since that number means little on anyone else's.
+  recipeSource?: {
+    attemptId: string;
+    username: string;
+    grind: string | null;
+    grinderModelName: string | null;
+  };
   recipe: BrewDraftRecipe;
   // When the current run began; null whenever the clock isn't moving,
   // which is both "never started" and "paused".

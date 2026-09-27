@@ -134,6 +134,7 @@ export type Database = {
           output_weight_g: number | null
           overall_rating: number | null
           parent_attempt_id: string | null
+          recipe_source_attempt_id: string | null
           shot_mode: string | null
           sweetness: number | null
           target_time_ms: number | null
@@ -181,6 +182,7 @@ export type Database = {
           output_weight_g?: number | null
           overall_rating?: number | null
           parent_attempt_id?: string | null
+          recipe_source_attempt_id?: string | null
           shot_mode?: string | null
           sweetness?: number | null
           target_time_ms?: number | null
@@ -228,6 +230,7 @@ export type Database = {
           output_weight_g?: number | null
           overall_rating?: number | null
           parent_attempt_id?: string | null
+          recipe_source_attempt_id?: string | null
           shot_mode?: string | null
           sweetness?: number | null
           target_time_ms?: number | null
@@ -272,6 +275,13 @@ export type Database = {
           {
             foreignKeyName: "brew_attempts_parent_attempt_id_fkey"
             columns: ["parent_attempt_id"]
+            isOneToOne: false
+            referencedRelation: "brew_attempts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "brew_attempts_recipe_source_attempt_id_fkey"
+            columns: ["recipe_source_attempt_id"]
             isOneToOne: false
             referencedRelation: "brew_attempts"
             referencedColumns: ["id"]
@@ -934,6 +944,14 @@ export type Database = {
           roaster: string
           target_weight_g: number
           water_g: number
+        }[]
+      }
+      get_recipe_source: {
+        Args: { p_attempt_id: string }
+        Returns: {
+          available: boolean
+          source_attempt_id: string
+          username: string
         }[]
       }
       is_admin: { Args: never; Returns: boolean }

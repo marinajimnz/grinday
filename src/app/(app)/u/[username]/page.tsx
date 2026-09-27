@@ -108,6 +108,7 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
               coffeeName={recommended.coffeeName}
               attempt={recommended.attempt}
               username={profile.username}
+              canTry={!isMe}
               dict={dict}
             />
           )}

@@ -155,6 +155,7 @@ export function BrewLiveScreen({ draftId }: { draftId: string }) {
       const result = await createAttemptAction({
         coffeeBagId: draft.coffeeBagId,
         parentAttemptId: draft.parentAttemptId,
+        recipeSourceAttemptId: draft.recipeSource?.attemptId,
         // The draft's own id doubles as the idempotency key: a retried save
         // (this listener, or the manual button) can never create a
         // duplicate attempt — see createAttemptAction.
@@ -277,6 +278,23 @@ export function BrewLiveScreen({ draftId }: { draftId: string }) {
           <IconFavorita aria-hidden className="size-3.5 text-coffee" />
           {dict.brew.basedOnAttempt} #{draft.parentAttemptNo}
         </p>
+      )}
+      {/* Someone else's recipe: whose, and their grind on their grinder —
+          the one number that doesn't carry over to another grinder as is. */}
+      {draft.recipeSource && (
+        <div className="mt-1 text-sm">
+          <p className="flex items-center gap-1 text-coffee">
+            <IconFavorita aria-hidden className="size-3.5 text-coffee" />
+            {dict.publicProfile.recipeBy.replace("{username}", draft.recipeSource.username)}
+          </p>
+          {draft.recipeSource.grind && (
+            <p className="text-ink-muted">
+              {(draft.recipeSource.grinderModelName ? dict.publicProfile.grindFrom : dict.publicProfile.grindFromUnknown)
+                .replace("{grind}", draft.recipeSource.grind)
+                .replace("{grinder}", draft.recipeSource.grinderModelName ?? "")}
+            </p>
+          )}
+        </div>
       )}
 
       {!brewFinished && !showTimer && (

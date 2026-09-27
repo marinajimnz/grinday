@@ -1,9 +1,13 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import { ProfileAvatar } from "@/components/profile/ProfileAvatar";
 import { PublicCoffeesSection, RecommendedRecipeCard } from "@/components/profile/PublicProfileSections";
 import { LocaleProvider } from "@/components/i18n/LocaleProvider";
 import es from "@/lib/i18n/dictionaries/es";
+
+// A server action module: only its reference matters here.
+vi.mock("@/features/profile/tryRecipe", () => ({ tryPublicRecipeAction: vi.fn() }));
+vi.mock("next/navigation", () => ({ useRouter: () => ({ push: vi.fn(), refresh: vi.fn() }) }));
 
 const coffee = {
   id: "c1",
@@ -46,6 +50,7 @@ describe("roaster profile parts", () => {
       <RecommendedRecipeCard
         coffeeName="Guji Shakiso"
         username="lasemilla"
+        canTry={false}
         dict={es}
         attempt={{
           id: "a1",
