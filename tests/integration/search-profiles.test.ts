@@ -69,9 +69,24 @@ describe("search_profiles", () => {
     await withRollback(async (tx) => {
       await tx`update public.app_settings set social_enabled = 'all'`;
       const t = tag();
-      for (let i = 0; i < 22; i++) {
-        await profile(tx, `${t}_${String(i).padStart(2, "0")}`, `Cuenta ${i}`);
-      }
+      // 22 public accounts in two statements rather than ~70 round trips.
+      await tx`
+        insert into auth.users (id, instance_id, aud, role, email, created_at, updated_at)
+        select gen_random_uuid(), '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated',
+               'integration-' || gen_random_uuid() || '@grinday.test', now(), now()
+        from generate_series(1, 22)
+      `;
+      await tx`
+        update public.profiles p
+        set username = ${t} || '_' || lpad(n.i::text, 2, '0'), display_name = 'Cuenta ' || n.i, visibility = 'public'
+        from (
+          select id, row_number() over (order by id) as i
+          from public.profiles
+          where id in (select id from auth.users where email like 'integration-%')
+            and username is null
+        ) n
+        where p.id = n.id
+      `;
       const viewer = await createUser(tx);
       expect(await search(tx, viewer, "z")).toHaveLength(0);
       expect(await search(tx, viewer, " @ ")).toHaveLength(0);

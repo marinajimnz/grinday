@@ -1,7 +1,8 @@
 import { notFound } from "next/navigation";
 import { IconPerfil } from "@/components/icons/pencil-icons";
 import { createClient } from "@/lib/supabase/server";
-import { parseProfileKind, searchProfiles } from "@/features/profile/publicQueries";
+import { getMyFavourites, parseProfileKind, searchProfiles } from "@/features/profile/publicQueries";
+import { SaveProfileButton } from "@/components/profile/SaveProfileButton";
 import { ProfileSearchBox } from "@/components/profile/ProfileSearchBox";
 import { ProfileRow } from "@/components/profile/ProfileRow";
 import { BackButton } from "@/components/ui/BackButton";
@@ -30,7 +31,10 @@ export default async function SearchPage({
   const dict = getDictionary(await getLocale());
   const t = dict.search;
   const searchable = query.replace(/^@+/, "").length >= 2;
-  const results = searchable ? await searchProfiles(supabase, query, kind) : [];
+  const [results, favourites] = searchable
+    ? await Promise.all([searchProfiles(supabase, query, kind), getMyFavourites(supabase)])
+    : [[], []];
+  const savedUsernames = new Set(favourites.flatMap((f) => (f.available ? [f.username] : [])));
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-6 md:px-8 md:py-8">
@@ -59,6 +63,12 @@ export default async function SearchPage({
                     profile.accountType === "roaster"
                       ? dict.publicProfile.accountTypeRoaster
                       : dict.publicProfile.accountTypePerson
+                  }
+                  action={
+                    <SaveProfileButton
+                      username={profile.username}
+                      initiallySaved={savedUsernames.has(profile.username)}
+                    />
                   }
                 />
               </li>
