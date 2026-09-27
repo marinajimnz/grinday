@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { ProfileForm } from "@/components/settings/ProfileForm";
 import { ProfileLanguageToggle } from "@/components/settings/ProfileLanguageToggle";
+import { getMyPublicIdentity } from "@/features/profile/queries";
 import { getLocale } from "@/lib/i18n/locale";
 import { getDictionary } from "@/lib/i18n/get-dictionary";
 
@@ -17,11 +18,10 @@ export default async function ProfilePage() {
   if (!user) notFound();
   const dict = getDictionary(await getLocale());
 
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("display_name, role, username")
-    .eq("id", user.id)
-    .single();
+  const [{ data: profile }, identity] = await Promise.all([
+    supabase.from("profiles").select("display_name, role, username").eq("id", user.id).single(),
+    getMyPublicIdentity(supabase, user.id),
+  ]);
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-8 md:px-8">
@@ -33,6 +33,7 @@ export default async function ProfilePage() {
           initialDisplayName={profile?.display_name ?? ""}
           role={profile?.role ?? "admin"}
           loginIdentifier={profile?.username ?? user?.email ?? ""}
+          publicFields={identity.socialEnabled ? { handle: identity.handle, bio: identity.bio } : undefined}
         />
       </div>
 
