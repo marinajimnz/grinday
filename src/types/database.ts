@@ -535,34 +535,64 @@ export type Database = {
       }
       profiles: {
         Row: {
+          bio: string | null
           created_at: string
           display_name: string | null
+          handle: string | null
           id: string
           is_anonymous: boolean
           locale: string
           role: string
           updated_at: string
           username: string | null
+          visibility: string
+          visibility_chosen_at: string | null
         }
         Insert: {
+          bio?: string | null
           created_at?: string
           display_name?: string | null
+          handle?: string | null
           id: string
           is_anonymous?: boolean
           locale?: string
           role?: string
           updated_at?: string
           username?: string | null
+          visibility?: string
+          visibility_chosen_at?: string | null
         }
         Update: {
+          bio?: string | null
           created_at?: string
           display_name?: string | null
+          handle?: string | null
           id?: string
           is_anonymous?: boolean
           locale?: string
           role?: string
           updated_at?: string
           username?: string | null
+          visibility?: string
+          visibility_chosen_at?: string | null
+        }
+        Relationships: []
+      }
+      reserved_handles: {
+        Row: {
+          created_at: string
+          handle: string
+          reason: string | null
+        }
+        Insert: {
+          created_at?: string
+          handle: string
+          reason?: string | null
+        }
+        Update: {
+          created_at?: string
+          handle?: string
+          reason?: string | null
         }
         Relationships: []
       }
@@ -689,6 +719,7 @@ export type Database = {
         Args: { p_profile_id: string; p_reason: string; p_role: string }
         Returns: undefined
       }
+      social_enabled_for_me: { Args: never; Returns: boolean }
       stats_by_coffee: {
         Args: { p_from?: string; p_to?: string; p_tz?: string }
         Returns: {

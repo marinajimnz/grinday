@@ -161,6 +161,11 @@
       ]
     },
     {
+      "signature": "guard_profile_identity()",
+      "security_definer": true,
+      "callable_by": []
+    },
+    {
       "signature": "handle_new_user()",
       "security_definer": true,
       "callable_by": []
@@ -224,6 +229,13 @@
       "security_definer": false,
       "callable_by": [
         "anon",
+        "authenticated"
+      ]
+    },
+    {
+      "signature": "social_enabled_for_me()",
+      "security_definer": true,
+      "callable_by": [
         "authenticated"
       ]
     },
@@ -417,10 +429,19 @@
         "authenticated:SELECT"
       ],
       "authenticated_column_grants": [
+        "bio:UPDATE",
         "display_name:UPDATE",
+        "handle:UPDATE",
         "locale:UPDATE",
-        "username:UPDATE"
+        "username:UPDATE",
+        "visibility:UPDATE"
       ]
+    },
+    {
+      "table": "reserved_handles",
+      "rls": true,
+      "table_grants": [],
+      "authenticated_column_grants": []
     },
     {
       "table": "user_brew_equipment",

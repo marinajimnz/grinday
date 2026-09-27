@@ -47,7 +47,9 @@ export function RegisterForm() {
           setError(dict.login.error);
           return;
         }
-        router.push("/");
+        // ?bienvenida tells the public/private question (VisibilityPrompt) to
+        // greet a brand-new account rather than announce a change.
+        router.push("/?bienvenida");
         router.refresh();
       }}
     >

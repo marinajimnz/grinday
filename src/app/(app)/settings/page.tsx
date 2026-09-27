@@ -1,12 +1,22 @@
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
+import { cn } from "@/lib/cn";
 import { ThemeToggle } from "@/components/settings/ThemeToggle";
+import { ProfilePrivacyCard } from "@/components/settings/ProfilePrivacyCard";
+import { createClient } from "@/lib/supabase/server";
+import { getMyPublicIdentity } from "@/features/profile/queries";
+import { suggestHandle } from "@/features/profile/handle";
 import { getLocale } from "@/lib/i18n/locale";
 import { getDictionary } from "@/lib/i18n/get-dictionary";
 import { IconCuenta, IconMaquinas, IconPerfil } from "@/components/icons/pencil-icons";
 
 export default async function SettingsPage() {
   const dict = getDictionary(await getLocale());
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  const identity = user ? await getMyPublicIdentity(supabase, user.id) : null;
 
   const LINKS = [
     { href: "/settings/profile", label: dict.settings.profile, icon: IconPerfil },
@@ -19,7 +29,24 @@ export default async function SettingsPage() {
       <h1 className="font-display text-3xl text-ink">{dict.settings.title}</h1>
       <p className="mt-1 text-sm text-ink-muted">{dict.settings.subtitle}</p>
 
-      <div className="mt-8 rounded-card border border-border bg-surface p-5">
+      {/* First thing in Settings, on purpose: making a profile private is
+          never more than one tap away. */}
+      {identity?.socialEnabled && (
+        <div className="mt-8">
+          <ProfilePrivacyCard
+            visibility={identity.visibility}
+            handle={identity.handle}
+            suggestedHandle={suggestHandle(identity.displayName)}
+          />
+        </div>
+      )}
+
+      <div
+        className={cn(
+          "rounded-card border border-border bg-surface p-5",
+          identity?.socialEnabled ? "mt-6" : "mt-8",
+        )}
+      >
         <p className="text-sm font-medium text-ink">{dict.settings.appearance}</p>
         <p className="mt-1 text-sm text-ink-muted">{dict.settings.appearanceDescription}</p>
         <div className="mt-4">
