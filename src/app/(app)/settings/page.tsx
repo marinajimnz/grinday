@@ -31,6 +31,8 @@ export default async function SettingsPage() {
       ])
     : [null, null, []];
   const locale = await getLocale();
+  const openReports =
+    role === "admin" ? await supabase.rpc("admin_open_report_count").then(({ data }) => data ?? 0) : 0;
 
   const LINKS = [
     { href: "/settings/profile", label: dict.settings.profile, icon: IconPerfil },
@@ -40,7 +42,17 @@ export default async function SettingsPage() {
     ...(identity?.socialEnabled && role !== "admin"
       ? [{ href: "/settings/roaster", label: dict.roaster.settingsLink, icon: IconGrano }]
       : []),
-    ...(role === "admin" ? [{ href: "/admin", label: dict.admin.settingsLink, icon: ShieldCheck }] : []),
+    ...(role === "admin"
+      ? [
+          {
+            href: "/admin",
+            // How many reported profiles are waiting — only answers for an
+            // admin session that passed the second factor.
+            label: openReports ? `${dict.admin.settingsLink} (${openReports})` : dict.admin.settingsLink,
+            icon: ShieldCheck,
+          },
+        ]
+      : []),
   ];
 
   return (
