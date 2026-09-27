@@ -35,10 +35,24 @@ const admin = createClient(supabaseUrl, serviceRoleKey, {
   auth: { autoRefreshToken: false, persistSession: false },
 });
 
-export const test = base.extend<{ testUser: { email: string; password: string } }>({
-  testUser: async ({ page }, use) => {
+export { admin as e2eAdmin };
+
+export type TestUser = { id: string; email: string; password: string; username: string };
+
+export const test = base.extend<{
+  testUser: TestUser;
+  // Whether the account has already answered "public or private?". The
+  // question is a modal nobody can dismiss, so every test that isn't about
+  // it gets an account that already said "private" — otherwise, once the
+  // public side is on for everyone, it would cover whatever page the test
+  // opens.
+  visibilityAnswered: boolean;
+}>({
+  visibilityAnswered: [true, { option: true }],
+  testUser: async ({ page, visibilityAnswered }, use) => {
     const email = `e2e-${randomUUID()}@grinday.test`;
     const password = `Test-${randomUUID()}`;
+    const username = `e2e_${randomUUID().replace(/-/g, "").slice(0, 12)}`;
 
     const { data, error } = await admin.auth.admin.createUser({
       email,
@@ -46,6 +60,14 @@ export const test = base.extend<{ testUser: { email: string; password: string } 
       email_confirm: true,
     });
     if (error) throw error;
+
+    // A username like every account made through sign-up has — it's also
+    // the public @.
+    const { error: profileError } = await admin
+      .from("profiles")
+      .update({ username, ...(visibilityAnswered && { visibility: "private" }) })
+      .eq("id", data.user.id);
+    if (profileError) throw profileError;
 
     // Signing in is the first click of every single test, and under `next
     // dev` the login form is interactive-looking well before hydration
@@ -70,7 +92,7 @@ export const test = base.extend<{ testUser: { email: string; password: string } 
     // Playwright's fixture callback, not a React hook — the rule matches on
     // the `use` name alone and can't tell the two apart.
     // eslint-disable-next-line react-hooks/rules-of-hooks
-    await use({ email, password });
+    await use({ id: data.user!.id, email, password, username });
 
     await admin.auth.admin.deleteUser(data.user!.id);
   },
