@@ -541,6 +541,7 @@ export type Database = {
           id: string
           is_anonymous: boolean
           locale: string
+          moderation_status: string
           role: string
           updated_at: string
           username: string | null
@@ -554,6 +555,7 @@ export type Database = {
           id: string
           is_anonymous?: boolean
           locale?: string
+          moderation_status?: string
           role?: string
           updated_at?: string
           username?: string | null
@@ -567,6 +569,7 @@ export type Database = {
           id?: string
           is_anonymous?: boolean
           locale?: string
+          moderation_status?: string
           role?: string
           updated_at?: string
           username?: string | null
@@ -649,7 +652,23 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_public_profile: {
+        Args: { p_username: string }
+        Returns: {
+          account_type: string
+          attempts_count: number
+          bio: string
+          coffees_count: number
+          display_name: string
+          recipes_count: number
+          username: string
+        }[]
+      }
       is_admin: { Args: never; Returns: boolean }
+      profile_is_visible_to_me: {
+        Args: { p_profile_id: string }
+        Returns: boolean
+      }
       set_default_equipment: {
         Args: { p_equipment_id: string }
         Returns: {

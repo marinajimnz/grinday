@@ -2,8 +2,9 @@
 
 import { useEffect, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { Globe, Lock } from "lucide-react";
-import { Button } from "@/components/ui/Button";
+import { Button, buttonClassName } from "@/components/ui/Button";
 import { LoadingLabel } from "@/components/ui/LoadingLabel";
 import { Modal } from "@/components/ui/Modal";
 import { useDictionary } from "@/components/i18n/LocaleProvider";
@@ -77,6 +78,11 @@ export function ProfilePrivacyCard({
             <Globe aria-hidden className="size-4" />
             {t.makePublicCta}
           </Button>
+        )}
+        {isPublic && username && (
+          <Link href={`/u/${username}`} className={buttonClassName("secondary")}>
+            {t.viewMyProfile}
+          </Link>
         )}
       </div>
 

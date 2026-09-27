@@ -161,6 +161,13 @@
       ]
     },
     {
+      "signature": "get_public_profile(p_username text)",
+      "security_definer": true,
+      "callable_by": [
+        "authenticated"
+      ]
+    },
+    {
       "signature": "guard_profile_identity()",
       "security_definer": true,
       "callable_by": []
@@ -176,6 +183,11 @@
       "callable_by": [
         "authenticated"
       ]
+    },
+    {
+      "signature": "profile_is_visible_to_me(p_profile_id uuid)",
+      "security_definer": true,
+      "callable_by": []
     },
     {
       "signature": "recompute_bag_remaining()",
