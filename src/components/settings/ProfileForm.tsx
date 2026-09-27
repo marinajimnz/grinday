@@ -8,7 +8,6 @@ import { useDictionary } from "@/components/i18n/LocaleProvider";
 import { IconGrano } from "@/components/icons/pencil-icons";
 import { LoadingLabel } from "@/components/ui/LoadingLabel";
 import { Button } from "@/components/ui/Button";
-import { HandleField } from "@/components/profile/HandleField";
 import { BIO_MAX_LENGTH } from "@/lib/validation/profile";
 
 const ROLE_LABELS: Record<string, string> = { admin: "Admin", coffee_lover: "Coffee lover" };
@@ -26,14 +25,13 @@ export function ProfileForm({
   initialDisplayName: string;
   role: string;
   loginIdentifier: string;
-  // Handle and bio, shown only once the public side is on for this account.
-  publicFields?: { handle: string | null; bio: string | null };
+  // The bio, shown only once the public side is on for this account.
+  publicFields?: { bio: string | null };
 }) {
   const dict = useDictionary();
   const [displayName, setDisplayName] = useState(initialDisplayName);
-  const [handle, setHandle] = useState(publicFields?.handle ?? "");
   const [bio, setBio] = useState(publicFields?.bio ?? "");
-  const [errorField, setErrorField] = useState<"handle" | "bio" | null>(null);
+  const [errorField, setErrorField] = useState<"bio" | null>(null);
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
@@ -49,7 +47,7 @@ export function ProfileForm({
         setSaved(false);
         startTransition(async () => {
           const result = await updateProfileAction(
-            publicFields ? { displayName, handle, bio } : { displayName },
+            publicFields ? { displayName, bio } : { displayName },
           );
           if (!result.success) {
             setError(result.message);
@@ -86,15 +84,6 @@ export function ProfileForm({
 
       {publicFields && (
         <>
-          <HandleField
-            id="profile-handle"
-            value={handle}
-            onChange={(value) => {
-              setHandle(value);
-              setSaved(false);
-            }}
-            error={errorField === "handle" ? error : null}
-          />
           <Field
             label={dict.settings.bio}
             htmlFor="profile-bio"

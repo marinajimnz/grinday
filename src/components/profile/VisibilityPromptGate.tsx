@@ -1,7 +1,6 @@
 import { Suspense } from "react";
 import { createClient } from "@/lib/supabase/server";
 import { getMyPublicIdentity } from "@/features/profile/queries";
-import { suggestHandle } from "@/features/profile/handle";
 import { VisibilityPrompt } from "./VisibilityPrompt";
 
 // Mounted once in the app layout. Renders the public/private question only
@@ -20,7 +19,7 @@ export async function VisibilityPromptGate() {
   return (
     // useSearchParams (for ?bienvenida) needs a boundary of its own.
     <Suspense fallback={null}>
-      <VisibilityPrompt currentHandle={identity.handle} suggestedHandle={suggestHandle(identity.displayName)} />
+      <VisibilityPrompt username={identity.username} />
     </Suspense>
   );
 }

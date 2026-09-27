@@ -17,7 +17,7 @@ vi.mock("next/navigation", () => ({
 function renderCard(props: Partial<React.ComponentProps<typeof ProfilePrivacyCard>> = {}) {
   return render(
     <LocaleProvider locale="es" dict={es}>
-      <ProfilePrivacyCard visibility="public" handle="marina" suggestedHandle="marina" {...props} />
+      <ProfilePrivacyCard visibility="public" username="marinajimnz" {...props} />
     </LocaleProvider>,
   );
 }
@@ -40,7 +40,7 @@ describe("ProfilePrivacyCard", () => {
     await userEvent.click(screen.getByRole("button", { name: es.publicProfile.makePrivate }));
     rerender(
       <LocaleProvider locale="es" dict={es}>
-        <ProfilePrivacyCard visibility="private" handle="marina" suggestedHandle="marina" />
+        <ProfilePrivacyCard visibility="private" username="marinajimnz" />
       </LocaleProvider>,
     );
     expect(screen.getByRole("status")).toHaveTextContent(es.publicProfile.madePrivate);
@@ -56,12 +56,12 @@ describe("ProfilePrivacyCard", () => {
     expect(setVisibilityAction).not.toHaveBeenCalled();
   });
 
-  it("treats an unanswered account as private and asks for a handle when going public", async () => {
-    renderCard({ visibility: "unset", handle: null, suggestedHandle: "lucia" });
+  it("treats an unanswered account as private, and names the public @ when going public", async () => {
+    renderCard({ visibility: "unset" });
     expect(screen.getByText(es.publicProfile.statusPrivate)).toBeInTheDocument();
     await userEvent.click(screen.getByRole("button", { name: es.publicProfile.makePublicCta }));
-    expect(screen.getByLabelText(es.settings.handle)).toHaveValue("lucia");
+    expect(screen.getByText(es.publicProfile.foundAs.replace("{username}", "marinajimnz"))).toBeInTheDocument();
     await userEvent.click(screen.getByRole("button", { name: es.publicProfile.makePublic }));
-    expect(setVisibilityAction).toHaveBeenCalledWith({ visibility: "public", handle: "lucia" });
+    expect(setVisibilityAction).toHaveBeenCalledWith({ visibility: "public" });
   });
 });

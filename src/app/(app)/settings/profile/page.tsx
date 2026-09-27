@@ -33,7 +33,7 @@ export default async function ProfilePage() {
           initialDisplayName={profile?.display_name ?? ""}
           role={profile?.role ?? "admin"}
           loginIdentifier={profile?.username ?? user?.email ?? ""}
-          publicFields={identity.socialEnabled ? { handle: identity.handle, bio: identity.bio } : undefined}
+          publicFields={identity.socialEnabled ? { bio: identity.bio } : undefined}
         />
       </div>
 
