@@ -66,9 +66,9 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
         <p className="mt-3 text-sm text-ink-muted tabular-nums">{counts}</p>
       </header>
 
-      <PublicCoffeesSection coffees={content.coffees} dict={dict} />
+      <PublicCoffeesSection coffees={content.coffees} username={profile.username} dict={dict} />
       <PublicEquipmentSection equipment={content.equipment} dict={dict} />
-      <PublicAttemptsSection attempts={content.attempts} dict={dict} locale={locale} />
+      <PublicAttemptsSection attempts={content.attempts} username={profile.username} dict={dict} locale={locale} />
     </div>
   );
 }

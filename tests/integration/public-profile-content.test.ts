@@ -6,7 +6,7 @@ import { asService, asUser, closeDb, createUser, errorCode, withRollback, type T
 
 afterAll(closeDb);
 
-const COFFEE_FIELDS = ["country", "has_recipe", "name", "process", "recipe_grind", "recipe_method", "roaster"];
+const COFFEE_FIELDS = ["country", "has_recipe", "id", "name", "process", "recipe_grind", "recipe_method", "roaster"];
 const EQUIPMENT_FIELDS = ["kind", "model_name"];
 const ATTEMPT_FIELDS = [
   "brewed_on",
@@ -16,6 +16,7 @@ const ATTEMPT_FIELDS = [
   "dose_g",
   "extraction_ms",
   "grind",
+  "id",
   "method",
   "output_weight_g",
   "overall_rating",
@@ -94,6 +95,7 @@ describe("public profile content", () => {
       const [c] = await read(tx, viewer, "get_public_coffees", lucia.username);
       expect(Object.keys(c).sort()).toEqual(COFFEE_FIELDS);
       expect(c).toEqual({
+        id: guji.id,
         name: "Guji",
         roaster: "La Semilla",
         country: "Etiopía",

@@ -166,6 +166,27 @@
       ]
     },
     {
+      "signature": "get_public_attempt(p_username text, p_attempt_id uuid)",
+      "security_definer": true,
+      "callable_by": [
+        "authenticated"
+      ]
+    },
+    {
+      "signature": "get_public_coffee(p_username text, p_coffee_id uuid)",
+      "security_definer": true,
+      "callable_by": [
+        "authenticated"
+      ]
+    },
+    {
+      "signature": "get_public_coffee_attempts(p_username text, p_coffee_id uuid)",
+      "security_definer": true,
+      "callable_by": [
+        "authenticated"
+      ]
+    },
+    {
       "signature": "get_public_coffees(p_username text)",
       "security_definer": true,
       "callable_by": [

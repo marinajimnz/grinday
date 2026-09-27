@@ -68,6 +68,7 @@ export function parseProfileKind(value: string | undefined): ProfileKind {
 }
 
 export type PublicCoffee = {
+  id: string;
   name: string;
   roaster: string;
   country: string | null;
@@ -80,6 +81,7 @@ export type PublicCoffee = {
 export type PublicEquipment = { kind: string; modelName: string };
 
 export type PublicAttempt = {
+  id: string;
   brewedOn: string;
   method: string;
   coffeeName: string;
@@ -121,6 +123,7 @@ export async function getPublicProfileContent(supabase: Client, username: string
   }
   return {
     coffees: (coffees.data ?? []).map((row) => ({
+      id: row.id,
       name: row.name,
       roaster: row.roaster,
       country: row.country ?? null,
@@ -131,6 +134,7 @@ export async function getPublicProfileContent(supabase: Client, username: string
     })),
     equipment: (equipment.data ?? []).map((row) => ({ kind: row.kind, modelName: row.model_name })),
     attempts: (attempts.data ?? []).map((row) => ({
+      id: row.id,
       brewedOn: row.brewed_on,
       method: row.method,
       coffeeName: row.coffee_name,
@@ -146,4 +150,149 @@ export async function getPublicProfileContent(supabase: Client, username: string
       overallRating: num(row.overall_rating),
     })),
   };
+}
+
+export type PublicCoffeeDetail = {
+  name: string;
+  roaster: string;
+  country: string | null;
+  region: string | null;
+  farm: string | null;
+  producer: string | null;
+  varieties: string[];
+  process: string | null;
+  altitude_min_m: number | null;
+  altitude_max_m: number | null;
+  roast_level: string | null;
+  tasting_notes: string[];
+};
+
+export type PublicCoffeeAttempt = Omit<PublicAttempt, "coffeeName" | "roaster"> & { isPreferred: boolean };
+
+/**
+ * One coffee of a public profile and the attempts shown with it (its latest
+ * four plus its preferred recipe), through get_public_coffee() and
+ * get_public_coffee_attempts(). Null when the viewer can't see it — an
+ * archived coffee, another profile's, a private profile — all alike.
+ */
+export async function getPublicCoffee(
+  supabase: Client,
+  username: string,
+  coffeeId: string,
+): Promise<{ coffee: PublicCoffeeDetail; attempts: PublicCoffeeAttempt[] } | null> {
+  const args = { p_username: username, p_coffee_id: coffeeId };
+  const [coffee, attempts] = await Promise.all([
+    supabase.rpc("get_public_coffee", args),
+    supabase.rpc("get_public_coffee_attempts", args),
+  ]);
+  if (coffee.error) throw coffee.error;
+  if (attempts.error) throw attempts.error;
+  const row = coffee.data?.[0];
+  if (!row) return null;
+  return {
+    coffee: {
+      name: row.name,
+      roaster: row.roaster,
+      country: row.country ?? null,
+      region: row.region ?? null,
+      farm: row.farm ?? null,
+      producer: row.producer ?? null,
+      varieties: row.varieties ?? [],
+      process: row.process ?? null,
+      altitude_min_m: row.altitude_min_m ?? null,
+      altitude_max_m: row.altitude_max_m ?? null,
+      roast_level: row.roast_level ?? null,
+      tasting_notes: row.tasting_notes ?? [],
+    },
+    attempts: (attempts.data ?? []).map((a) => ({
+      id: a.id,
+      isPreferred: a.is_preferred,
+      brewedOn: a.brewed_on,
+      method: a.method,
+      cup_count: num(a.cup_count),
+      dose_g: num(a.dose_g),
+      water_g: num(a.water_g),
+      dilution_water_g: num(a.dilution_water_g),
+      target_weight_g: num(a.target_weight_g),
+      output_weight_g: num(a.output_weight_g),
+      extraction_ms: num(a.extraction_ms),
+      grind: a.grind ?? null,
+      overallRating: num(a.overall_rating),
+    })),
+  };
+}
+
+export type PublicAttemptDetail = {
+  coffeeId: string;
+  coffeeName: string;
+  roaster: string;
+  isPreferred: boolean;
+  brewedOn: string;
+  overallRating: number | null;
+  grinderModelName: string | null;
+  equipmentModelName: string | null;
+  // Same names as the attempt row, so AttemptRecipeSummary can show it.
+  recipe: {
+    method: string;
+    cup_count: number | null;
+    dose_g: number | null;
+    input_weight_g: number | null;
+    water_g: number | null;
+    dilution_water_g: number | null;
+    target_weight_g: number | null;
+    output_weight_g: number | null;
+    extraction_ms: number | null;
+    temperature_c: number | null;
+    grind_setting: number | null;
+    grind_seconds: number | null;
+    grinder_upper_burr: number | null;
+    grinder_lower_burr: number | null;
+    moka_cup_size: number | null;
+    heat_intensity: string | null;
+  };
+};
+
+/** One attempt's configuration, through get_public_attempt(); null when not visible. */
+export async function getPublicAttempt(
+  supabase: Client,
+  username: string,
+  attemptId: string,
+): Promise<PublicAttemptDetail | null> {
+  const { data, error } = await supabase.rpc("get_public_attempt", { p_username: username, p_attempt_id: attemptId });
+  if (error) throw error;
+  const row = data?.[0];
+  if (!row) return null;
+  return {
+    coffeeId: row.coffee_id,
+    coffeeName: row.coffee_name,
+    roaster: row.roaster,
+    isPreferred: row.is_preferred,
+    brewedOn: row.brewed_on,
+    overallRating: num(row.overall_rating),
+    grinderModelName: row.grinder_model_name ?? null,
+    equipmentModelName: row.equipment_model_name ?? null,
+    recipe: {
+      method: row.method,
+      cup_count: num(row.cup_count),
+      dose_g: num(row.dose_g),
+      input_weight_g: num(row.input_weight_g),
+      water_g: num(row.water_g),
+      dilution_water_g: num(row.dilution_water_g),
+      target_weight_g: num(row.target_weight_g),
+      output_weight_g: num(row.output_weight_g),
+      extraction_ms: num(row.extraction_ms),
+      temperature_c: num(row.temperature_c),
+      grind_setting: num(row.grind_setting),
+      grind_seconds: num(row.grind_seconds),
+      grinder_upper_burr: num(row.grinder_upper_burr),
+      grinder_lower_burr: num(row.grinder_lower_burr),
+      moka_cup_size: num(row.moka_cup_size),
+      heat_intensity: row.heat_intensity ?? null,
+    },
+  };
+}
+
+/** A route segment id that can't be a UUID never reaches the database. */
+export function isUuid(value: string): boolean {
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value);
 }
