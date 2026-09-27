@@ -136,17 +136,17 @@ describe("public profile content", () => {
     });
   });
 
-  it("shows only the latest five attempts, newest first", async () => {
+  it("shows only the latest twelve attempts, newest first", async () => {
     await withRollback(async (tx) => {
       await tx`update public.app_settings set social_enabled = 'all'`;
       const lucia = await owner(tx);
       const viewer = await createUser(tx);
       const guji = await coffee(tx, lucia, "Guji");
-      for (let i = 0; i < 7; i++) {
+      for (let i = 0; i < 14; i++) {
         await attempt(tx, lucia, guji, { dose_g: 10 + i, created_at: new Date(Date.UTC(2026, 8, 1 + i, 10)) });
       }
       const rows = await read(tx, viewer, "get_public_recent_attempts", lucia.username);
-      expect(rows.map((r) => Number(r.dose_g))).toEqual([16, 15, 14, 13, 12]);
+      expect(rows.map((r) => Number(r.dose_g))).toEqual([23, 22, 21, 20, 19, 18, 17, 16, 15, 14, 13, 12]);
     });
   });
 

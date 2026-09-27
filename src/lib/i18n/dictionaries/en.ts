@@ -72,6 +72,8 @@ const en: Dictionary = {
     searching: "Searching...",
   },
   publicProfile: {
+    seeMore: "See more",
+    seeLess: "See less",
     sectionCoffees: "Coffees",
     sectionEquipment: "Equipment",
     sectionAttempts: "Latest attempts",

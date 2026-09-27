@@ -70,6 +70,8 @@ const es = {
     searching: "Buscando...",
   },
   publicProfile: {
+    seeMore: "Ver más",
+    seeLess: "Ver menos",
     sectionCoffees: "Cafés",
     sectionEquipment: "Equipo",
     sectionAttempts: "Últimos intentos",
