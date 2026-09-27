@@ -46,7 +46,16 @@ const es = {
     invalid: "El código no es correcto o ha caducado. Prueba con el siguiente.",
     error: "No se ha podido verificar. Inténtalo de nuevo.",
   },
+  favorites: {
+    open: "Mis favoritos",
+    title: "Mis favoritos",
+    subtitle: "Solo tú los ves.",
+    emptyTitle: "Aún no has guardado ningún perfil",
+    emptyBody: "Muy pronto podrás guardar aquí los perfiles de personas y tostadoras que te gusten.",
+    searchCta: "Buscar perfiles",
+  },
   search: {
+    headerNav: "Buscar y favoritos",
     noResultsTitle: "Sin resultados",
     title: "Buscar",
     placeholder: "Buscar por nombre o @usuario",

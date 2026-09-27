@@ -48,7 +48,16 @@ const en: Dictionary = {
     invalid: "That code is wrong or has expired. Try the next one.",
     error: "Couldn't verify. Try again.",
   },
+  favorites: {
+    open: "My favourites",
+    title: "My favourites",
+    subtitle: "Only you can see them.",
+    emptyTitle: "You haven't saved any profiles yet",
+    emptyBody: "Soon you'll be able to save the people and roasters you like here.",
+    searchCta: "Search profiles",
+  },
   search: {
+    headerNav: "Search and favourites",
     noResultsTitle: "No results",
     title: "Search",
     placeholder: "Search by name or @username",
