@@ -39,6 +39,15 @@ const en: Dictionary = {
     forgotPasswordLink: "Forgot your password?",
     backToLogin: "Back to sign in",
   },
+  mfa: {
+    title: "Two-step verification",
+    subtitle: "Enter the 6-digit code shown in your authenticator app.",
+    code: "Code",
+    submit: "Verify",
+    submitting: "Checking...",
+    invalid: "That code is wrong or has expired. Try the next one.",
+    error: "Couldn't verify. Try again.",
+  },
   forgotPassword: {
     title: "Reset your password",
     subtitle: "Enter your username or email and, if it has an account, we'll send a link to choose a new password.",
@@ -159,6 +168,22 @@ const en: Dictionary = {
     exportDescription: "A copy of your coffees, bags, and attempts. Useful as a manual backup.",
     downloadJson: "Download JSON",
     downloadCsv: "Download attempts (CSV)",
+    twoFactorTitle: "Two-step verification",
+    twoFactorDescription:
+      "Admin actions require a code from an authenticator app (Google Authenticator, 1Password, Authy…) on top of your password.",
+    twoFactorEnable: "Turn on",
+    twoFactorEnabled: "On",
+    twoFactorScan: "Scan this code with your authenticator app. If you can't scan it, type the key in by hand.",
+    twoFactorSecretLabel: "Key",
+    twoFactorQrAlt: "QR code for the authenticator app",
+    twoFactorCodeLabel: "6-digit code",
+    twoFactorConfirm: "Confirm",
+    twoFactorConfirming: "Checking...",
+    twoFactorCancel: "Cancel",
+    twoFactorCodeInvalid: "That code is wrong or has expired. Try the next one.",
+    twoFactorError: "Couldn't turn it on. Try again.",
+    twoFactorEnabledMessage:
+      "From now on you'll be asked for a code when you sign in. If you lose access to the app, it has to be turned off from the Supabase dashboard.",
   },
   equipment: {
     grinderCardTitle: "Grinder",

@@ -37,6 +37,15 @@ const es = {
     forgotPasswordLink: "¿Olvidaste tu contraseña?",
     backToLogin: "Volver a iniciar sesión",
   },
+  mfa: {
+    title: "Verificación en dos pasos",
+    subtitle: "Escribe el código de 6 dígitos que muestra tu app de autenticación.",
+    code: "Código",
+    submit: "Verificar",
+    submitting: "Comprobando...",
+    invalid: "El código no es correcto o ha caducado. Prueba con el siguiente.",
+    error: "No se ha podido verificar. Inténtalo de nuevo.",
+  },
   forgotPassword: {
     title: "Recuperar contraseña",
     subtitle: "Escribe tu usuario o email y, si tiene una cuenta, te enviaremos un enlace para elegir una contraseña nueva.",
@@ -165,6 +174,22 @@ const es = {
     exportDescription: "Una copia de tus cafés, bolsas e intentos. Útil como respaldo manual.",
     downloadJson: "Descargar JSON",
     downloadCsv: "Descargar intentos (CSV)",
+    twoFactorTitle: "Verificación en dos pasos",
+    twoFactorDescription:
+      "Las acciones de administración exigen un código de una app de autenticación (Google Authenticator, 1Password, Authy…) además de la contraseña.",
+    twoFactorEnable: "Activar",
+    twoFactorEnabled: "Activada",
+    twoFactorScan: "Escanea este código con tu app de autenticación. Si no puedes escanearlo, escribe la clave a mano.",
+    twoFactorSecretLabel: "Clave",
+    twoFactorQrAlt: "Código QR para la app de autenticación",
+    twoFactorCodeLabel: "Código de 6 dígitos",
+    twoFactorConfirm: "Confirmar",
+    twoFactorConfirming: "Comprobando...",
+    twoFactorCancel: "Cancelar",
+    twoFactorCodeInvalid: "El código no es correcto o ha caducado. Prueba con el siguiente.",
+    twoFactorError: "No se ha podido activar. Inténtalo de nuevo.",
+    twoFactorEnabledMessage:
+      "A partir de ahora te pediremos un código al iniciar sesión. Si pierdes el acceso a la app, habrá que desactivarla desde el panel de Supabase.",
   },
   equipment: {
     grinderCardTitle: "Molinillo",
