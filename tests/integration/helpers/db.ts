@@ -52,7 +52,11 @@ function connectionString(): string {
 let client: Sql | null = null;
 
 export function db(): Sql {
-  client ??= postgres(connectionString(), { max: 1, onnotice: () => {}, prepare: false });
+  client ??= postgres(connectionString(), {
+    max: 1,
+    onnotice: () => {},
+    prepare: false,
+  });
   return client;
 }
 
@@ -68,6 +72,14 @@ export async function withRollback(fn: (tx: TransactionSql) => Promise<void>): P
   const migration = process.env.DRY_RUN_MIGRATION;
   try {
     await db().begin(async (tx) => {
+      // This is the production database. A test that dies or hangs
+      // mid-transaction must never sit on locks the app needs: the server
+      // ends an idle open transaction, a lock wait or a runaway statement
+      // on its own within seconds. Set here, per transaction, because the
+      // Supabase pooler drops these when passed as connection parameters.
+      await tx`set local idle_in_transaction_session_timeout = '15s'`;
+      await tx`set local lock_timeout = '5s'`;
+      await tx`set local statement_timeout = '20s'`;
       if (migration) {
         await tx.unsafe(readFileSync(resolve(process.cwd(), migration), "utf8"));
       }

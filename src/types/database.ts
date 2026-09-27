@@ -533,6 +533,27 @@ export type Database = {
         }
         Relationships: []
       }
+      profile_bookmarks: {
+        Row: {
+          created_at: string
+          id: string
+          target_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          target_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          target_id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           bio: string | null
@@ -656,6 +677,17 @@ export type Database = {
         Args: { p_grind_setting: number; p_lower: number; p_upper: number }
         Returns: string
       }
+      get_my_favourites: {
+        Args: never
+        Returns: {
+          account_type: string
+          available: boolean
+          bookmark_id: string
+          display_name: string
+          saved_at: string
+          username: string
+        }[]
+      }
       get_public_attempt: {
         Args: { p_attempt_id: string; p_username: string }
         Returns: {
@@ -772,10 +804,13 @@ export type Database = {
         }[]
       }
       is_admin: { Args: never; Returns: boolean }
+      is_profile_saved: { Args: { p_username: string }; Returns: boolean }
       profile_is_visible_to_me: {
         Args: { p_profile_id: string }
         Returns: boolean
       }
+      remove_favourite: { Args: { p_bookmark_id: string }; Returns: undefined }
+      save_profile: { Args: { p_username: string }; Returns: undefined }
       search_profiles: {
         Args: { p_kind?: string; p_query: string }
         Returns: {
@@ -938,6 +973,7 @@ export type Database = {
           top_roast_brews: number
         }[]
       }
+      unsave_profile: { Args: { p_username: string }; Returns: undefined }
     }
     Enums: {
       [_ in never]: never

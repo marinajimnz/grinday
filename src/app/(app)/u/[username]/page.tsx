@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { getPublicProfile, getPublicProfileContent } from "@/features/profile/publicQueries";
+import { getPublicProfile, getPublicProfileContent, isProfileSaved } from "@/features/profile/publicQueries";
+import { SaveProfileButton } from "@/components/profile/SaveProfileButton";
 import {
   PublicAttemptsSection,
   PublicCoffeesSection,
@@ -31,9 +32,10 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
   const profile = await getPublicProfile(supabase, decodeURIComponent(username));
   if (!profile) notFound();
 
-  const [{ data: me }, content] = await Promise.all([
+  const [{ data: me }, content, saved] = await Promise.all([
     supabase.from("profiles").select("username").eq("id", user.id).single(),
     getPublicProfileContent(supabase, profile.username),
+    isProfileSaved(supabase, profile.username),
   ]);
   const isMe = me?.username === profile.username;
 
@@ -48,7 +50,10 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-6 md:px-8 md:py-8">
-      <BackButton label={t.back} />
+      <div className="flex items-start justify-between gap-3">
+        <BackButton label={t.back} />
+        {!isMe && <SaveProfileButton username={profile.username} initiallySaved={saved} />}
+      </div>
 
       {isMe && (
         <div className="mt-2">

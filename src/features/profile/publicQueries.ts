@@ -296,3 +296,34 @@ export async function getPublicAttempt(
 export function isUuid(value: string): boolean {
   return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value);
 }
+
+export type Favourite =
+  | { bookmarkId: string; available: true; username: string; displayName: string | null; accountType: "person" | "roaster" }
+  | { bookmarkId: string; available: false };
+
+/**
+ * The caller's own saved profiles, newest first. One that has since gone
+ * private or been suspended comes back with nothing but its bookmark id —
+ * enough to remove it, not to say who it was.
+ */
+export async function getMyFavourites(supabase: Client): Promise<Favourite[]> {
+  const { data, error } = await supabase.rpc("get_my_favourites");
+  if (error) throw error;
+  return (data ?? []).map((row) =>
+    row.available && row.username
+      ? {
+          bookmarkId: row.bookmark_id,
+          available: true,
+          username: row.username,
+          displayName: row.display_name ?? null,
+          accountType: row.account_type === "roaster" ? "roaster" : "person",
+        }
+      : { bookmarkId: row.bookmark_id, available: false },
+  );
+}
+
+export async function isProfileSaved(supabase: Client, username: string): Promise<boolean> {
+  const { data, error } = await supabase.rpc("is_profile_saved", { p_username: username });
+  if (error) throw error;
+  return data === true;
+}

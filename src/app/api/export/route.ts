@@ -31,10 +31,11 @@ export async function GET(request: Request) {
   // so this export needs its own explicit filter. coffee_bags stayed
   // owner-only, but filtering it too costs nothing and removes any future
   // reliance on that staying true.
-  const [{ data: coffees }, { data: bags }, { data: attempts }] = await Promise.all([
+  const [{ data: coffees }, { data: bags }, { data: attempts }, { data: favourites }] = await Promise.all([
     supabase.from("coffees").select("*").eq("user_id", user.id).order("created_at"),
     supabase.from("coffee_bags").select("*").eq("user_id", user.id).order("created_at"),
     supabase.from("brew_attempts").select("*").eq("user_id", user.id).order("created_at"),
+    supabase.rpc("get_my_favourites"),
   ]);
 
   const format = new URL(request.url).searchParams.get("format") === "csv" ? "csv" : "json";
@@ -51,7 +52,17 @@ export async function GET(request: Request) {
   }
 
   const body = JSON.stringify(
-    { exported_at: new Date().toISOString(), coffees, coffee_bags: bags, brew_attempts: attempts },
+    {
+      exported_at: new Date().toISOString(),
+      coffees,
+      coffee_bags: bags,
+      brew_attempts: attempts,
+      // Your saved profiles, by @username. One that is no longer public is
+      // exported only as the date you saved it — the list never says who.
+      favourites: (favourites ?? []).map((f) =>
+        f.available ? { username: f.username, saved_at: f.saved_at } : { username: null, saved_at: f.saved_at },
+      ),
+    },
     null,
     2,
   );
