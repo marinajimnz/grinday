@@ -6,11 +6,13 @@ import { ProfileAvatar } from "./ProfileAvatar";
 export function ProfileRow({
   username,
   displayName,
+  kind = "person",
   kindLabel,
   action,
 }: {
   username: string;
   displayName: string | null;
+  kind?: "person" | "roaster";
   kindLabel: string;
   action?: React.ReactNode;
 }) {
@@ -20,7 +22,7 @@ export function ProfileRow({
         href={`/u/${username}`}
         className="flex min-w-0 flex-1 items-center gap-3 rounded-card py-3 pl-4 outline-none focus-visible:ring-2 focus-visible:ring-ink"
       >
-        <ProfileAvatar displayName={displayName} username={username} className="size-11 text-base" />
+        <ProfileAvatar displayName={displayName} username={username} kind={kind} className="size-11 text-base" />
         <span className="min-w-0 flex-1">
           <span className="block truncate text-sm font-semibold text-ink">{displayName ?? `@${username}`}</span>
           <span className="block truncate text-xs text-ink-muted">

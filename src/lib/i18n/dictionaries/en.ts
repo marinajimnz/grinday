@@ -175,6 +175,11 @@ const en: Dictionary = {
     searching: "Searching...",
   },
   publicProfile: {
+    catalogOne: "1 coffee in the catalogue",
+    catalogMany: "{count} coffees in the catalogue",
+    roasterCoffees: "The roaster's coffees",
+    recommendedRecipe: "Recommended recipe",
+    seeDetail: "See details",
     preferredRecipe: "Preferred recipe",
     byUser: "by @{username}",
     viewConfiguration: "See setup",

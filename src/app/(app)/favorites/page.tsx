@@ -79,6 +79,7 @@ export default async function FavoritesPage({ searchParams }: { searchParams: Pr
                     <ProfileRow
                       username={favourite.username}
                       displayName={favourite.displayName}
+                      kind={favourite.accountType}
                       kindLabel={
                         favourite.accountType === "roaster"
                           ? dict.publicProfile.accountTypeRoaster

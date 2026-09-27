@@ -30,17 +30,21 @@ export function PublicCoffeesSection({
   coffees,
   username,
   dict,
+  asRoaster = false,
 }: {
   coffees: PublicCoffee[];
   username: string;
   dict: Dictionary;
+  // A roaster's catalogue: the roaster is the page itself, so each card
+  // leads with the origin instead.
+  asRoaster?: boolean;
 }) {
   if (coffees.length === 0) return null;
   const t = dict.publicProfile;
 
   return (
     <ExpandableSection
-      title={t.sectionCoffees}
+      title={asRoaster ? t.roasterCoffees : t.sectionCoffees}
       listClassName="grid grid-cols-2 gap-3"
       items={coffees.map((coffee) => (
         <li key={coffee.id}>
@@ -52,7 +56,9 @@ export function PublicCoffeesSection({
               <IconCafe aria-hidden className="size-6" />
             </div>
             <div className="p-3">
-              <p className="truncate text-xs text-ink-muted">{coffee.roaster}</p>
+              <p className="truncate text-xs text-ink-muted">
+                {asRoaster ? [coffee.country, coffee.process].filter(Boolean).join(" · ") || "\u00a0" : coffee.roaster}
+              </p>
               <p className="mt-0.5 font-display text-base leading-tight break-words text-ink">{coffee.name}</p>
               {coffee.hasRecipe && (
                 <p className="mt-1.5 flex items-start gap-1 text-xs text-ink-muted">
@@ -203,5 +209,46 @@ export function PublicAttemptsSection({
         </li>
       ))}
     />
+  );
+}
+
+// The roaster's recommended recipe: the preferred recipe of the coffee at
+// the top of its catalogue, in the same card shape as Home's preferred one.
+export function RecommendedRecipeCard({
+  coffeeName,
+  attempt,
+  username,
+  dict,
+}: {
+  coffeeName: string;
+  attempt: RowAttempt & { grind: string | null };
+  username: string;
+  dict: Dictionary;
+}) {
+  const t = dict.publicProfile;
+  return (
+    <section className="mt-8">
+      <h2 className="text-lg font-semibold text-ink">{t.recommendedRecipe}</h2>
+      <div className="mt-3 rounded-card border border-coffee/40 bg-surface p-5">
+        <div className="flex items-center gap-1.5 text-coffee">
+          <IconFavorita aria-hidden className="size-4" />
+          <span className="text-xs font-medium tracking-wide uppercase">{coffeeName}</span>
+        </div>
+        <p className="mt-2 text-sm text-ink-muted">
+          {[methodLabel(dict, attempt.method), attempt.grind && t.grind.replace("{grind}", attempt.grind)]
+            .filter(Boolean)
+            .join(" · ")}
+        </p>
+        <BrewSummary attempt={attempt} dict={dict} size="lg" className="mt-2" />
+        <div className="mt-4 flex gap-2">
+          <Link
+            href={`/u/${username}/attempts/${attempt.id}`}
+            className="inline-flex min-h-11 flex-1 items-center justify-center rounded-input border border-border px-4 text-sm font-medium text-ink"
+          >
+            {t.seeDetail}
+          </Link>
+        </div>
+      </div>
+    </section>
   );
 }
