@@ -24,7 +24,10 @@ const serwist = new Serwist({
     {
       matcher: ({ sameOrigin, url }) =>
         sameOrigin &&
-        (url.pathname.startsWith("/u/") || url.pathname === "/search" || url.pathname === "/favorites"),
+        (url.pathname.startsWith("/u/") ||
+          url.pathname === "/search" ||
+          url.pathname === "/favorites" ||
+          url.pathname.startsWith("/admin")),
       handler: new NetworkOnly(),
     },
     ...defaultCache,
