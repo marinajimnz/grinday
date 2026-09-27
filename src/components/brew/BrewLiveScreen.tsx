@@ -126,6 +126,19 @@ export function BrewLiveScreen({ draftId }: { draftId: string }) {
     persist({ ...draft, stoppedAtEpochMs: Date.now(), extractionMs: Math.round(elapsedMs) });
   }
 
+  // Not timing a brew is a choice about the clock, not about the rest of
+  // it: the coffee still got made, it still wants a photo and it still
+  // wants tasting. This used to save the attempt outright from the timer
+  // step, which dropped you on the attempt page having never been asked
+  // what it tasted like — the one thing a journal is for. So it ends the
+  // brew the way "Parar" does, minus a reading, and the same photo and
+  // result steps follow. extractionMs stays null and the result step
+  // offers it as a field, so a time remembered afterwards can still go in.
+  function handleSkipTimer() {
+    if (!draft) return;
+    persist({ ...draft, stoppedAtEpochMs: Date.now(), extractionMs: null });
+  }
+
   function handleSave() {
     if (!draft) return;
     setSaveError(null);
@@ -299,22 +312,18 @@ export function BrewLiveScreen({ draftId }: { draftId: string }) {
             onReset={handleReset}
           />
 
-          {saveStatus}
-
-          {/* Full-width, directly under "Parar", and it saves with
-              extractionMs null — while the shot is running that's a wet
-              thumb away from throwing the timing away with no confirm and no
-              undo. It's an escape hatch for a brew you never timed, so it
-              belongs to the state where there is no timing to lose,
-              exactly like "Volver" above. Pausing does not put it back:
-              a paused clock is holding a reading, which is precisely what
-              this button would discard. A failed or queued save still
-              needs its retry, so that keeps it on screen. */}
-          {(!timerHasRun || pendingSync || saveError) && (
-            <Button type="button" variant="secondary" disabled={isSaving} onClick={handleSave} fullWidth>
-              <LoadingLabel loading={isSaving}>
-                {pendingSync ? dict.brew.retryNow : saveError ? dict.common.retry : dict.brew.saveWithoutTimer}
-              </LoadingLabel>
+          {/* Full-width, directly under "Parar", and it ends the brew —
+              while the shot is running that's a wet thumb away from
+              throwing the timing away with no confirm and no undo. It's
+              for a brew you never timed, so it belongs to the state where
+              there is no timing to lose, exactly like "Volver" above.
+              Pausing does not put it back: a paused clock is holding a
+              reading, which is precisely what this would discard. Nothing
+              is saved here any more, so the offline retry that used to
+              share this button lives only on the result step now. */}
+          {!timerHasRun && (
+            <Button type="button" variant="secondary" onClick={handleSkipTimer} fullWidth>
+              {dict.brew.skipTimer}
             </Button>
           )}
         </div>

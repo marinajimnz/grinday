@@ -4,6 +4,7 @@ import userEvent from "@testing-library/user-event";
 import { BrewLiveScreen } from "@/components/brew/BrewLiveScreen";
 import { LocaleProvider } from "@/components/i18n/LocaleProvider";
 import { loadDraft, saveDraft, type BrewDraft } from "@/features/brew/draft";
+import { createAttemptAction } from "@/features/attempts/actions";
 import es from "@/lib/i18n/dictionaries/es";
 
 vi.mock("next/navigation", () => ({
@@ -103,7 +104,7 @@ describe("BrewLiveScreen timer step", () => {
     localStorage.clear();
   });
 
-  it("offers 'guardar sin cronometrar' while the shot hasn't started", async () => {
+  it("offers 'continuar sin cronometrar' while the shot hasn't started", async () => {
     saveFinishedBrew({ startedAtEpochMs: null, stoppedAtEpochMs: null, extractionMs: null });
     renderScreen();
 
@@ -112,19 +113,43 @@ describe("BrewLiveScreen timer step", () => {
     await userEvent.click(await screen.findByRole("button", { name: es.common.next }));
 
     expect(await screen.findByRole("heading", { name: es.brew.stepTimerTitle })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: es.brew.saveWithoutTimer })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: es.brew.skipTimer })).toBeInTheDocument();
+  });
+
+  it("carries an untimed brew on to the photo and rating steps instead of saving it", async () => {
+    // The whole point of the journal is what the coffee tasted like, and
+    // this button used to skip straight past that question: it saved the
+    // attempt from the timer step and dropped you on the attempt page,
+    // rated nothing, with no way back into the flow. Not timing a brew is
+    // a choice about the clock, not about tasting it.
+    saveFinishedBrew({ startedAtEpochMs: null, stoppedAtEpochMs: null, extractionMs: null });
+    renderScreen();
+    await userEvent.click(await screen.findByRole("button", { name: es.common.next }));
+    await userEvent.click(screen.getByRole("button", { name: es.brew.skipTimer }));
+
+    // The brew is over, and it has no reading — which is the truth of it.
+    const draft = loadDraft(DRAFT_ID);
+    expect(draft?.stoppedAtEpochMs).not.toBeNull();
+    expect(draft?.extractionMs).toBeNull();
+    expect(createAttemptAction).not.toHaveBeenCalled();
+
+    // And the flow continues exactly as a stopped timer would: photo first.
+    expect(await screen.findByRole("heading", { name: es.brew.stepPhotoTitle })).toBeInTheDocument();
+    await userEvent.click(screen.getByRole("button", { name: es.brew.continueWithoutPhoto }));
+    expect(await screen.findByRole("heading", { name: es.brew.stepResultTitle })).toBeInTheDocument();
+    expect(screen.getByRole("radiogroup", { name: es.brew.overallRating })).toBeInTheDocument();
   });
 
   it("hides it once the timer is running, so a mis-tap can't discard the timing", async () => {
     // Started and not yet stopped: the shot is pulling right now. The button
-    // is full-width and sits directly under "Parar", and it saves with
-    // extractionMs null — no confirm, no undo.
+    // is full-width, sits directly under "Parar", and ends the brew with no
+    // reading — no confirm, no undo.
     saveFinishedBrew({ startedAtEpochMs: Date.now() - 5000, stoppedAtEpochMs: null, extractionMs: null });
     renderScreen();
 
     expect(await screen.findByRole("heading", { name: es.brew.stepTimerTitle })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: es.brew.stop })).toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: es.brew.saveWithoutTimer })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: es.brew.skipTimer })).not.toBeInTheDocument();
   });
 });
 
@@ -177,17 +202,17 @@ describe("BrewLiveScreen timer pause and reset", () => {
     expect(draft?.stoppedAtEpochMs).toBeNull();
   });
 
-  it("keeps 'guardar sin cronometrar' away while paused", async () => {
-    // The button saves with extractionMs null and no confirm. A paused
-    // clock is holding a reading, so it is exactly what would be thrown
-    // away — the same trap as while it's running.
+  it("keeps 'continuar sin cronometrar' away while paused", async () => {
+    // The button ends the brew with no reading, and asks nothing first. A
+    // paused clock is holding a reading, so it is exactly what would be
+    // thrown away — the same trap as while it's running.
     saveFinishedBrew({ startedAtEpochMs: Date.now() - 5000, stoppedAtEpochMs: null, extractionMs: null });
     renderScreen();
 
     await userEvent.click(await screen.findByRole("button", { name: es.brew.pause }));
 
     expect(screen.getByRole("button", { name: es.brew.resume })).toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: es.brew.saveWithoutTimer })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: es.brew.skipTimer })).not.toBeInTheDocument();
   });
 
   it("can still be stopped from paused, without resuming first", async () => {
@@ -210,7 +235,7 @@ describe("BrewLiveScreen timer pause and reset", () => {
     await userEvent.click(screen.getByRole("button", { name: es.brew.reset }));
 
     expect(loadDraft(DRAFT_ID)?.accumulatedMs).toBe(0);
-    expect(screen.getByRole("button", { name: es.brew.saveWithoutTimer })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: es.brew.skipTimer })).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: es.brew.reset })).not.toBeInTheDocument();
   });
 
