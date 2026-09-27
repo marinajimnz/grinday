@@ -175,6 +175,13 @@
       ]
     },
     {
+      "signature": "admin_list_reports()",
+      "security_definer": true,
+      "callable_by": [
+        "authenticated"
+      ]
+    },
+    {
       "signature": "admin_list_reserved_handles()",
       "security_definer": true,
       "callable_by": [
@@ -196,6 +203,13 @@
       ]
     },
     {
+      "signature": "admin_open_report_count()",
+      "security_definer": true,
+      "callable_by": [
+        "authenticated"
+      ]
+    },
+    {
       "signature": "admin_reason(p_reason text)",
       "security_definer": false,
       "callable_by": []
@@ -209,6 +223,13 @@
     },
     {
       "signature": "admin_reserve_handle(p_handle text, p_reason text)",
+      "security_definer": true,
+      "callable_by": [
+        "authenticated"
+      ]
+    },
+    {
+      "signature": "admin_resolve_reports(p_username text, p_action text, p_reason text)",
       "security_definer": true,
       "callable_by": [
         "authenticated"
@@ -369,6 +390,13 @@
     },
     {
       "signature": "remove_favourite(p_bookmark_id uuid)",
+      "security_definer": true,
+      "callable_by": [
+        "authenticated"
+      ]
+    },
+    {
+      "signature": "report_profile(p_username text, p_reason text, p_details text)",
       "security_definer": true,
       "callable_by": [
         "authenticated"
@@ -643,6 +671,12 @@
     },
     {
       "table": "profile_bookmarks",
+      "rls": true,
+      "table_grants": [],
+      "authenticated_column_grants": []
+    },
+    {
+      "table": "profile_reports",
       "rls": true,
       "table_grants": [],
       "authenticated_column_grants": []

@@ -564,6 +564,45 @@ export type Database = {
         }
         Relationships: []
       }
+      profile_reports: {
+        Row: {
+          created_at: string
+          details: string | null
+          id: string
+          reason: string
+          reporter_id: string
+          resolution: string | null
+          resolved_at: string | null
+          resolved_by: string | null
+          status: string
+          target_id: string
+        }
+        Insert: {
+          created_at?: string
+          details?: string | null
+          id?: string
+          reason: string
+          reporter_id: string
+          resolution?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          status?: string
+          target_id: string
+        }
+        Update: {
+          created_at?: string
+          details?: string | null
+          id?: string
+          reason?: string
+          reporter_id?: string
+          resolution?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          status?: string
+          target_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           bio: string | null
@@ -746,6 +785,17 @@ export type Database = {
           target_username: string
         }[]
       }
+      admin_list_reports: {
+        Args: never
+        Returns: {
+          display_name: string
+          first_reported_at: string
+          moderation_status: string
+          open_count: number
+          reports: Json
+          username: string
+        }[]
+      }
       admin_list_reserved_handles: {
         Args: never
         Returns: {
@@ -782,6 +832,7 @@ export type Database = {
           visibility: string
         }[]
       }
+      admin_open_report_count: { Args: never; Returns: number }
       admin_reason: { Args: { p_reason: string }; Returns: string }
       admin_reassign_username: {
         Args: { p_reason: string; p_username: string }
@@ -790,6 +841,10 @@ export type Database = {
       admin_reserve_handle: {
         Args: { p_handle: string; p_reason: string }
         Returns: undefined
+      }
+      admin_resolve_reports: {
+        Args: { p_action: string; p_reason: string; p_username: string }
+        Returns: string
       }
       admin_review_roaster_application: {
         Args: { p_application_id: string; p_approve: boolean; p_reason: string }
@@ -961,6 +1016,10 @@ export type Database = {
         Returns: boolean
       }
       remove_favourite: { Args: { p_bookmark_id: string }; Returns: undefined }
+      report_profile: {
+        Args: { p_details: string; p_reason: string; p_username: string }
+        Returns: undefined
+      }
       save_profile: { Args: { p_username: string }; Returns: undefined }
       search_profiles: {
         Args: { p_kind?: string; p_query: string }

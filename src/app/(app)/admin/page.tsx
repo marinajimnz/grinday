@@ -6,6 +6,7 @@ import {
   ModerateProfileForm,
   ReleaseHandleButton,
   ReserveHandleForm,
+  ResolveReportButtons,
   ReviewButtons,
   RoasterButtons,
 } from "@/components/admin/AdminWidgets";
@@ -15,7 +16,7 @@ import { formatDateTime } from "@/lib/i18n/format-date";
 import { getLocale } from "@/lib/i18n/locale";
 import { getDictionary } from "@/lib/i18n/get-dictionary";
 
-const TABS = ["solicitudes", "tostadoras", "perfiles", "handles", "registro"] as const;
+const TABS = ["solicitudes", "denuncias", "tostadoras", "perfiles", "handles", "registro"] as const;
 type Tab = (typeof TABS)[number];
 
 // Moderation. Only for the admin role, and only useful in a session that
@@ -52,8 +53,10 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
 
   const { tab: rawTab } = await searchParams;
   const tab: Tab = TABS.includes(rawTab as Tab) ? (rawTab as Tab) : "solicitudes";
+  const { data: openReports } = await supabase.rpc("admin_open_report_count");
   const tabLabels: Record<Tab, string> = {
     solicitudes: t.tabApplications,
+    denuncias: openReports ? `${t.tabReports} (${openReports})` : t.tabReports,
     tostadoras: t.tabRoasters,
     perfiles: t.tabProfiles,
     handles: t.tabHandles,
@@ -84,6 +87,7 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
 
       <div className="mt-6">
         {tab === "solicitudes" && <ApplicationsTab />}
+        {tab === "denuncias" && <ReportsTab />}
         {tab === "tostadoras" && <RoastersTab />}
         {tab === "perfiles" && (
           <div className="rounded-card border border-border bg-surface p-5">
@@ -150,6 +154,56 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
             </div>
           </li>
         ))}
+      </ul>
+    );
+  }
+
+  async function ReportsTab() {
+    const { data, error } = await supabase.rpc("admin_list_reports");
+    if (error) throw error;
+    if (!data?.length) return <p className="text-sm text-ink-muted">{t.noReports}</p>;
+    const reasons = dict.report.reasons;
+    return (
+      <ul className="space-y-3">
+        {data.map((row) => {
+          const reports = (row.reports ?? []) as {
+            reason: keyof typeof reasons;
+            details: string | null;
+            reporter: string | null;
+            created_at: string;
+          }[];
+          return (
+            <li key={row.username} className="rounded-card border border-border bg-surface p-5">
+              <p className="font-medium text-ink">
+                <Link href={`/u/${row.username}`} className="underline">
+                  @{row.username}
+                </Link>{" "}
+                {row.display_name && <span className="text-sm text-ink-muted">· {row.display_name}</span>}
+                {row.moderation_status === "suspended" && (
+                  <span className="ml-2 rounded-full bg-canvas px-2 py-0.5 text-xs text-danger">{t.suspended}</span>
+                )}
+              </p>
+              <p className="mt-0.5 text-sm text-ink-muted">
+                {row.open_count === 1 ? t.reportsCountOne : t.reportsCount.replace("{count}", String(row.open_count))}
+              </p>
+              <ul className="mt-3 space-y-2">
+                {reports.map((r, i) => (
+                  <li key={i} className="rounded-input bg-canvas px-3 py-2 text-sm">
+                    <p className="text-ink">{reasons[r.reason] ?? r.reason}</p>
+                    {r.details && <p className="mt-0.5 whitespace-pre-line text-ink-muted">{r.details}</p>}
+                    <p className="mt-1 text-xs text-ink-muted">
+                      {formatDateTime(r.created_at, locale)}
+                      {r.reporter && <> · {t.reporter.replace("{username}", r.reporter)}</>}
+                    </p>
+                  </li>
+                ))}
+              </ul>
+              <div className="mt-4">
+                <ResolveReportButtons username={row.username} />
+              </div>
+            </li>
+          );
+        })}
       </ul>
     );
   }

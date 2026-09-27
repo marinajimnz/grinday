@@ -7,6 +7,7 @@ import { ReasonAction } from "./ReasonAction";
 import {
   moderateProfileAction,
   reserveHandleAction,
+  resolveReportsAction,
   reviewApplicationAction,
   unreserveHandleAction,
 } from "@/features/moderation/actions";
@@ -112,4 +113,26 @@ export function ReserveHandleForm() {
 export function ReleaseHandleButton({ handle }: { handle: string }) {
   const t = useDictionary().admin;
   return <ReasonAction label={t.release} run={(reason) => unreserveHandleAction({ handle, reason })} />;
+}
+
+export function ResolveReportButtons({ username }: { username: string }) {
+  const t = useDictionary().admin;
+  return (
+    <div className="flex flex-wrap items-start gap-2">
+      <ReasonAction
+        label={t.dismissReports}
+        run={(reason) => resolveReportsAction({ username, action: "dismiss", reason })}
+      />
+      <ReasonAction
+        label={t.suspendFromReports}
+        variant="destructive"
+        run={(reason) => resolveReportsAction({ username, action: "suspend", reason })}
+      />
+      <ReasonAction
+        label={t.reassignFromReports}
+        run={(reason) => resolveReportsAction({ username, action: "reassign_username", reason })}
+        successMessage={(fresh) => t.reassignedTo.replace("{username}", fresh ?? "")}
+      />
+    </div>
+  );
 }

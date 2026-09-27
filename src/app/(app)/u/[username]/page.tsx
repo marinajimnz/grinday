@@ -7,6 +7,7 @@ import {
   isProfileSaved,
 } from "@/features/profile/publicQueries";
 import { SaveProfileButton } from "@/components/profile/SaveProfileButton";
+import { ReportProfileButton } from "@/components/profile/ReportProfileButton";
 import {
   PublicAttemptsSection,
   PublicCoffeesSection,
@@ -119,6 +120,12 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
           <PublicEquipmentSection equipment={content.equipment} dict={dict} />
           <PublicAttemptsSection attempts={content.attempts} username={profile.username} dict={dict} locale={locale} />
         </>
+      )}
+
+      {!isMe && (
+        <div className="mt-10 border-t border-border pt-4">
+          <ReportProfileButton username={profile.username} />
+        </div>
       )}
     </div>
   );
