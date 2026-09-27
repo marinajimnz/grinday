@@ -198,6 +198,13 @@
       ]
     },
     {
+      "signature": "search_profiles(p_query text, p_kind text)",
+      "security_definer": true,
+      "callable_by": [
+        "authenticated"
+      ]
+    },
+    {
       "signature": "set_attempt_no()",
       "security_definer": false,
       "callable_by": [

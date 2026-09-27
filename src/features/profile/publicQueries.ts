@@ -35,3 +35,34 @@ export async function getPublicProfile(supabase: Client, username: string): Prom
     attemptsCount: row.attempts_count,
   };
 }
+
+export type ProfileKind = "all" | "person" | "roaster";
+
+export type ProfileSearchResult = {
+  username: string;
+  displayName: string | null;
+  accountType: "person" | "roaster";
+};
+
+/**
+ * Public profiles matching `query` by name or @username, through
+ * search_profiles() — which already leaves out anything the profile page
+ * wouldn't show, needs two characters and returns at most 20.
+ */
+export async function searchProfiles(
+  supabase: Client,
+  query: string,
+  kind: ProfileKind,
+): Promise<ProfileSearchResult[]> {
+  const { data, error } = await supabase.rpc("search_profiles", { p_query: query, p_kind: kind });
+  if (error) throw error;
+  return (data ?? []).map((row) => ({
+    username: row.username,
+    displayName: row.display_name ?? null,
+    accountType: row.account_type === "roaster" ? "roaster" : "person",
+  }));
+}
+
+export function parseProfileKind(value: string | undefined): ProfileKind {
+  return value === "personas" ? "person" : value === "tostadoras" ? "roaster" : "all";
+}
