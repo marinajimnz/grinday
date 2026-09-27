@@ -60,6 +60,15 @@ npx supabase gen types typescript --linked > src/types/database.ts
 - `npm run typecheck` — TypeScript estricto (app + service worker).
 - `npm run test:unit` — Vitest.
 - `npm run test:e2e` — Playwright (390×844 y 1440×900).
+- `npm run test:integration` — tests contra la base de datos real enlazada
+  (grants, RLS, funciones de admin y la foto fija de lo que cada cuenta puede
+  alcanzar). Cada test corre en una transacción que siempre se deshace, así
+  que no deja nada detrás. Necesita `SUPABASE_DB_PASSWORD` en `.env.local` y
+  el proyecto enlazado (o `SUPABASE_DB_URL`). Para probar una migración antes
+  de aplicarla:
+  `DRY_RUN_MIGRATION=supabase/migrations/00xx_nombre.sql npm run test:integration`.
+  Si cambia a propósito lo que queda expuesto, se actualiza la foto con
+  `npm run test:integration -- -u` y el diff se revisa en el PR.
 
 ## Estado del roadmap
 

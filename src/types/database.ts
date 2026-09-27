@@ -39,6 +39,24 @@ export type Database = {
   }
   public: {
     Tables: {
+      app_settings: {
+        Row: {
+          id: boolean
+          social_enabled: string
+          updated_at: string
+        }
+        Insert: {
+          id?: boolean
+          social_enabled?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: boolean
+          social_enabled?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       attempt_media: {
         Row: {
           alt_text: string | null
@@ -485,6 +503,36 @@ export type Database = {
           },
         ]
       }
+      moderation_events: {
+        Row: {
+          action: string
+          actor_id: string | null
+          created_at: string
+          details: Json
+          id: string
+          reason: string
+          target_id: string | null
+        }
+        Insert: {
+          action: string
+          actor_id?: string | null
+          created_at?: string
+          details?: Json
+          id?: string
+          reason: string
+          target_id?: string | null
+        }
+        Update: {
+          action?: string
+          actor_id?: string | null
+          created_at?: string
+          details?: Json
+          id?: string
+          reason?: string
+          target_id?: string | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string
@@ -574,6 +622,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      is_admin: { Args: never; Returns: boolean }
       set_default_equipment: {
         Args: { p_equipment_id: string }
         Returns: {
@@ -635,6 +684,10 @@ export type Database = {
           isOneToOne: true
           isSetofReturn: false
         }
+      }
+      set_profile_role: {
+        Args: { p_profile_id: string; p_reason: string; p_role: string }
+        Returns: undefined
       }
       stats_by_coffee: {
         Args: { p_from?: string; p_to?: string; p_tz?: string }
