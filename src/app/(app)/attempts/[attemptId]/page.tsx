@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ChevronLeft } from "lucide-react";
+import { IconFavorita } from "@/components/icons/pencil-icons";
 import { createClient } from "@/lib/supabase/server";
 import { getAttempt, getAttemptMedia } from "@/features/attempts/queries";
 import { AttemptDetailPanel } from "@/components/attempt/AttemptDetailPanel";
@@ -23,7 +24,14 @@ export default async function AttemptDetailPage({
 
   if (!attempt) notFound();
 
-  const media = await getAttemptMedia(supabase, attemptId);
+  const [media, recipeSource] = await Promise.all([
+    getAttemptMedia(supabase, attemptId),
+    attempt.recipe_source_attempt_id
+      ? supabase
+          .rpc("get_recipe_source", { p_attempt_id: attemptId })
+          .then(({ data }) => data?.[0] ?? null)
+      : Promise.resolve(null),
+  ]);
   const dict = getDictionary(await getLocale());
 
   return (
@@ -35,6 +43,24 @@ export default async function AttemptDetailPage({
         <ChevronLeft aria-hidden className="size-4" />
         {attempt.coffee.roaster} · {attempt.coffee.name}
       </Link>
+
+      {/* Brewed from someone else's public recipe. Credited by name only
+          while their profile and that recipe are still public. */}
+      {attempt.recipe_source_attempt_id && (
+        <p className="mt-3 flex items-center gap-1 text-sm text-coffee">
+          <IconFavorita aria-hidden className="size-3.5" />
+          {recipeSource?.available && recipeSource.username && recipeSource.source_attempt_id ? (
+            <Link
+              href={`/u/${recipeSource.username}/attempts/${recipeSource.source_attempt_id}`}
+              className="underline"
+            >
+              {dict.publicProfile.recipeBy.replace("{username}", recipeSource.username)}
+            </Link>
+          ) : (
+            dict.publicProfile.recipeCopied
+          )}
+        </p>
+      )}
 
       <div className="mt-4">
         <AttemptDetailPanel

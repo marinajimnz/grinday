@@ -113,7 +113,7 @@ export async function createAttemptAction(
   if (!parsed.success) {
     return { success: false, message: parsed.error.issues[0]?.message ?? "Datos inválidos" };
   }
-  const { coffeeBagId, parentAttemptId, idempotencyKey, attempt, media } = parsed.data;
+  const { coffeeBagId, parentAttemptId, recipeSourceAttemptId, idempotencyKey, attempt, media } = parsed.data;
 
   const supabase = await createClient();
   const {
@@ -161,6 +161,7 @@ export async function createAttemptAction(
       coffee_id: bag.coffee_id,
       coffee_bag_id: bag.id,
       parent_attempt_id: parentAttemptId ?? null,
+      recipe_source_attempt_id: recipeSourceAttemptId ?? null,
       idempotency_key: idempotencyKey ?? null,
       equipment_snapshot: equipmentSnapshot,
     })

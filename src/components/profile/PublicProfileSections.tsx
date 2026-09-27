@@ -11,6 +11,7 @@ import type { Dictionary } from "@/lib/i18n/dictionaries/es";
 import type { Locale } from "@/lib/i18n/types";
 import { formatRelativeDay } from "@/lib/i18n/format-date";
 import { ExpandableSection } from "./ExpandableSection";
+import { TryRecipeButton } from "./TryRecipeButton";
 
 function methodLabel(dict: Dictionary, method: string | null) {
   if (!method) return null;
@@ -218,11 +219,14 @@ export function RecommendedRecipeCard({
   coffeeName,
   attempt,
   username,
+  canTry,
   dict,
 }: {
   coffeeName: string;
   attempt: RowAttempt & { grind: string | null };
   username: string;
+  // Not on your own page.
+  canTry: boolean;
   dict: Dictionary;
 }) {
   const t = dict.publicProfile;
@@ -247,6 +251,15 @@ export function RecommendedRecipeCard({
           >
             {t.seeDetail}
           </Link>
+          {canTry && (
+            <TryRecipeButton
+              username={username}
+              attemptId={attempt.id}
+              label={t.tryRecipeShort}
+              showHint={false}
+              className="flex-1"
+            />
+          )}
         </div>
       </div>
     </section>
