@@ -91,6 +91,16 @@
       "with_check": "(auth.uid() = id)"
     },
     {
+      "tablename": "roaster_applications",
+      "policyname": "roaster_applications_select_own",
+      "cmd": "SELECT",
+      "roles": [
+        "authenticated"
+      ],
+      "qual": "(user_id = ( SELECT auth.uid() AS uid))",
+      "with_check": null
+    },
+    {
       "tablename": "user_brew_equipment",
       "policyname": "user_brew_equipment_all_own",
       "cmd": "ALL",
@@ -153,6 +163,91 @@
   ],
   "functions": [
     {
+      "signature": "admin_guard()",
+      "security_definer": true,
+      "callable_by": []
+    },
+    {
+      "signature": "admin_list_moderation_events()",
+      "security_definer": true,
+      "callable_by": [
+        "authenticated"
+      ]
+    },
+    {
+      "signature": "admin_list_reserved_handles()",
+      "security_definer": true,
+      "callable_by": [
+        "authenticated"
+      ]
+    },
+    {
+      "signature": "admin_list_roaster_applications(p_status text)",
+      "security_definer": true,
+      "callable_by": [
+        "authenticated"
+      ]
+    },
+    {
+      "signature": "admin_list_roasters()",
+      "security_definer": true,
+      "callable_by": [
+        "authenticated"
+      ]
+    },
+    {
+      "signature": "admin_reason(p_reason text)",
+      "security_definer": false,
+      "callable_by": []
+    },
+    {
+      "signature": "admin_reassign_username(p_username text, p_reason text)",
+      "security_definer": true,
+      "callable_by": [
+        "authenticated"
+      ]
+    },
+    {
+      "signature": "admin_reserve_handle(p_handle text, p_reason text)",
+      "security_definer": true,
+      "callable_by": [
+        "authenticated"
+      ]
+    },
+    {
+      "signature": "admin_review_roaster_application(p_application_id uuid, p_approve boolean, p_reason text)",
+      "security_definer": true,
+      "callable_by": [
+        "authenticated"
+      ]
+    },
+    {
+      "signature": "admin_revoke_roaster(p_username text, p_reason text)",
+      "security_definer": true,
+      "callable_by": [
+        "authenticated"
+      ]
+    },
+    {
+      "signature": "admin_set_suspended(p_username text, p_suspended boolean, p_reason text)",
+      "security_definer": true,
+      "callable_by": [
+        "authenticated"
+      ]
+    },
+    {
+      "signature": "admin_target(p_username text)",
+      "security_definer": true,
+      "callable_by": []
+    },
+    {
+      "signature": "admin_unreserve_handle(p_handle text, p_reason text)",
+      "security_definer": true,
+      "callable_by": [
+        "authenticated"
+      ]
+    },
+    {
       "signature": "attempt_grind_label(p_grind_setting numeric, p_upper smallint, p_lower smallint)",
       "security_definer": false,
       "callable_by": []
@@ -167,6 +262,13 @@
     },
     {
       "signature": "get_my_favourites()",
+      "security_definer": true,
+      "callable_by": [
+        "authenticated"
+      ]
+    },
+    {
+      "signature": "get_my_moderation_notices()",
       "security_definer": true,
       "callable_by": [
         "authenticated"
@@ -334,6 +436,13 @@
       ]
     },
     {
+      "signature": "start_roaster_application(p_business_name text, p_website text, p_instagram text, p_city text, p_contact_email text)",
+      "security_definer": true,
+      "callable_by": [
+        "authenticated"
+      ]
+    },
+    {
       "signature": "stats_by_coffee(p_from date, p_to date, p_tz text)",
       "security_definer": false,
       "callable_by": [
@@ -402,6 +511,13 @@
       "security_definer": false,
       "callable_by": [
         "anon",
+        "authenticated"
+      ]
+    },
+    {
+      "signature": "submit_roaster_application()",
+      "security_definer": true,
+      "callable_by": [
         "authenticated"
       ]
     },
@@ -547,6 +663,14 @@
       "table": "reserved_handles",
       "rls": true,
       "table_grants": [],
+      "authenticated_column_grants": []
+    },
+    {
+      "table": "roaster_applications",
+      "rls": true,
+      "table_grants": [
+        "authenticated:SELECT"
+      ],
       "authenticated_column_grants": []
     },
     {

@@ -617,6 +617,57 @@ export type Database = {
         }
         Relationships: []
       }
+      roaster_applications: {
+        Row: {
+          business_name: string
+          city: string | null
+          contact_email: string
+          created_at: string
+          id: string
+          instagram: string | null
+          reason: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+          submitted_at: string | null
+          user_id: string
+          verification_code: string
+          website: string | null
+        }
+        Insert: {
+          business_name: string
+          city?: string | null
+          contact_email: string
+          created_at?: string
+          id?: string
+          instagram?: string | null
+          reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          submitted_at?: string | null
+          user_id: string
+          verification_code: string
+          website?: string | null
+        }
+        Update: {
+          business_name?: string
+          city?: string | null
+          contact_email?: string
+          created_at?: string
+          id?: string
+          instagram?: string | null
+          reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          submitted_at?: string | null
+          user_id?: string
+          verification_code?: string
+          website?: string | null
+        }
+        Relationships: []
+      }
       user_brew_equipment: {
         Row: {
           created_at: string
@@ -673,6 +724,80 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_guard: { Args: never; Returns: undefined }
+      admin_list_moderation_events: {
+        Args: never
+        Returns: {
+          action: string
+          actor_username: string
+          created_at: string
+          details: Json
+          reason: string
+          target_username: string
+        }[]
+      }
+      admin_list_reserved_handles: {
+        Args: never
+        Returns: {
+          created_at: string
+          handle: string
+          reason: string
+        }[]
+      }
+      admin_list_roaster_applications: {
+        Args: { p_status?: string }
+        Returns: {
+          business_name: string
+          city: string
+          contact_email: string
+          display_name: string
+          id: string
+          instagram: string
+          reason: string
+          reviewed_at: string
+          status: string
+          submitted_at: string
+          username: string
+          verification_code: string
+          website: string
+        }[]
+      }
+      admin_list_roasters: {
+        Args: never
+        Returns: {
+          business_name: string
+          display_name: string
+          moderation_status: string
+          username: string
+          visibility: string
+        }[]
+      }
+      admin_reason: { Args: { p_reason: string }; Returns: string }
+      admin_reassign_username: {
+        Args: { p_reason: string; p_username: string }
+        Returns: string
+      }
+      admin_reserve_handle: {
+        Args: { p_handle: string; p_reason: string }
+        Returns: undefined
+      }
+      admin_review_roaster_application: {
+        Args: { p_application_id: string; p_approve: boolean; p_reason: string }
+        Returns: undefined
+      }
+      admin_revoke_roaster: {
+        Args: { p_reason: string; p_username: string }
+        Returns: undefined
+      }
+      admin_set_suspended: {
+        Args: { p_reason: string; p_suspended: boolean; p_username: string }
+        Returns: undefined
+      }
+      admin_target: { Args: { p_username: string }; Returns: string }
+      admin_unreserve_handle: {
+        Args: { p_handle: string; p_reason: string }
+        Returns: undefined
+      }
       attempt_grind_label: {
         Args: { p_grind_setting: number; p_lower: number; p_upper: number }
         Returns: string
@@ -686,6 +811,14 @@ export type Database = {
           display_name: string
           saved_at: string
           username: string
+        }[]
+      }
+      get_my_moderation_notices: {
+        Args: never
+        Returns: {
+          action: string
+          created_at: string
+          reason: string
         }[]
       }
       get_public_attempt: {
@@ -886,6 +1019,16 @@ export type Database = {
         Returns: undefined
       }
       social_enabled_for_me: { Args: never; Returns: boolean }
+      start_roaster_application: {
+        Args: {
+          p_business_name: string
+          p_city: string
+          p_contact_email: string
+          p_instagram: string
+          p_website: string
+        }
+        Returns: string
+      }
       stats_by_coffee: {
         Args: { p_from?: string; p_to?: string; p_tz?: string }
         Returns: {
@@ -973,6 +1116,7 @@ export type Database = {
           top_roast_brews: number
         }[]
       }
+      submit_roaster_application: { Args: never; Returns: undefined }
       unsave_profile: { Args: { p_username: string }; Returns: undefined }
     }
     Enums: {
