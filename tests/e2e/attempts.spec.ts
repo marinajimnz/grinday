@@ -54,10 +54,16 @@ test("logs an attempt manually, marks it preferred, duplicates it, and compares 
   await expect(page.getByText("Basado en intento #1")).toBeVisible();
 
   // brew.spec.ts drives the six steps in full; here it only has to reach a
-  // second saved attempt, so the shot goes in without timing it.
+  // second saved attempt, so the shot goes in without timing it. Skipping
+  // the clock skips the clock and nothing else: the photo and rating steps
+  // still follow, and the attempt is saved from the last of them.
   await page.getByRole("button", { name: "Siguiente" }).click();
   await expect(page.getByText("Paso 4 de 6")).toBeVisible();
-  await page.getByRole("button", { name: "Guardar sin cronometrar" }).click();
+  await page.getByRole("button", { name: "Continuar sin cronometrar" }).click();
+  await expect(page.getByText("Paso 5 de 6")).toBeVisible();
+  await page.getByRole("button", { name: "Continuar sin foto" }).click();
+  await expect(page.getByText("Paso 6 de 6")).toBeVisible();
+  await page.getByRole("button", { name: "Guardar receta" }).click();
   await expect(page).toHaveURL(/\/attempts\/[0-9a-f-]+$/);
   await expect(page.getByRole("heading", { name: "Intento #2" })).toBeVisible();
 
