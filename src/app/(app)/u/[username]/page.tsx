@@ -1,6 +1,11 @@
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { getPublicProfile } from "@/features/profile/publicQueries";
+import { getPublicProfile, getPublicProfileContent } from "@/features/profile/publicQueries";
+import {
+  PublicAttemptsSection,
+  PublicCoffeesSection,
+  PublicEquipmentSection,
+} from "@/components/profile/PublicProfileSections";
 import { ProfileAvatar } from "@/components/profile/ProfileAvatar";
 import { OwnProfileBanner } from "@/components/profile/OwnProfileBanner";
 import { BackButton } from "@/components/ui/BackButton";
@@ -26,10 +31,15 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
   const profile = await getPublicProfile(supabase, decodeURIComponent(username));
   if (!profile) notFound();
 
-  const { data: me } = await supabase.from("profiles").select("username").eq("id", user.id).single();
+  const [{ data: me }, content] = await Promise.all([
+    supabase.from("profiles").select("username").eq("id", user.id).single(),
+    getPublicProfileContent(supabase, profile.username),
+  ]);
   const isMe = me?.username === profile.username;
 
-  const t = getDictionary(await getLocale()).publicProfile;
+  const locale = await getLocale();
+  const dict = getDictionary(locale);
+  const t = dict.publicProfile;
   const counts = [
     countLabel(profile.coffeesCount, t.coffeesOne, t.coffeesMany),
     countLabel(profile.recipesCount, t.recipesOne, t.recipesMany),
@@ -55,6 +65,10 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
         {profile.bio && <p className="mt-3 max-w-prose text-sm whitespace-pre-line text-ink">{profile.bio}</p>}
         <p className="mt-3 text-sm text-ink-muted tabular-nums">{counts}</p>
       </header>
+
+      <PublicCoffeesSection coffees={content.coffees} dict={dict} />
+      <PublicEquipmentSection equipment={content.equipment} dict={dict} />
+      <PublicAttemptsSection attempts={content.attempts} dict={dict} locale={locale} />
     </div>
   );
 }

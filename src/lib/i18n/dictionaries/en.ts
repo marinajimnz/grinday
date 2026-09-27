@@ -72,6 +72,12 @@ const en: Dictionary = {
     searching: "Searching...",
   },
   publicProfile: {
+    sectionCoffees: "Coffees",
+    sectionEquipment: "Equipment",
+    sectionAttempts: "Latest attempts",
+    recipe: "Recipe",
+    grind: "Grind {grind}",
+    grinder: "Grinder",
     notFoundTitle: "This profile isn't available",
     notFoundBody: "It may not exist, or it may not be public.",
     notFoundCta: "Back to home",

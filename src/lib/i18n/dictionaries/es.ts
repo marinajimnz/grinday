@@ -70,6 +70,12 @@ const es = {
     searching: "Buscando...",
   },
   publicProfile: {
+    sectionCoffees: "Cafés",
+    sectionEquipment: "Equipo",
+    sectionAttempts: "Últimos intentos",
+    recipe: "Receta",
+    grind: "Molienda {grind}",
+    grinder: "Molinillo",
     notFoundTitle: "Este perfil no está disponible",
     notFoundBody: "Puede que no exista o que no sea público.",
     notFoundCta: "Volver al inicio",

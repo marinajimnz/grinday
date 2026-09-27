@@ -652,6 +652,29 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      attempt_grind_label: {
+        Args: { p_grind_setting: number; p_lower: number; p_upper: number }
+        Returns: string
+      }
+      get_public_coffees: {
+        Args: { p_username: string }
+        Returns: {
+          country: string
+          has_recipe: boolean
+          name: string
+          process: string
+          recipe_grind: string
+          recipe_method: string
+          roaster: string
+        }[]
+      }
+      get_public_equipment: {
+        Args: { p_username: string }
+        Returns: {
+          kind: string
+          model_name: string
+        }[]
+      }
       get_public_profile: {
         Args: { p_username: string }
         Returns: {
@@ -662,6 +685,24 @@ export type Database = {
           display_name: string
           recipes_count: number
           username: string
+        }[]
+      }
+      get_public_recent_attempts: {
+        Args: { p_username: string }
+        Returns: {
+          brewed_on: string
+          coffee_name: string
+          cup_count: number
+          dilution_water_g: number
+          dose_g: number
+          extraction_ms: number
+          grind: string
+          method: string
+          output_weight_g: number
+          overall_rating: number
+          roaster: string
+          target_weight_g: number
+          water_g: number
         }[]
       }
       is_admin: { Args: never; Returns: boolean }
