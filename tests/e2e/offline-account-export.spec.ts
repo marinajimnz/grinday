@@ -54,13 +54,15 @@ test("offline page shows the empty state when nothing is saved locally", async (
   ).toBeVisible();
 });
 
-test("account settings shows the linked email and a sign-out button", async ({
+test("account settings shows the linked username and a sign-out button", async ({
   page,
   testUser,
 }) => {
   await page.goto("/settings/account");
 
-  await expect(page.getByText(testUser.email)).toBeVisible();
+  // Every account made through sign-up has a username, and it's what this
+  // page names the account by (the email only when there's none).
+  await expect(page.getByText(testUser.username, { exact: true })).toBeVisible();
   await expect(page.getByRole("button", { name: "Cerrar sesión" })).toBeVisible();
 
   await expect(page.getByText("Exportar tus datos")).toBeVisible();

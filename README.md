@@ -80,6 +80,39 @@ npx supabase gen types typescript --linked > src/types/database.ts
 - [x] Fase 5 — Inventario (este commit).
 - [x] Fase 6 — Estadísticas y dashboard (este commit).
 - [x] Fase 7 — Hardening PWA, offline, cuenta y release (este commit).
+- [x] Perfiles públicos (F0–F9) — perfiles, tostadoras, buscador, favoritos,
+  probar recetas ajenas, moderación y denuncias. Ver «Perfiles públicos» abajo.
+
+## Perfiles públicos
+
+Cada cuenta elige si su perfil es público (popup la primera vez; tarjeta
+«Privacidad del perfil» arriba del todo en Ajustes). Hasta que elige, cuenta
+como privada. El @ público es el nombre de usuario.
+
+- **Qué se comparte:** nombre, @usuario, bio, cafés no archivados con su
+  ficha (origen, proceso, tueste, notas de cata), modelos de equipo, intentos
+  (día, receta y puntuación). **Nunca:** notas, fotos, bolsas, inventario,
+  hora del intento, intentos quitados del inicio ni ids de cuenta.
+- **Cómo:** el RLS de las tablas no cambia; otra cuenta solo lee a través de
+  funciones `security definer` con columnas explícitas que pasan por
+  `profile_is_visible_to_me()` (perfil público, con usuario, no suspendido e
+  interruptor encendido). `tests/integration/exposure-surface.test.ts` guarda
+  una foto fija de policies, funciones y permisos: cualquier cambio en lo que
+  una cuenta puede alcanzar aparece como diff.
+- **Interruptor:** `app_settings.social_enabled` (`off`, `admins`, `all`).
+  Apagarlo oculta todo lo público al momento, sin desplegar:
+
+  ```sql
+  update public.app_settings set social_enabled = 'off';
+  ```
+
+- **Moderación:** `/admin` (rol admin **y** sesión con verificación en dos
+  pasos) — solicitudes de tostadora con código publicado en su web o
+  Instagram, tostadoras, perfiles (suspender, reasignar usuario), handles
+  reservados, denuncias y registro. Toda acción pide motivo y queda en
+  `moderation_events`; la cuenta afectada ve qué y por qué, nunca quién.
+- **Caché:** el Service Worker nunca guarda `/u/*`, `/search`, `/favorites`
+  ni `/admin`.
 
 ## Offline y PWA
 
