@@ -53,7 +53,27 @@ const CAPTION_INDENT: Record<IconSize, string> = {
 // instead — seventeen equally-weighted cells, none of which was the recipe,
 // because the guided flow writes dose_g/water_g/target_weight_g and that
 // list only ever showed the Sage-era columns next to them.
-export function AttemptRecipeSummary({ attempt }: { attempt: BrewAttemptRow }) {
+export type AttemptRecipeSummaryAttempt = Pick<
+  BrewAttemptRow,
+  | "method"
+  | "cup_count"
+  | "dose_g"
+  | "input_weight_g"
+  | "water_g"
+  | "dilution_water_g"
+  | "target_weight_g"
+  | "output_weight_g"
+  | "extraction_ms"
+  | "temperature_c"
+  | "grind_setting"
+  | "grind_seconds"
+  | "grinder_upper_burr"
+  | "grinder_lower_burr"
+  | "moka_cup_size"
+  | "heat_intensity"
+>;
+
+export function AttemptRecipeSummary({ attempt }: { attempt: AttemptRecipeSummaryAttempt }) {
   const dict = useDictionary();
   const method = (attempt.method as BrewMethod) ?? "espresso";
   const config = getRecipeFieldConfig(method);

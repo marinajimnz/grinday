@@ -656,11 +656,76 @@ export type Database = {
         Args: { p_grind_setting: number; p_lower: number; p_upper: number }
         Returns: string
       }
+      get_public_attempt: {
+        Args: { p_attempt_id: string; p_username: string }
+        Returns: {
+          brewed_on: string
+          coffee_id: string
+          coffee_name: string
+          cup_count: number
+          dilution_water_g: number
+          dose_g: number
+          equipment_model_name: string
+          extraction_ms: number
+          grind_seconds: number
+          grind_setting: number
+          grinder_lower_burr: number
+          grinder_model_name: string
+          grinder_upper_burr: number
+          heat_intensity: string
+          input_weight_g: number
+          is_preferred: boolean
+          method: string
+          moka_cup_size: number
+          output_weight_g: number
+          overall_rating: number
+          roaster: string
+          target_weight_g: number
+          temperature_c: number
+          water_g: number
+        }[]
+      }
+      get_public_coffee: {
+        Args: { p_coffee_id: string; p_username: string }
+        Returns: {
+          altitude_max_m: number
+          altitude_min_m: number
+          country: string
+          farm: string
+          name: string
+          process: string
+          producer: string
+          region: string
+          roast_level: string
+          roaster: string
+          tasting_notes: string[]
+          varieties: string[]
+        }[]
+      }
+      get_public_coffee_attempts: {
+        Args: { p_coffee_id: string; p_username: string }
+        Returns: {
+          brewed_on: string
+          cup_count: number
+          dilution_water_g: number
+          dose_g: number
+          extraction_ms: number
+          grind: string
+          id: string
+          is_preferred: boolean
+          method: string
+          output_weight_g: number
+          overall_rating: number
+          target_weight_g: number
+          water_g: number
+        }[]
+      }
       get_public_coffees: {
         Args: { p_username: string }
         Returns: {
           country: string
           has_recipe: boolean
+          id: string
           name: string
           process: string
           recipe_grind: string
@@ -697,6 +762,7 @@ export type Database = {
           dose_g: number
           extraction_ms: number
           grind: string
+          id: string
           method: string
           output_weight_g: number
           overall_rating: number

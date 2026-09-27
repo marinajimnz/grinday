@@ -1,9 +1,12 @@
+import Link from "next/link";
 import { IconCafe, IconFavorita, IconMolinillo } from "@/components/icons/pencil-icons";
 import { BrewSummary } from "@/components/attempt/BrewSummary";
 import { StarRating } from "@/components/ui/StarRating";
 import { METHOD_ICONS } from "@/features/equipment/methodIcons";
 import type { BrewMethod } from "@/features/equipment/constants";
 import type { PublicAttempt, PublicCoffee, PublicEquipment } from "@/features/profile/publicQueries";
+import type { BrewSummaryAttempt } from "@/components/attempt/BrewSummary";
+import { cn } from "@/lib/cn";
 import type { Dictionary } from "@/lib/i18n/dictionaries/es";
 import type { Locale } from "@/lib/i18n/types";
 import { formatRelativeDay } from "@/lib/i18n/format-date";
@@ -23,7 +26,15 @@ function Section({ title, children }: { title: string; children: React.ReactNode
   );
 }
 
-export function PublicCoffeesSection({ coffees, dict }: { coffees: PublicCoffee[]; dict: Dictionary }) {
+export function PublicCoffeesSection({
+  coffees,
+  username,
+  dict,
+}: {
+  coffees: PublicCoffee[];
+  username: string;
+  dict: Dictionary;
+}) {
   if (coffees.length === 0) return null;
   const t = dict.publicProfile;
 
@@ -31,25 +42,30 @@ export function PublicCoffeesSection({ coffees, dict }: { coffees: PublicCoffee[
     <ExpandableSection
       title={t.sectionCoffees}
       listClassName="grid grid-cols-2 gap-3"
-      items={coffees.map((coffee, i) => (
-        <li key={`${coffee.roaster}-${coffee.name}-${i}`} className="overflow-hidden rounded-card border border-border bg-surface">
-          <div className="flex h-20 items-center justify-center bg-canvas text-ink-muted">
-            <IconCafe aria-hidden className="size-6" />
-          </div>
-          <div className="p-3">
-            <p className="truncate text-xs text-ink-muted">{coffee.roaster}</p>
-            <p className="mt-0.5 font-display text-base leading-tight break-words text-ink">{coffee.name}</p>
-            {coffee.hasRecipe && (
-              <p className="mt-1.5 flex items-start gap-1 text-xs text-ink-muted">
-                <IconFavorita aria-hidden className="mt-px size-3.5 shrink-0 text-coffee" />
-                <span className="min-w-0">
-                  {[t.recipe, methodLabel(dict, coffee.recipeMethod), coffee.recipeGrind && t.grind.replace("{grind}", coffee.recipeGrind)]
-                    .filter(Boolean)
-                    .join(" · ")}
-                </span>
-              </p>
-            )}
-          </div>
+      items={coffees.map((coffee) => (
+        <li key={coffee.id}>
+          <Link
+            href={`/u/${username}/coffees/${coffee.id}`}
+            className="block h-full overflow-hidden rounded-card border border-border bg-surface outline-none focus-visible:ring-2 focus-visible:ring-ink"
+          >
+            <div className="flex h-20 items-center justify-center bg-canvas text-ink-muted">
+              <IconCafe aria-hidden className="size-6" />
+            </div>
+            <div className="p-3">
+              <p className="truncate text-xs text-ink-muted">{coffee.roaster}</p>
+              <p className="mt-0.5 font-display text-base leading-tight break-words text-ink">{coffee.name}</p>
+              {coffee.hasRecipe && (
+                <p className="mt-1.5 flex items-start gap-1 text-xs text-ink-muted">
+                  <IconFavorita aria-hidden className="mt-px size-3.5 shrink-0 text-coffee" />
+                  <span className="min-w-0">
+                    {[t.recipe, methodLabel(dict, coffee.recipeMethod), coffee.recipeGrind && t.grind.replace("{grind}", coffee.recipeGrind)]
+                      .filter(Boolean)
+                      .join(" · ")}
+                  </span>
+                </p>
+              )}
+            </div>
+          </Link>
         </li>
       ))}
     />
@@ -91,12 +107,80 @@ function calendarDay(isoDate: string) {
   return new Date(year, month - 1, day);
 }
 
+type RowAttempt = BrewSummaryAttempt & {
+  id: string;
+  brewedOn: string;
+  method: string;
+  overallRating: number | null;
+};
+
+// One attempt in a public list; opens its setup. `subtitle` names the
+// coffee on the profile, where attempts of different coffees are mixed.
+export function PublicAttemptRow({
+  attempt,
+  username,
+  subtitle,
+  highlighted = false,
+  preferredLabel = true,
+  dict,
+  locale,
+}: {
+  attempt: RowAttempt;
+  username: string;
+  subtitle?: string;
+  highlighted?: boolean;
+  // Off where a "Preferred recipe" heading already says it.
+  preferredLabel?: boolean;
+  dict: Dictionary;
+  locale: Locale;
+}) {
+  const Icon = METHOD_ICONS[attempt.method as BrewMethod] ?? IconCafe;
+  return (
+    <Link
+      href={`/u/${username}/attempts/${attempt.id}`}
+      className={cn(
+        "flex items-center gap-2.5 rounded-card border bg-surface p-4 outline-none focus-visible:ring-2 focus-visible:ring-ink",
+        highlighted ? "border-coffee/40" : "border-border",
+      )}
+    >
+      <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-canvas text-ink">
+        <Icon aria-hidden className="size-5" />
+      </span>
+      <div className="min-w-0 flex-1">
+        <div className="flex items-baseline gap-2">
+          <span className="font-semibold text-ink">{methodLabel(dict, attempt.method)}</span>
+          <span className="text-xs text-ink-muted">
+            {formatRelativeDay(calendarDay(attempt.brewedOn), locale, {
+              today: dict.dashboard.today,
+              yesterday: dict.dashboard.yesterday,
+            })}
+          </span>
+          {attempt.overallRating != null && (
+            <span className="ml-auto shrink-0">
+              <StarRating value={attempt.overallRating} size="sm" />
+            </span>
+          )}
+        </div>
+        {(subtitle || (highlighted && preferredLabel)) && (
+          <p className="mt-0.5 flex items-center gap-1 truncate text-sm text-ink-muted">
+            {highlighted && preferredLabel && <IconFavorita aria-hidden className="size-3.5 shrink-0 text-coffee" />}
+            {subtitle ?? dict.publicProfile.preferredRecipe}
+          </p>
+        )}
+        <BrewSummary attempt={attempt} dict={dict} className="mt-1" />
+      </div>
+    </Link>
+  );
+}
+
 export function PublicAttemptsSection({
   attempts,
+  username,
   dict,
   locale,
 }: {
   attempts: PublicAttempt[];
+  username: string;
   dict: Dictionary;
   locale: Locale;
 }) {
@@ -107,36 +191,17 @@ export function PublicAttemptsSection({
     <ExpandableSection
       title={t.sectionAttempts}
       listClassName="space-y-2"
-      items={attempts.map((attempt, i) => {
-        const Icon = METHOD_ICONS[attempt.method as BrewMethod] ?? IconCafe;
-        return (
-          <li key={`${attempt.brewedOn}-${i}`} className="flex items-center gap-2.5 rounded-card border border-border bg-surface p-4">
-            <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-canvas text-ink">
-              <Icon aria-hidden className="size-5" />
-            </span>
-            <div className="min-w-0 flex-1">
-              <div className="flex items-baseline gap-2">
-                <span className="font-semibold text-ink">{methodLabel(dict, attempt.method)}</span>
-                <span className="text-xs text-ink-muted">
-                  {formatRelativeDay(calendarDay(attempt.brewedOn), locale, {
-                    today: dict.dashboard.today,
-                    yesterday: dict.dashboard.yesterday,
-                  })}
-                </span>
-                {attempt.overallRating != null && (
-                  <span className="ml-auto shrink-0">
-                    <StarRating value={attempt.overallRating} size="sm" />
-                  </span>
-                )}
-              </div>
-              <p className="mt-0.5 truncate text-sm text-ink-muted">
-                {attempt.coffeeName} · {attempt.roaster}
-              </p>
-              <BrewSummary attempt={attempt} dict={dict} className="mt-1" />
-            </div>
-          </li>
-        );
-      })}
+      items={attempts.map((attempt) => (
+        <li key={attempt.id}>
+          <PublicAttemptRow
+            attempt={attempt}
+            username={username}
+            subtitle={`${attempt.coffeeName} · ${attempt.roaster}`}
+            dict={dict}
+            locale={locale}
+          />
+        </li>
+      ))}
     />
   );
 }
