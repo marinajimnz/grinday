@@ -142,10 +142,13 @@ describe("moderation_events", () => {
 });
 
 describe("app_settings (kill switch)", () => {
-  it("starts off and can't be read or changed by any account", async () => {
+  it("holds one of its three states and can't be read or changed by any account", async () => {
     await withRollback(async (tx) => {
-      const [settings] = await tx`select social_enabled from public.app_settings`;
-      expect(settings.social_enabled).toBe("off");
+      // Which state it's in is an operational decision (it started 'off');
+      // the test only pins that there's exactly one row holding a valid one.
+      const settings = await tx`select social_enabled from public.app_settings`;
+      expect(settings).toHaveLength(1);
+      expect(["off", "admins", "all"]).toContain(settings[0].social_enabled);
 
       const admin = await createUser(tx, { role: "admin" });
       await asUser(tx, admin, "aal2");

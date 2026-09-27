@@ -538,7 +538,6 @@ export type Database = {
           bio: string | null
           created_at: string
           display_name: string | null
-          handle: string | null
           id: string
           is_anonymous: boolean
           locale: string
@@ -552,7 +551,6 @@ export type Database = {
           bio?: string | null
           created_at?: string
           display_name?: string | null
-          handle?: string | null
           id: string
           is_anonymous?: boolean
           locale?: string
@@ -566,7 +564,6 @@ export type Database = {
           bio?: string | null
           created_at?: string
           display_name?: string | null
-          handle?: string | null
           id?: string
           is_anonymous?: boolean
           locale?: string

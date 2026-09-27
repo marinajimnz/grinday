@@ -28,7 +28,7 @@ export default async function AccountSettingsPage() {
   // and was never meant to be user-visible.
   const { data: profile } = await supabase
     .from("profiles")
-    .select("username, role")
+    .select("username, role, visibility")
     .eq("id", user.id)
     .single();
   const loginIdentifier = profile?.username ?? user?.email;
@@ -54,6 +54,9 @@ export default async function AccountSettingsPage() {
 
       <div className="mt-6 space-y-3">
         <SettingsAccordionCard title={dict.settings.changeUsernameTitle}>
+          {profile?.visibility === "public" && (
+            <p className="mb-3 text-sm text-ink-muted">{dict.settings.usernamePublicHint}</p>
+          )}
           <ChangeUsernameForm currentUsername={profile?.username ?? null} />
         </SettingsAccordionCard>
         <SettingsAccordionCard title={dict.settings.changeEmailTitle}>

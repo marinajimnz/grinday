@@ -431,7 +431,6 @@
       "authenticated_column_grants": [
         "bio:UPDATE",
         "display_name:UPDATE",
-        "handle:UPDATE",
         "locale:UPDATE",
         "username:UPDATE",
         "visibility:UPDATE"

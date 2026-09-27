@@ -17,10 +17,10 @@ vi.mock("next/navigation", () => ({
   useSearchParams: () => searchParams,
 }));
 
-function renderPrompt(props: { currentHandle?: string | null; suggestedHandle?: string } = {}) {
+function renderPrompt(username: string | null = "marinajimnz") {
   return render(
     <LocaleProvider locale="es" dict={es}>
-      <VisibilityPrompt currentHandle={props.currentHandle ?? null} suggestedHandle={props.suggestedHandle ?? "marina"} />
+      <VisibilityPrompt username={username} />
     </LocaleProvider>,
   );
 }
@@ -40,6 +40,11 @@ describe("VisibilityPrompt", () => {
     expect(screen.getByRole("button", { name: es.publicProfile.stayPrivate })).toBeInTheDocument();
     expect(screen.getByText(es.publicProfile.neverShared)).toBeInTheDocument();
     expect(screen.getByText(es.publicProfile.changeLater)).toBeInTheDocument();
+  });
+
+  it("says the username becomes the public @ before anyone chooses", () => {
+    renderPrompt("marinajimnz");
+    expect(screen.getByText(es.publicProfile.foundAs.replace("{username}", "marinajimnz"))).toBeInTheDocument();
   });
 
   it("greets a new account instead of announcing a change", () => {
@@ -62,31 +67,20 @@ describe("VisibilityPrompt", () => {
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
   });
 
-  it("asks for a handle before going public, prefilled with the suggestion", async () => {
-    renderPrompt({ suggestedHandle: "lucia_v60" });
+  it("goes public and then reminds how to go back to private", async () => {
+    renderPrompt();
     await userEvent.click(screen.getByRole("button", { name: es.publicProfile.makePublic }));
-    expect(screen.getByRole("dialog", { name: es.publicProfile.handleStepTitle })).toBeInTheDocument();
-    expect(screen.getByLabelText(es.settings.handle)).toHaveValue("lucia_v60");
-
-    await userEvent.click(screen.getByRole("button", { name: es.publicProfile.makePublic }));
-    expect(setVisibilityAction).toHaveBeenCalledWith({ visibility: "public", handle: "lucia_v60" });
+    expect(setVisibilityAction).toHaveBeenCalledWith({ visibility: "public" });
     expect(screen.getByRole("dialog", { name: es.publicProfile.doneTitle })).toBeInTheDocument();
     expect(screen.getByText(es.publicProfile.doneBody)).toBeInTheDocument();
   });
 
-  it("goes public straight away when the account already has a handle", async () => {
-    renderPrompt({ currentHandle: "marina" });
+  it("shows why going public was refused and keeps both answers available", async () => {
+    setVisibilityAction.mockResolvedValue({ success: false, message: es.publicProfile.usernameReserved });
+    renderPrompt("admin");
     await userEvent.click(screen.getByRole("button", { name: es.publicProfile.makePublic }));
-    expect(setVisibilityAction).toHaveBeenCalledWith({ visibility: "public" });
-  });
-
-  it("shows why a handle was refused and stays on the handle step", async () => {
-    setVisibilityAction.mockResolvedValue({ success: false, field: "handle", message: es.publicProfile.handleTaken });
-    renderPrompt();
-    await userEvent.click(screen.getByRole("button", { name: es.publicProfile.makePublic }));
-    await userEvent.click(screen.getByRole("button", { name: es.publicProfile.makePublic }));
-    expect(screen.getByText(es.publicProfile.handleTaken)).toBeInTheDocument();
-    expect(screen.getByLabelText(es.settings.handle)).toBeInTheDocument();
+    expect(screen.getByText(es.publicProfile.usernameReserved)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: es.publicProfile.stayPrivate })).toBeEnabled();
   });
 
   it("waits for a connection instead of asking offline", () => {

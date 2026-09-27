@@ -8,7 +8,6 @@ import { LoadingLabel } from "@/components/ui/LoadingLabel";
 import { Modal } from "@/components/ui/Modal";
 import { useDictionary } from "@/components/i18n/LocaleProvider";
 import { PublicProfileSummary } from "@/components/profile/PublicProfileSummary";
-import { HandleField } from "@/components/profile/HandleField";
 import { setVisibilityAction } from "@/features/profile/actions";
 import type { Visibility } from "@/features/profile/queries";
 
@@ -20,12 +19,11 @@ const UNDO_WINDOW_MS = 10_000;
 // Going public asks first and shows exactly what will be seen.
 export function ProfilePrivacyCard({
   visibility,
-  handle,
-  suggestedHandle,
+  username,
 }: {
   visibility: Visibility;
-  handle: string | null;
-  suggestedHandle: string;
+  // The public @ (0039).
+  username: string | null;
 }) {
   const dict = useDictionary();
   const t = dict.publicProfile;
@@ -33,7 +31,6 @@ export function ProfilePrivacyCard({
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [confirmingPublic, setConfirmingPublic] = useState(false);
-  const [handleDraft, setHandleDraft] = useState(handle ?? suggestedHandle);
   const [undoable, setUndoable] = useState(false);
   const isPublic = visibility === "public";
 
@@ -43,12 +40,10 @@ export function ProfilePrivacyCard({
     return () => clearTimeout(timer);
   }, [undoable]);
 
-  function save(next: "public" | "private", withHandle?: string, onDone?: () => void) {
+  function save(next: "public" | "private", onDone?: () => void) {
     setError(null);
     startTransition(async () => {
-      const result = await setVisibilityAction(
-        next === "public" ? { visibility: next, handle: withHandle } : { visibility: next },
-      );
+      const result = await setVisibilityAction({ visibility: next });
       if (!result.success) {
         setError(result.message);
         return;
@@ -68,12 +63,12 @@ export function ProfilePrivacyCard({
         </span>
       </div>
       <p className="mt-1 text-sm text-ink-muted">
-        {isPublic ? t.cardPublicBody.replace("{handle}", handle ?? "") : t.cardPrivateBody}
+        {isPublic ? t.cardPublicBody.replace("{username}", username ?? "") : t.cardPrivateBody}
       </p>
 
       <div className="mt-4 flex flex-wrap items-center gap-2">
         {isPublic ? (
-          <Button type="button" variant="secondary" disabled={isPending} onClick={() => save("private", undefined, () => setUndoable(true))}>
+          <Button type="button" variant="secondary" disabled={isPending} onClick={() => save("private", () => setUndoable(true))}>
             <Lock aria-hidden className="size-4" />
             <LoadingLabel loading={isPending}>{t.makePrivate}</LoadingLabel>
           </Button>
@@ -92,7 +87,7 @@ export function ProfilePrivacyCard({
             type="button"
             className="min-h-11 font-medium underline"
             disabled={isPending}
-            onClick={() => save("public", undefined, () => setUndoable(false))}
+            onClick={() => save("public", () => setUndoable(false))}
           >
             {t.undo}
           </button>
@@ -114,20 +109,22 @@ export function ProfilePrivacyCard({
           className="mt-3 space-y-5"
           onSubmit={(e) => {
             e.preventDefault();
-            save("public", handle ? undefined : handleDraft, () => setConfirmingPublic(false));
+            save("public", () => setConfirmingPublic(false));
           }}
         >
           <PublicProfileSummary />
-          {!handle && (
-            <HandleField id="privacy-card-handle" value={handleDraft} onChange={setHandleDraft} error={error} />
+          {username && (
+            <p className="rounded-input bg-canvas px-3 py-2.5 text-sm text-ink">
+              {t.foundAs.replace("{username}", username)}
+            </p>
           )}
-          {error && handle && (
+          {error && (
             <p role="alert" className="text-sm text-danger">
               {error}
             </p>
           )}
           <div className="flex flex-col gap-2">
-            <Button type="submit" fullWidth disabled={isPending || (!handle && handleDraft.length < 3)}>
+            <Button type="submit" fullWidth disabled={isPending}>
               <LoadingLabel loading={isPending}>{t.makePublic}</LoadingLabel>
             </Button>
             <Button

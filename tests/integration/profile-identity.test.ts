@@ -1,19 +1,19 @@
-// F1: handle, bio and the explicit public/private choice. Nothing here
-// makes a profile readable by anyone else yet; these check the rules the
-// later public functions will rely on.
+// F1: the public @ (the username), bio and the explicit public/private
+// choice. Nothing here makes a profile readable by anyone else yet; these
+// check the rules the later public functions will rely on.
 import { afterAll, describe, expect, it } from "vitest";
 import { asService, asUser, closeDb, createUser, errorCode, withRollback } from "./helpers/db";
 
 afterAll(closeDb);
 
-const handleFor = (id: string) => `t_${id.replace(/-/g, "").slice(0, 12)}`;
+const usernameFor = (id: string) => `t_${id.replace(/-/g, "").slice(0, 12)}`;
 
 describe("visibility", () => {
   it("starts unset for every new account", async () => {
     await withRollback(async (tx) => {
       const a = await createUser(tx);
-      const [profile] = await tx`select visibility, visibility_chosen_at, handle from public.profiles where id = ${a.id}`;
-      expect(profile).toEqual({ visibility: "unset", visibility_chosen_at: null, handle: null });
+      const [profile] = await tx`select visibility, visibility_chosen_at from public.profiles where id = ${a.id}`;
+      expect(profile).toEqual({ visibility: "unset", visibility_chosen_at: null });
     });
   });
 
@@ -43,14 +43,14 @@ describe("visibility", () => {
     });
   });
 
-  it("can't be public without a handle", async () => {
+  it("can't be public without a username", async () => {
     await withRollback(async (tx) => {
       const a = await createUser(tx);
       await asUser(tx, a);
       expect(await errorCode(tx, (sp) => sp`update public.profiles set visibility = 'public' where id = ${a.id}`)).toBe(
         "23514",
       );
-      await tx`update public.profiles set handle = ${handleFor(a.id)}, visibility = 'public' where id = ${a.id}`;
+      await tx`update public.profiles set username = ${usernameFor(a.id)}, visibility = 'public' where id = ${a.id}`;
       const [profile] = await tx`select visibility from public.profiles where id = ${a.id}`;
       expect(profile.visibility).toBe("public");
     });
@@ -69,13 +69,13 @@ describe("visibility", () => {
   });
 });
 
-describe("handle", () => {
-  it("must be 3-30 lowercase letters, digits or underscores", async () => {
+describe("username as the public @", () => {
+  it("must be 3-20 lowercase letters, digits, _ or -", async () => {
     await withRollback(async (tx) => {
       const a = await createUser(tx);
       await asUser(tx, a);
-      for (const bad of ["ab", "Mayusculas", "con espacio", "tildé", "a".repeat(31), "guion-medio"]) {
-        expect(await errorCode(tx, (sp) => sp`update public.profiles set handle = ${bad} where id = ${a.id}`), bad).toBe(
+      for (const bad of ["ab", "Mayusculas", "con espacio", "tildé", "a".repeat(21), "punto.medio"]) {
+        expect(await errorCode(tx, (sp) => sp`update public.profiles set username = ${bad} where id = ${a.id}`), bad).toBe(
           "23514",
         );
       }
@@ -86,11 +86,11 @@ describe("handle", () => {
     await withRollback(async (tx) => {
       const a = await createUser(tx);
       const b = await createUser(tx);
-      const handle = handleFor(a.id);
+      const username = usernameFor(a.id);
       await asUser(tx, a);
-      await tx`update public.profiles set handle = ${handle} where id = ${a.id}`;
+      await tx`update public.profiles set username = ${username} where id = ${a.id}`;
       await asUser(tx, b);
-      expect(await errorCode(tx, (sp) => sp`update public.profiles set handle = ${handle} where id = ${b.id}`)).toBe(
+      expect(await errorCode(tx, (sp) => sp`update public.profiles set username = ${username} where id = ${b.id}`)).toBe(
         "23505",
       );
     });
@@ -100,10 +100,26 @@ describe("handle", () => {
     await withRollback(async (tx) => {
       const a = await createUser(tx);
       await asUser(tx, a);
-      expect(await errorCode(tx, (sp) => sp`update public.profiles set handle = 'grindaily' where id = ${a.id}`)).toBe(
+      expect(await errorCode(tx, (sp) => sp`update public.profiles set username = 'grindaily' where id = ${a.id}`)).toBe(
         "P0001",
       );
       expect(await errorCode(tx, (sp) => sp`select handle from public.reserved_handles`)).toBe("42501");
+    });
+  });
+
+  it("an account that already has a reserved username can't go public under it", async () => {
+    await withRollback(async (tx) => {
+      const a = await createUser(tx);
+      // Reserved after the account already had it — the way the original
+      // `admin` account got its name before names were reserved.
+      const username = usernameFor(a.id);
+      await tx`update public.profiles set username = ${username} where id = ${a.id}`;
+      await tx`insert into public.reserved_handles (handle, reason) values (${username}, 'test')`;
+      await asUser(tx, a);
+      expect(await errorCode(tx, (sp) => sp`update public.profiles set visibility = 'public' where id = ${a.id}`)).toBe(
+        "P0001",
+      );
+      await tx`update public.profiles set visibility = 'private' where id = ${a.id}`;
     });
   });
 

@@ -29,27 +29,15 @@ describe("updateProfileSchema", () => {
   });
 });
 
-describe("updateProfileSchema, public fields", () => {
-  it("normalizes a handle typed with @, spaces or capitals", () => {
-    const result = updateProfileSchema.safeParse({ displayName: "Marina", handle: " @Marina_V60 " });
-    expect(result.success && result.data.handle).toBe("marina_v60");
+describe("updateProfileSchema, bio", () => {
+  it("clears the bio when emptied", () => {
+    const result = updateProfileSchema.safeParse({ displayName: "Marina", bio: "   " });
+    expect(result.success && result.data.bio).toBeNull();
   });
 
-  it("clears handle and bio when the fields are emptied", () => {
-    const result = updateProfileSchema.safeParse({ displayName: "Marina", handle: "", bio: "   " });
-    expect(result.success && result.data).toMatchObject({ handle: null, bio: null });
-  });
-
-  it("leaves them out entirely when the form didn't send them", () => {
+  it("leaves it out entirely when the form didn't send it", () => {
     const result = updateProfileSchema.safeParse({ displayName: "Marina" });
-    expect(result.success && result.data).toEqual({ displayName: "Marina", handle: undefined, bio: undefined });
-  });
-
-  it("rejects a handle outside 3-30 of [a-z0-9_]", () => {
-    for (const handle of ["ab", "con espacio", "guion-medio", "tildé", "a".repeat(31)]) {
-      const result = updateProfileSchema.safeParse({ displayName: "Marina", handle });
-      expect(result.success, handle).toBe(false);
-    }
+    expect(result.success && result.data).toEqual({ displayName: "Marina", bio: undefined });
   });
 
   it("rejects a bio over 160 characters", () => {
@@ -59,14 +47,9 @@ describe("updateProfileSchema, public fields", () => {
 });
 
 describe("setVisibilitySchema", () => {
-  it("takes private on its own", () => {
+  it("takes private or public", () => {
     expect(setVisibilitySchema.safeParse({ visibility: "private" }).success).toBe(true);
-  });
-
-  it("takes public with or without a handle, normalizing it", () => {
     expect(setVisibilitySchema.safeParse({ visibility: "public" }).success).toBe(true);
-    const result = setVisibilitySchema.safeParse({ visibility: "public", handle: "@Lucia" });
-    expect(result.success && result.data).toEqual({ visibility: "public", handle: "lucia" });
   });
 
   it("never takes unset back", () => {

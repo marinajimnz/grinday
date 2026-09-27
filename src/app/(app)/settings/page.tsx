@@ -5,7 +5,6 @@ import { ThemeToggle } from "@/components/settings/ThemeToggle";
 import { ProfilePrivacyCard } from "@/components/settings/ProfilePrivacyCard";
 import { createClient } from "@/lib/supabase/server";
 import { getMyPublicIdentity } from "@/features/profile/queries";
-import { suggestHandle } from "@/features/profile/handle";
 import { getLocale } from "@/lib/i18n/locale";
 import { getDictionary } from "@/lib/i18n/get-dictionary";
 import { IconCuenta, IconMaquinas, IconPerfil } from "@/components/icons/pencil-icons";
@@ -33,11 +32,7 @@ export default async function SettingsPage() {
           never more than one tap away. */}
       {identity?.socialEnabled && (
         <div className="mt-8">
-          <ProfilePrivacyCard
-            visibility={identity.visibility}
-            handle={identity.handle}
-            suggestedHandle={suggestHandle(identity.displayName)}
-          />
+          <ProfilePrivacyCard visibility={identity.visibility} username={identity.username} />
         </div>
       )}
 

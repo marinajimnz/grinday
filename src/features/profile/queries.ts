@@ -8,7 +8,8 @@ export type Visibility = "unset" | "private" | "public";
 
 export type MyPublicIdentity = {
   displayName: string | null;
-  handle: string | null;
+  // The public @ is the username (0039).
+  username: string | null;
   bio: string | null;
   visibility: Visibility;
   // Whether the public side of the app is on for this account (the
@@ -23,13 +24,13 @@ function asVisibility(value: string | null | undefined): Visibility {
 
 export async function getMyPublicIdentity(supabase: Client, userId: string): Promise<MyPublicIdentity> {
   const [{ data: profile, error }, { data: socialEnabled }] = await Promise.all([
-    supabase.from("profiles").select("display_name, handle, bio, visibility").eq("id", userId).single(),
+    supabase.from("profiles").select("display_name, username, bio, visibility").eq("id", userId).single(),
     supabase.rpc("social_enabled_for_me"),
   ]);
   if (error) throw error;
   return {
     displayName: profile.display_name,
-    handle: profile.handle,
+    username: profile.username,
     bio: profile.bio,
     visibility: asVisibility(profile.visibility),
     socialEnabled: socialEnabled === true,
