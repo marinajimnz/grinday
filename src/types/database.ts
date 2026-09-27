@@ -669,6 +669,14 @@ export type Database = {
         Args: { p_profile_id: string }
         Returns: boolean
       }
+      search_profiles: {
+        Args: { p_kind?: string; p_query: string }
+        Returns: {
+          account_type: string
+          display_name: string
+          username: string
+        }[]
+      }
       set_default_equipment: {
         Args: { p_equipment_id: string }
         Returns: {

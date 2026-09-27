@@ -15,14 +15,15 @@ const serwist = new Serwist({
   skipWaiting: true,
   clientsClaim: true,
   navigationPreload: true,
-  // Other accounts' public pages are never kept on the device: a profile
+  // Other accounts' public pages (profiles, search) are never kept on the device: a profile
   // that goes private or gets suspended must stop showing at once, and on a
   // shared phone the next person signed in mustn't find the last one's
   // browsing in the cache. Checked before defaultCache, which would
   // otherwise keep them like any page.
   runtimeCaching: [
     {
-      matcher: ({ sameOrigin, url }) => sameOrigin && url.pathname.startsWith("/u/"),
+      matcher: ({ sameOrigin, url }) =>
+        sameOrigin && (url.pathname.startsWith("/u/") || url.pathname === "/search"),
       handler: new NetworkOnly(),
     },
     ...defaultCache,

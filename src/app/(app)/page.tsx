@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Search } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { IconCafe, IconFavorito, IconPreparar } from "@/components/icons/pencil-icons";
 import { getDashboardRecipe, getRecentAttempts, hasAnyCoffee } from "@/features/dashboard/queries";
@@ -23,7 +24,10 @@ export default async function DashboardPage() {
     ? await supabase.from("profiles").select("display_name").eq("id", user.id).single()
     : { data: null };
 
-  const hasCoffee = user ? await hasAnyCoffee(supabase, user.id) : false;
+  const [hasCoffee, { data: socialEnabled }] = await Promise.all([
+    user ? hasAnyCoffee(supabase, user.id) : Promise.resolve(false),
+    supabase.rpc("social_enabled_for_me"),
+  ]);
 
   const [recipe, recentAttempts] =
     hasCoffee && user
@@ -37,17 +41,30 @@ export default async function DashboardPage() {
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-8 md:px-8">
-      <h1 className="flex flex-wrap items-center gap-x-2 font-display text-4xl break-words text-ink">
-        {profile?.display_name ? (
-          <>
-            {profile.display_name}
-            <IconFavorito aria-hidden className="size-6 text-coffee" />
-            grindaily
-          </>
-        ) : (
-          dict.dashboard.title
+      <div className="flex items-start justify-between gap-3">
+        <h1 className="flex min-w-0 flex-wrap items-center gap-x-2 font-display text-4xl break-words text-ink">
+          {profile?.display_name ? (
+            <>
+              {profile.display_name}
+              <IconFavorito aria-hidden className="size-6 text-coffee" />
+              grindaily
+            </>
+          ) : (
+            dict.dashboard.title
+          )}
+        </h1>
+        {/* Only once the public side is on for this account: until then
+            there's nobody to find. */}
+        {socialEnabled && (
+          <Link
+            href="/search"
+            aria-label={dict.search.openSearch}
+            className="inline-flex size-11 shrink-0 items-center justify-center rounded-input border border-border bg-surface text-ink"
+          >
+            <Search aria-hidden className="size-5" />
+          </Link>
         )}
-      </h1>
+      </div>
 
       {!hasCoffee ? (
         <>
