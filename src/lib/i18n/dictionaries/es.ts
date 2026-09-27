@@ -173,6 +173,11 @@ const es = {
     searching: "Buscando...",
   },
   publicProfile: {
+    catalogOne: "1 café en catálogo",
+    catalogMany: "{count} cafés en catálogo",
+    roasterCoffees: "Cafés de la tostadora",
+    recommendedRecipe: "Receta recomendada",
+    seeDetail: "Ver detalle",
     preferredRecipe: "Receta preferida",
     byUser: "de @{username}",
     viewConfiguration: "Ver configuración",

@@ -1,11 +1,17 @@
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { getPublicProfile, getPublicProfileContent, isProfileSaved } from "@/features/profile/publicQueries";
+import {
+  getPublicCoffee,
+  getPublicProfile,
+  getPublicProfileContent,
+  isProfileSaved,
+} from "@/features/profile/publicQueries";
 import { SaveProfileButton } from "@/components/profile/SaveProfileButton";
 import {
   PublicAttemptsSection,
   PublicCoffeesSection,
   PublicEquipmentSection,
+  RecommendedRecipeCard,
 } from "@/components/profile/PublicProfileSections";
 import { ProfileAvatar } from "@/components/profile/ProfileAvatar";
 import { OwnProfileBanner } from "@/components/profile/OwnProfileBanner";
@@ -38,6 +44,17 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
     isProfileSaved(supabase, profile.username),
   ]);
   const isMe = me?.username === profile.username;
+  const isRoaster = profile.accountType === "roaster";
+
+  // A roaster's recommended recipe: the preferred one of the first coffee
+  // in its catalogue that has one (the list puts those first).
+  const recommendedCoffee = isRoaster ? content.coffees.find((c) => c.hasRecipe) : undefined;
+  const recommended = recommendedCoffee
+    ? await getPublicCoffee(supabase, profile.username, recommendedCoffee.id).then((result) => {
+        const attempt = result?.attempts.find((a) => a.isPreferred);
+        return attempt ? { coffeeName: recommendedCoffee.name, attempt } : null;
+      })
+    : null;
 
   const locale = await getLocale();
   const dict = getDictionary(locale);
@@ -62,18 +79,46 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
       )}
 
       <header className="mt-4">
-        <ProfileAvatar displayName={profile.displayName} username={profile.username} className="size-20 text-3xl" />
+        <ProfileAvatar
+          displayName={profile.displayName}
+          username={profile.username}
+          kind={profile.accountType}
+          className="size-20 text-3xl"
+        />
         <h1 className="mt-4 font-display text-3xl break-words text-ink text-balance">
           {profile.displayName ?? `@${profile.username}`}
         </h1>
         <p className="mt-0.5 text-sm text-ink-muted">@{profile.username}</p>
+        {isRoaster && (
+          <span className="mt-2 inline-flex rounded-full bg-canvas px-3 py-1 text-xs font-medium text-ink">
+            {t.accountTypeRoaster}
+          </span>
+        )}
         {profile.bio && <p className="mt-3 max-w-prose text-sm whitespace-pre-line text-ink">{profile.bio}</p>}
-        <p className="mt-3 text-sm text-ink-muted tabular-nums">{counts}</p>
+        <p className="mt-3 text-sm text-ink-muted tabular-nums">
+          {isRoaster ? countLabel(profile.coffeesCount, t.catalogOne, t.catalogMany) : counts}
+        </p>
       </header>
 
-      <PublicCoffeesSection coffees={content.coffees} username={profile.username} dict={dict} />
-      <PublicEquipmentSection equipment={content.equipment} dict={dict} />
-      <PublicAttemptsSection attempts={content.attempts} username={profile.username} dict={dict} locale={locale} />
+      {isRoaster ? (
+        <>
+          <PublicCoffeesSection coffees={content.coffees} username={profile.username} dict={dict} asRoaster />
+          {recommended && (
+            <RecommendedRecipeCard
+              coffeeName={recommended.coffeeName}
+              attempt={recommended.attempt}
+              username={profile.username}
+              dict={dict}
+            />
+          )}
+        </>
+      ) : (
+        <>
+          <PublicCoffeesSection coffees={content.coffees} username={profile.username} dict={dict} />
+          <PublicEquipmentSection equipment={content.equipment} dict={dict} />
+          <PublicAttemptsSection attempts={content.attempts} username={profile.username} dict={dict} locale={locale} />
+        </>
+      )}
     </div>
   );
 }

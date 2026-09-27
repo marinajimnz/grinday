@@ -132,6 +132,7 @@ describe("search_profiles", () => {
       expect(await search(tx, regular, t)).toHaveLength(0);
 
       expect(await search(tx, admin, t, "person")).toHaveLength(1);
+      // Lucía is a person, so the roaster filter leaves her out.
       expect(await search(tx, admin, t, "roaster")).toHaveLength(0);
       await asUser(tx, admin);
       expect(await errorCode(tx, (sp) => sp`select * from public.search_profiles(${t}, 'otra')`)).toBe("22023");

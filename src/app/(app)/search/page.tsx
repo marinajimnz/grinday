@@ -59,6 +59,7 @@ export default async function SearchPage({
                 <ProfileRow
                   username={profile.username}
                   displayName={profile.displayName}
+                  kind={profile.accountType}
                   kindLabel={
                     profile.accountType === "roaster"
                       ? dict.publicProfile.accountTypeRoaster
