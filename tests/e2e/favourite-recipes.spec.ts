@@ -64,6 +64,10 @@ test("reaches the favourites from Home and from the coffee library", async ({ pa
   const name = `Linked Coffee ${Date.now()}`;
 
   await createCoffeeBasic(page, { name });
+  // Waited for, not assumed: page.url() right after createCoffeeBasic can
+  // still be the form it was submitted from, and a coffeeUrl pointing at
+  // /coffees/new has no "Registrar manual" on it to click.
+  await expect(page).toHaveURL(/\/coffees\/[0-9a-f-]+$/);
   const coffeeUrl = page.url();
 
   await page.getByRole("link", { name: "Registrar manual" }).click();

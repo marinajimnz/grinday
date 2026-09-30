@@ -188,12 +188,17 @@ export async function listBrewableCoffees(supabase: Client, userId: string): Pro
 
 // The three numbers a recipe card shows, on top of what seeding a brew from it
 // needs. Same set the dashboard's card selects — see features/dashboard/queries.
-const FAVOURITE_CARD_FIELDS = `${RECIPE_SOURCE_ATTEMPT_FIELDS}, favourite_at, grind_seconds, extraction_ms, output_weight_g`;
+const FAVOURITE_CARD_FIELDS = `${RECIPE_SOURCE_ATTEMPT_FIELDS}, favourite_at, created_at, grind_seconds, extraction_ms, output_weight_g`;
 
 export type FavouriteRecipeItem = FavouriteRecipe & {
   attempt: RecipeSourceAttempt & Pick<BrewAttemptRow, "grind_seconds" | "extraction_ms" | "output_weight_g">;
   /** The bag a new brew would come out of, or null when every bag is spent. */
   targetBagId: string | null;
+  /** When it was brewed — what tells two recipes of the same method apart on
+   *  a card, since the method alone repeats. The attempts table has no
+   *  separate brew date; created_at is it, and it is what the timeline
+   *  prints too. */
+  brewedOn: string;
 };
 
 /**
@@ -236,7 +241,7 @@ export async function listFavouriteRecipes(
   }
 
   return groupFavouritesByCoffee(
-    rows.map(({ coffee, coffee_id, favourite_at, ...attempt }) => ({
+    rows.map(({ coffee, coffee_id, favourite_at, created_at, ...attempt }) => ({
       coffeeId: coffee_id,
       coffeeName: coffee!.name,
       roaster: coffee!.roaster,
@@ -244,6 +249,7 @@ export async function listFavouriteRecipes(
       // Not null: the query asked for rows where it isn't.
       favouriteAt: favourite_at!,
       targetBagId: targetBagByCoffee.get(coffee_id) ?? null,
+      brewedOn: created_at,
       attempt,
     })),
   );

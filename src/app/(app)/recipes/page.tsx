@@ -8,6 +8,7 @@ import { BackButton } from "@/components/ui/BackButton";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Button } from "@/components/ui/Button";
 import { getLocale } from "@/lib/i18n/locale";
+import { formatRelativeDay } from "@/lib/i18n/format-date";
 import { getDictionary } from "@/lib/i18n/get-dictionary";
 
 // Every recipe you have starred, grouped by coffee. The dashboard shows one —
@@ -21,7 +22,8 @@ export default async function RecipesPage() {
   } = await supabase.auth.getUser();
   if (!user) notFound();
 
-  const dict = getDictionary(await getLocale());
+  const locale = await getLocale();
+  const dict = getDictionary(locale);
   const t = dict.recipes;
   const groups = await listFavouriteRecipes(supabase, user.id);
   const count = groups.reduce((total, group) => total + group.recipes.length, 0);
@@ -78,13 +80,17 @@ export default async function RecipesPage() {
                     userId={user.id}
                     brewable={group.brewable}
                     // The coffee is already the heading, so the card's caption
-                    // is free to say the thing that tells two of them apart.
-                    label={
+                    // is free to say what tells two of them apart. The method
+                    // alone does not: two starred V60s read the same, and then
+                    // the only difference is in numbers you have to compare.
+                    label={`${
                       dict.equipment.methodLabels[
                         recipe.attempt.method as keyof typeof dict.equipment.methodLabels
-                      ] ??
-                      recipe.attempt.method
-                    }
+                      ] ?? recipe.attempt.method
+                    } · ${formatRelativeDay(recipe.brewedOn, locale, {
+                      today: dict.dashboard.today,
+                      yesterday: dict.dashboard.yesterday,
+                    })}`}
                   />
                 ))}
               </div>
