@@ -11,6 +11,8 @@ import {
   RoasterButtons,
 } from "@/components/admin/AdminWidgets";
 import { Button } from "@/components/ui/Button";
+import { LinkPendingLabel } from "@/components/ui/LinkPendingLabel";
+import { ScrollActiveIntoView } from "@/components/ui/ScrollActiveIntoView";
 import { cn } from "@/lib/cn";
 import { formatDateTime } from "@/lib/i18n/format-date";
 import { getLocale } from "@/lib/i18n/locale";
@@ -80,9 +82,12 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
               tab === value ? "border-ink bg-ink text-surface" : "border-border bg-surface text-ink",
             )}
           >
-            {tabLabels[value]}
+            {/* The tab's content is fetched fresh from the server; the
+                label turns into a spinner so the tap shows it registered. */}
+            <LinkPendingLabel>{tabLabels[value]}</LinkPendingLabel>
           </Link>
         ))}
+        <ScrollActiveIntoView activeKey={tab} />
       </nav>
 
       <div className="mt-6">
