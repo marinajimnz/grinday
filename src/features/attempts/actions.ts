@@ -39,6 +39,7 @@ function toAttemptRow(
     moka_cup_size: input.mokaCupSize ?? null,
     cup_count: input.cupCount ?? null,
     heat_intensity: input.heatIntensity ?? null,
+    basket_type: input.basketType ?? null,
     equipment_id: input.equipmentId ?? null,
     grinder_id: input.grinderId ?? null,
     grind_setting: input.grindSetting ?? null,

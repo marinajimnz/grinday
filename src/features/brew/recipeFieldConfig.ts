@@ -23,6 +23,9 @@ export type RecipeFieldConfig = {
   // beverage weight in the cup ("coffee/brew ratio"), every pour-over/
   // immersion method against the water poured in ("coffee/water ratio").
   ratioDenominator: "targetWeightG" | "waterG";
+  // Espresso machines only: pressurized or non-pressurized basket, which
+  // changes how fine the same dose has to be ground.
+  hasBasketType: boolean;
 };
 
 // One recipe shape per category — this is what a brand-new method inherits
@@ -39,6 +42,7 @@ const RECIPE_FIELD_CONFIG_DEFAULTS: Record<BrewMethodCategory, RecipeFieldConfig
     hasMoka: false,
     cupCountMode: "choice",
     ratioDenominator: "targetWeightG",
+    hasBasketType: true,
   },
   // Modeled on Chemex: weighing the finished brew is nice to have but not
   // essential for most pour-over methods.
@@ -50,6 +54,7 @@ const RECIPE_FIELD_CONFIG_DEFAULTS: Record<BrewMethodCategory, RecipeFieldConfig
     hasMoka: false,
     cupCountMode: "manual",
     ratioDenominator: "waterG",
+    hasBasketType: false,
   },
   // Modeled on the French press: steep for a set time, then weigh what you
   // poured. Aeropress overrides this — dilution and a shorter, optional
@@ -62,6 +67,7 @@ const RECIPE_FIELD_CONFIG_DEFAULTS: Record<BrewMethodCategory, RecipeFieldConfig
     hasMoka: false,
     cupCountMode: "manual",
     ratioDenominator: "waterG",
+    hasBasketType: false,
   },
   moka_pot: {
     hasWater: true,
@@ -71,6 +77,7 @@ const RECIPE_FIELD_CONFIG_DEFAULTS: Record<BrewMethodCategory, RecipeFieldConfig
     hasMoka: true,
     cupCountMode: "pot",
     ratioDenominator: "waterG",
+    hasBasketType: false,
   },
   other: {
     hasWater: true,
@@ -80,6 +87,7 @@ const RECIPE_FIELD_CONFIG_DEFAULTS: Record<BrewMethodCategory, RecipeFieldConfig
     hasMoka: false,
     cupCountMode: "manual",
     ratioDenominator: "waterG",
+    hasBasketType: false,
   },
 };
 

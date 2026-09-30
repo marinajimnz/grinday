@@ -249,6 +249,7 @@ export type PublicAttemptDetail = {
     grinder_lower_burr: number | null;
     moka_cup_size: number | null;
     heat_intensity: string | null;
+    basket_type: string | null;
   };
 };
 
@@ -288,6 +289,7 @@ export async function getPublicAttempt(
       grinder_lower_burr: num(row.grinder_lower_burr),
       moka_cup_size: num(row.moka_cup_size),
       heat_intensity: row.heat_intensity ?? null,
+      basket_type: row.basket_type ?? null,
     },
   };
 }

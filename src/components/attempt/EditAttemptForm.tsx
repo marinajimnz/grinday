@@ -42,6 +42,7 @@ export function EditAttemptForm({
         doseMode: (attempt.dose_mode as FormValues["attempt"]["doseMode"]) ?? undefined,
         doseFeedback: (attempt.dose_feedback as FormValues["attempt"]["doseFeedback"]) ?? undefined,
         basketSize: (attempt.basket_size as FormValues["attempt"]["basketSize"]) ?? undefined,
+        basketType: (attempt.basket_type as FormValues["attempt"]["basketType"]) ?? undefined,
         temperatureOffsetC: attempt.temperature_offset_c ?? undefined,
         shotMode: (attempt.shot_mode as FormValues["attempt"]["shotMode"]) ?? undefined,
         extractionMs: attempt.extraction_ms ?? undefined,

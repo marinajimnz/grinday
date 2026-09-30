@@ -72,7 +72,7 @@ export type BrewableCoffee = {
 };
 
 export const RECIPE_SOURCE_ATTEMPT_FIELDS =
-  "id, attempt_no, method, dose_g, water_g, dilution_water_g, target_weight_g, temperature_c, target_time_ms, grind_setting, grinder_upper_burr, grinder_lower_burr, moka_cup_size, cup_count, heat_intensity, equipment_id, grinder_id, equipment_snapshot";
+  "id, attempt_no, method, dose_g, water_g, dilution_water_g, target_weight_g, temperature_c, target_time_ms, grind_setting, grinder_upper_burr, grinder_lower_burr, moka_cup_size, cup_count, heat_intensity, basket_type, equipment_id, grinder_id, equipment_snapshot";
 
 // The recipe defaults for a new brew come from the most recent attempt
 // logged for this exact (coffee, method) pair — not the coffee's single

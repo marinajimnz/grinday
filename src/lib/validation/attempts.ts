@@ -2,6 +2,7 @@ import { z } from "zod";
 import {
   ATTEMPT_MEDIA_KINDS,
   BASKET_SIZES,
+  BASKET_TYPES,
   MAX_CUP_COUNT,
   DOSE_FEEDBACKS,
   DOSE_MODES,
@@ -34,6 +35,8 @@ export const attemptFieldsSchema = z.object({
   // record cups now, so the range matches the column's own check.
   cupCount: z.number().int().min(1).max(MAX_CUP_COUNT).optional(),
   heatIntensity: optionalEnum(HEAT_INTENSITIES),
+  // Espresso only: pressurized or non-pressurized basket.
+  basketType: optionalEnum(BASKET_TYPES),
   equipmentId: z.uuid().optional(),
   grinderId: z.uuid().optional(),
   // Display-only snapshot of the equipment names at brew time (survives the

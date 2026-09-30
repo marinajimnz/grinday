@@ -491,6 +491,7 @@ const es = {
     doseMode: { auto: "Automática", manual: "Manual" },
     doseFeedback: { under: "Por debajo", ideal: "Ideal", over: "Por encima", unknown: "No lo sé" },
     basketSize: { single: "1 taza", double: "2 tazas" },
+    basketType: { pressurized: "Presurizado", non_pressurized: "Despresurizado" },
     shotMode: { single: "1 taza", double: "2 tazas", manual: "Manual" },
     tasteDimension: {
       acidity: "Acidez",
@@ -748,6 +749,7 @@ const es = {
     oneCup: "Una taza",
     twoCups: "Dos tazas",
     heatIntensity: "Intensidad de calor",
+    basketType: "Filtro",
     ratio: "Ratio café/bebida",
     auto: "Auto",
     target: "objetivo",

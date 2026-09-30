@@ -71,6 +71,7 @@ export type AttemptRecipeSummaryAttempt = Pick<
   | "grinder_lower_burr"
   | "moka_cup_size"
   | "heat_intensity"
+  | "basket_type"
 >;
 
 export function AttemptRecipeSummary({ attempt }: { attempt: AttemptRecipeSummaryAttempt }) {
@@ -99,6 +100,15 @@ export function AttemptRecipeSummary({ attempt }: { attempt: AttemptRecipeSummar
   // Metric type guard below then can't satisfy.
   const candidates: Array<Metric | false | "" | null | undefined> = [
     doseG != null && { label: dict.brew.doseG, value: `${doseG} g`, icon: IconGrano },
+    // Right after the dose: the basket decides how that dose has to be
+    // ground, so it's the first thing to know before repeating the shot.
+    config.hasBasketType &&
+      attempt.basket_type && {
+        label: dict.brew.basketType,
+        value:
+          dict.enums.basketType[attempt.basket_type as keyof typeof dict.enums.basketType] ??
+          attempt.basket_type,
+      },
     config.hasWater &&
       attempt.water_g != null && {
         label: dict.brew.waterG,

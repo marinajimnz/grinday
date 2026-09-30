@@ -64,6 +64,7 @@ describe("buildDraftFromRecipe", () => {
       moka_cup_size: null,
       cup_count: null,
       heat_intensity: null,
+      basket_type: null,
       equipment_id: "equip-1",
       grinder_id: "grinder-1",
       equipment_snapshot: { equipment_model_name: "Hario V60-02", grinder_model_name: "1Zpresso J-Ultra" },
@@ -91,6 +92,45 @@ describe("buildDraftFromRecipe", () => {
     // A fresh draft never inherits a previous shot's timing or sensory data.
     expect(draft.extractionMs).toBeNull();
     expect(draft.postShot).toEqual({});
+  });
+
+  it("recalls the espresso basket type, but never guesses one on a first brew", () => {
+    expect(buildDraftFromRecipe({ ...baseParams, method: "espresso" }).recipe.basketType).toBeUndefined();
+
+    const source = {
+      id: "attempt-2",
+      attempt_no: 1,
+      method: "espresso",
+      dose_g: 18,
+      water_g: null,
+      dilution_water_g: null,
+      target_weight_g: 36,
+      temperature_c: 93,
+      target_time_ms: 28000,
+      grind_setting: null,
+      grinder_upper_burr: null,
+      grinder_lower_burr: null,
+      moka_cup_size: null,
+      cup_count: 1,
+      heat_intensity: null,
+      basket_type: "pressurized",
+      equipment_id: null,
+      grinder_id: null,
+      equipment_snapshot: {},
+    } satisfies RecipeSourceAttempt;
+
+    expect(
+      buildDraftFromRecipe({ ...baseParams, method: "espresso", sourceAttempt: source }).recipe.basketType,
+    ).toBe("pressurized");
+    // A basket means nothing on a V60, and an unknown value is dropped.
+    expect(buildDraftFromRecipe({ ...baseParams, sourceAttempt: source }).recipe.basketType).toBeUndefined();
+    expect(
+      buildDraftFromRecipe({
+        ...baseParams,
+        method: "espresso",
+        sourceAttempt: { ...source, basket_type: "bottomless" },
+      }).recipe.basketType,
+    ).toBeUndefined();
   });
 
   it("prefers the silently-picked default equipment/grinder over the source attempt's", () => {

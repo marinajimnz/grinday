@@ -21,6 +21,15 @@ export function getCompareFields(dict: Dictionary): CompareField[] {
       group: "technical",
       format: (a) => dict.equipment.methodLabels[a.method as keyof typeof dict.equipment.methodLabels] ?? a.method,
     },
+    {
+      key: "basket_type",
+      label: dict.brew.basketType,
+      group: "technical",
+      format: (a) =>
+        a.basket_type
+          ? (dict.enums.basketType[a.basket_type as keyof typeof dict.enums.basketType] ?? a.basket_type)
+          : "—",
+    },
     { key: "dose_g", label: dict.brew.doseG, group: "technical", format: (a) => (a.dose_g != null ? `${a.dose_g} g` : "—") },
     { key: "water_g", label: dict.brew.waterG, group: "technical", format: (a) => (a.water_g != null ? `${a.water_g} g` : "—") },
     {

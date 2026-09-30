@@ -104,6 +104,7 @@ export type Database = {
           attempt_no: number
           balance: number | null
           basket_size: string | null
+          basket_type: string | null
           bitterness: number | null
           body: number | null
           coffee_bag_id: string
@@ -152,6 +153,7 @@ export type Database = {
           attempt_no?: number
           balance?: number | null
           basket_size?: string | null
+          basket_type?: string | null
           bitterness?: number | null
           body?: number | null
           coffee_bag_id: string
@@ -200,6 +202,7 @@ export type Database = {
           attempt_no?: number
           balance?: number | null
           basket_size?: string | null
+          basket_type?: string | null
           bitterness?: number | null
           body?: number | null
           coffee_bag_id?: string
@@ -889,6 +892,7 @@ export type Database = {
       get_public_attempt: {
         Args: { p_attempt_id: string; p_username: string }
         Returns: {
+          basket_type: string
           brewed_on: string
           coffee_id: string
           coffee_name: string

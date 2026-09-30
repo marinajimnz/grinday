@@ -5,6 +5,7 @@ import { Field, inputClassName } from "@/components/ui/Field";
 import { TasteScale } from "@/components/ui/TasteScale";
 import {
   BASKET_SIZES,
+  BASKET_TYPES,
   DOSE_FEEDBACKS,
   DOSE_MODES,
   SHOT_MODES,
@@ -95,6 +96,16 @@ export function AttemptFieldsFieldset({
             {BASKET_SIZES.map((s) => (
               <option key={s} value={s}>
                 {dict.enums.basketSize[s]}
+              </option>
+            ))}
+          </select>
+        </Field>
+        <Field label={dict.brew.basketType} htmlFor="attempt.basketType" error={errors?.basketType?.message}>
+          <select id="attempt.basketType" className={inputClassName} {...register("attempt.basketType")}>
+            <option value="">{dict.brew.choose}</option>
+            {BASKET_TYPES.map((t) => (
+              <option key={t} value={t}>
+                {dict.enums.basketType[t]}
               </option>
             ))}
           </select>

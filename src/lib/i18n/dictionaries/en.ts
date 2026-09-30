@@ -485,6 +485,7 @@ const en: Dictionary = {
     doseMode: { auto: "Automatic", manual: "Manual" },
     doseFeedback: { under: "Under", ideal: "Ideal", over: "Over", unknown: "Not sure" },
     basketSize: { single: "1 cup", double: "2 cups" },
+    basketType: { pressurized: "Pressurized", non_pressurized: "Non-pressurized" },
     shotMode: { single: "1 cup", double: "2 cups", manual: "Manual" },
     tasteDimension: {
       acidity: "Acidity",
@@ -742,6 +743,7 @@ const en: Dictionary = {
     oneCup: "One cup",
     twoCups: "Two cups",
     heatIntensity: "Heat intensity",
+    basketType: "Basket",
     ratio: "Coffee/brew ratio",
     auto: "Auto",
     target: "target",

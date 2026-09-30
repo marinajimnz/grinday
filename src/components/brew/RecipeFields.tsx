@@ -4,7 +4,7 @@ import { cn } from "@/lib/cn";
 import { SteppableFieldGrid, type SteppableField } from "./SteppableFieldGrid";
 import { SettingsAccordionCard } from "@/components/settings/SettingsAccordionCard";
 import { computeRatios, getRecipeFieldConfig, formatRatio } from "@/features/brew/recipeFieldConfig";
-import { CUP_COUNTS, HEAT_INTENSITIES, MAX_CUP_COUNT } from "@/features/attempts/constants";
+import { BASKET_TYPES, CUP_COUNTS, HEAT_INTENSITIES, MAX_CUP_COUNT } from "@/features/attempts/constants";
 import { IconCafe } from "@/components/icons/pencil-icons";
 import type { BrewDraftRecipe } from "@/features/brew/draft";
 import { useDictionary } from "@/components/i18n/LocaleProvider";
@@ -173,6 +173,36 @@ export function RecipeFields({
                 >
                   <IconCafe aria-hidden className="size-7" />
                   {count === 2 && <IconCafe aria-hidden className="size-7" />}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Pressurized or not: optional, so tapping the chosen one again
+          clears it — an attempt that doesn't say is better than one that
+          says the wrong thing. */}
+      {config.hasBasketType && (
+        <div>
+          <p className="mb-1.5 text-center text-xs font-medium uppercase tracking-wide text-ink-muted">
+            {dict.brew.basketType}
+          </p>
+          <div className="flex gap-2">
+            {BASKET_TYPES.map((type) => {
+              const selected = value.basketType === type;
+              return (
+                <button
+                  key={type}
+                  type="button"
+                  aria-pressed={selected}
+                  onClick={() => set("basketType", selected ? undefined : type)}
+                  className={cn(
+                    "min-h-11 flex-1 rounded-input border text-sm font-medium transition-colors",
+                    selected ? "border-ink bg-ink text-surface" : "border-border bg-surface text-ink-muted",
+                  )}
+                >
+                  {dict.enums.basketType[type]}
                 </button>
               );
             })}

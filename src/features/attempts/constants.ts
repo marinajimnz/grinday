@@ -4,6 +4,13 @@ export const DOSE_FEEDBACKS = ["under", "ideal", "over", "unknown"] as const;
 
 export const BASKET_SIZES = ["single", "double"] as const;
 
+// Espresso: which kind of basket the shot went through. Pressurized
+// baskets build their own crema and forgive a coarse grind; non-pressurized
+// ones need the grind dialed in — the same numbers make a different recipe
+// on each.
+export const BASKET_TYPES = ["pressurized", "non_pressurized"] as const;
+export type BasketType = (typeof BASKET_TYPES)[number];
+
 export const SHOT_MODES = ["single", "double", "manual"] as const;
 
 

@@ -161,6 +161,7 @@ export async function tryPublicRecipeAction(input: unknown): Promise<Result> {
         moka_cup_size: recipe.moka_cup_size,
         cup_count: recipe.cup_count,
         heat_intensity: recipe.heat_intensity,
+        basket_type: recipe.basket_type,
         equipment_id: null,
         grinder_id: null,
         equipment_snapshot: {},

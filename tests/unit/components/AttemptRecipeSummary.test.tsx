@@ -99,4 +99,15 @@ describe("AttemptRecipeSummary", () => {
     expect(cell.querySelector("dt svg")).toBeNull();
     expect(screen.getByText(es.enums.heatIntensity.medium)).toBeInTheDocument();
   });
+
+  it("shows the espresso basket type", () => {
+    renderCard(makeAttempt({ dose_g: 18, basket_type: "non_pressurized" }));
+    expect(screen.getByText(es.brew.basketType)).toBeInTheDocument();
+    expect(screen.getByText(es.enums.basketType.non_pressurized)).toBeInTheDocument();
+  });
+
+  it("says nothing about the basket on a method that doesn't have one", () => {
+    renderCard(makeAttempt({ method: "v60", dose_g: 15, basket_type: "pressurized" }));
+    expect(screen.queryByText(es.brew.basketType)).toBeNull();
+  });
 });

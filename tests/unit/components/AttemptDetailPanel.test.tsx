@@ -51,6 +51,7 @@ function makeAttempt(overrides: Partial<BrewAttemptRow> = {}): BrewAttemptRow {
     grinder_lower_burr: null,
     grinder_upper_burr: null,
     heat_intensity: null,
+    basket_type: null,
     idempotency_key: null,
     input_weight_g: null,
     intensity: null,

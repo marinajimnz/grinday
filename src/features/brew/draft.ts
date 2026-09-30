@@ -5,7 +5,8 @@
 
 import type { BrewMethod } from "@/features/equipment/constants";
 import { MAX_CUP_COUNT } from "@/features/attempts/constants";
-import type { AttemptMediaKind, CupCount } from "@/features/attempts/constants";
+import { BASKET_TYPES } from "@/features/attempts/constants";
+import type { AttemptMediaKind, BasketType, CupCount } from "@/features/attempts/constants";
 import { getRecipeFieldConfig } from "@/features/brew/recipeFieldConfig";
 
 export type BrewDraftRecipe = {
@@ -24,6 +25,9 @@ export type BrewDraftRecipe = {
   // nothing else in the recipe moves when it changes.
   cupCount?: CupCount;
   heatIntensity?: "low" | "medium" | "high";
+  // Espresso only: pressurized or non-pressurized basket. Optional — left
+  // unset, the attempt simply doesn't say.
+  basketType?: BasketType;
   equipmentId?: string;
   equipmentModelName?: string;
   grinderId?: string;
@@ -208,10 +212,15 @@ export type RecipeSourceAttempt = {
   moka_cup_size: number | null;
   cup_count: number | null;
   heat_intensity: string | null;
+  basket_type: string | null;
   equipment_id: string | null;
   grinder_id: string | null;
   equipment_snapshot: unknown;
 };
+
+function basketTypeFrom(value: string | null | undefined): BasketType | undefined {
+  return (BASKET_TYPES as readonly string[]).includes(value ?? "") ? (value as BasketType) : undefined;
+}
 
 function cupCountFrom(value: number | null | undefined): CupCount | undefined {
   if (value == null || !Number.isInteger(value)) return undefined;
@@ -288,6 +297,9 @@ export function buildDraftFromRecipe(params: {
       cupCount:
         cupCountFrom(p?.cup_count) ?? (config.cupCountMode === "pot" ? undefined : 1),
       heatIntensity: (p?.heat_intensity as BrewDraftRecipe["heatIntensity"]) ?? undefined,
+      // Recalled like the rest of the recipe, but never proposed on a first
+      // brew: guessing the basket would put a wrong fact on the attempt.
+      basketType: config.hasBasketType ? basketTypeFrom(p?.basket_type) : undefined,
       equipmentId: params.defaultEquipment?.id ?? p?.equipment_id ?? undefined,
       equipmentModelName: params.defaultEquipment?.model_name ?? names.equipmentModelName,
       grinderId: params.defaultGrinder?.id ?? p?.grinder_id ?? undefined,

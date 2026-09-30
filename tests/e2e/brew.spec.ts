@@ -106,6 +106,17 @@ test("guided brew: recipe, timer, photo step, and result", async ({ page, testUs
   await expect(page.getByRole("button", { name: /^Peso de bebida/ })).toContainText("42g");
   await expect(page.getByText("1:2", { exact: true })).toBeVisible();
 
+  // Pressurized or not: optional, so a first brew proposes neither — a
+  // guess would put a wrong fact on the attempt.
+  await expect(page.getByRole("button", { name: es.enums.basketType.pressurized, exact: true })).toHaveAttribute(
+    "aria-pressed",
+    "false",
+  );
+  await page.getByRole("button", { name: es.enums.basketType.non_pressurized, exact: true }).click();
+  await expect(
+    page.getByRole("button", { name: es.enums.basketType.non_pressurized, exact: true }),
+  ).toHaveAttribute("aria-pressed", "true");
+
   await page.getByRole("button", { name: "Siguiente" }).click();
 
   // Step 4/6 — timer.
@@ -171,6 +182,9 @@ test("guided brew: recipe, timer, photo step, and result", async ({ page, testUs
   const methodLine = page.getByText("Espresso", { exact: true }).locator("xpath=..");
   await expect(methodLine.getByText("2", { exact: true })).toBeVisible();
   await expect(methodLine.getByText(es.brew.cupCount)).toBeAttached();
+  // The basket is part of the recipe too.
+  await expect(page.getByText(es.brew.basketType, { exact: true })).toBeVisible();
+  await expect(page.getByText(es.enums.basketType.non_pressurized, { exact: true })).toBeVisible();
 
   // The dashboard summarises the same brew the same way in both of its
   // cards: cups, dose against ratio, and the clock. These are the numbers
@@ -202,6 +216,9 @@ test("guided brew: recipe, timer, photo step, and result", async ({ page, testUs
   // Seeded from intento #1, not from the first-time defaults (20 g / 40 g).
   await expect(page.getByRole("button", { name: /^Café/ })).toContainText("21g");
   await expect(page.getByRole("button", { name: /^Peso de bebida/ })).toContainText("42g");
+  await expect(
+    page.getByRole("button", { name: es.enums.basketType.non_pressurized, exact: true }),
+  ).toHaveAttribute("aria-pressed", "true");
 });
 
 test("seeds a new brew from the preferred recipe, not merely the newest attempt", async ({

@@ -52,6 +52,7 @@ beforeEach(() => {
         moka_cup_size: null,
         cup_count: null,
         heat_intensity: null,
+        basket_type: null,
         equipment_id: null,
         grinder_id: null,
         equipment_snapshot: {},

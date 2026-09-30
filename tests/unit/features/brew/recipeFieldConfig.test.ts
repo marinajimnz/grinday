@@ -12,6 +12,7 @@ describe("getRecipeFieldConfig", () => {
       hasMoka: false,
       cupCountMode: "choice",
       ratioDenominator: "targetWeightG",
+      hasBasketType: true,
     });
     expect(getRecipeFieldConfig("v60")).toEqual({
       hasWater: true,
@@ -21,6 +22,7 @@ describe("getRecipeFieldConfig", () => {
       hasMoka: false,
       cupCountMode: "manual",
       ratioDenominator: "waterG",
+      hasBasketType: false,
     });
     expect(getRecipeFieldConfig("chemex")).toEqual({
       hasWater: true,
@@ -30,6 +32,7 @@ describe("getRecipeFieldConfig", () => {
       hasMoka: false,
       cupCountMode: "manual",
       ratioDenominator: "waterG",
+      hasBasketType: false,
     });
     expect(getRecipeFieldConfig("aeropress")).toEqual({
       hasWater: true,
@@ -39,6 +42,7 @@ describe("getRecipeFieldConfig", () => {
       hasMoka: false,
       cupCountMode: "manual",
       ratioDenominator: "waterG",
+      hasBasketType: false,
     });
     expect(getRecipeFieldConfig("prensa")).toEqual({
       hasWater: true,
@@ -48,6 +52,7 @@ describe("getRecipeFieldConfig", () => {
       hasMoka: false,
       cupCountMode: "manual",
       ratioDenominator: "waterG",
+      hasBasketType: false,
     });
     expect(getRecipeFieldConfig("moka")).toEqual({
       hasWater: true,
@@ -57,6 +62,7 @@ describe("getRecipeFieldConfig", () => {
       hasMoka: true,
       cupCountMode: "pot",
       ratioDenominator: "waterG",
+      hasBasketType: false,
     });
     expect(getRecipeFieldConfig("otros")).toEqual({
       hasWater: true,
@@ -66,6 +72,7 @@ describe("getRecipeFieldConfig", () => {
       hasMoka: false,
       cupCountMode: "manual",
       ratioDenominator: "waterG",
+      hasBasketType: false,
     });
   });
 

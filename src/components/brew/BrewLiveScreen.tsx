@@ -175,6 +175,7 @@ export function BrewLiveScreen({ draftId }: { draftId: string }) {
           mokaCupSize: draft.recipe.mokaCupSize,
           cupCount: draft.recipe.cupCount,
           heatIntensity: draft.recipe.heatIntensity,
+          basketType: draft.recipe.basketType,
           equipmentId: draft.recipe.equipmentId,
           grinderId: draft.recipe.grinderId,
           equipmentModelName: draft.recipe.equipmentModelName,

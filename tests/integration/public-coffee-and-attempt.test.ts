@@ -37,6 +37,7 @@ const COFFEE_ATTEMPT_FIELDS = [
   "water_g",
 ];
 const ATTEMPT_FIELDS = [
+  "basket_type",
   "brewed_on",
   "coffee_id",
   "coffee_name",
