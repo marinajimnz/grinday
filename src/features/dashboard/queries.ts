@@ -56,7 +56,7 @@ export type DashboardRecipe = {
   coffeeName: string;
   roaster: string;
   targetBagId: string;
-  // Whether the recipe shown is the coffee's pinned "receta preferida" or
+  // Whether the recipe shown is the coffee's cached "receta favorita" or
   // just the last thing brewed — the card labels itself from this.
   isPreferred: boolean;
 };

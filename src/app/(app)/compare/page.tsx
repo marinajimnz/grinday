@@ -29,17 +29,6 @@ export default async function ComparePage({
   const locale = await getLocale();
   const dict = getDictionary(locale);
 
-  let preferredAttemptId: string | null = null;
-  if (attempts.length && user) {
-    const { data: coffee } = await supabase
-      .from("coffees")
-      .select("preferred_attempt_id")
-      .eq("id", attempts[0].coffee_id)
-      .eq("user_id", user.id)
-      .maybeSingle();
-    preferredAttemptId = coffee?.preferred_attempt_id ?? null;
-  }
-
   return (
     <div className="mx-auto max-w-4xl px-4 py-8 md:px-8">
       {attempts.length > 0 && (
@@ -56,12 +45,7 @@ export default async function ComparePage({
 
       <div className="mt-6">
         {attempts.length >= MIN_COMPARE_ATTEMPTS ? (
-          <CompareView
-            attempts={attempts}
-            preferredAttemptId={preferredAttemptId}
-            dict={dict}
-            locale={locale}
-          />
+          <CompareView attempts={attempts} dict={dict} locale={locale} />
         ) : (
           <EmptyState
             icon={Scale}

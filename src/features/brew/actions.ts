@@ -60,8 +60,8 @@ export async function startBrewAction(rawInput: unknown): Promise<ActionResult<S
     bags?.[0];
   if (!bag) return { success: false, message: "Este café no tiene ninguna bolsa disponible" };
 
-  // The picker labels a coffee "Receta preferida · intento #N" and the page
-  // above it promises "si tiene receta preferida, partimos de ahí" — but the
+  // The picker labels a coffee "Receta favorita · intento #N" and the page
+  // above it promises "si tiene receta favorita, partimos de ahí" — but the
   // seeding ignored the pointer entirely and always took the newest attempt
   // for this (coffee, method), so marking a recipe preferred changed nothing
   // in the flow that advertises it. It's honoured now, with the caveat the

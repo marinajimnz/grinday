@@ -3,6 +3,9 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/types/database";
 import { attachSignedUrls } from "@/lib/supabase/storage";
 import { pickTargetBag } from "./brewTarget";
+import { groupFavouritesByCoffee } from "./favourites";
+import type { FavouriteGroup, FavouriteRecipe } from "./favourites";
+import type { RecipeSourceAttempt } from "@/features/brew/draft";
 
 type Client = SupabaseClient<Database>;
 
@@ -56,7 +59,7 @@ export async function getAttemptMedia(supabase: Client, attemptId: string) {
   return attachSignedUrls(supabase, data ?? []);
 }
 
-// What BrewPicker's "receta preferida" badge needs to display, plus the
+// What BrewPicker's "receta favorita" badge needs to display, plus the
 // method it was brewed with: a preferred V60 recipe says nothing about the
 // espresso you're about to pull, so both the badge and the seeding in
 // startBrewAction have to check it before claiming anything.
@@ -181,4 +184,79 @@ export async function listBrewableCoffees(supabase: Client, userId: string): Pro
     });
   }
   return result;
+}
+
+// The three numbers a recipe card shows, on top of what seeding a brew from it
+// needs. Same set the dashboard's card selects — see features/dashboard/queries.
+const FAVOURITE_CARD_FIELDS = `${RECIPE_SOURCE_ATTEMPT_FIELDS}, favourite_at, grind_seconds, extraction_ms, output_weight_g`;
+
+export type FavouriteRecipeItem = FavouriteRecipe & {
+  attempt: RecipeSourceAttempt & Pick<BrewAttemptRow, "grind_seconds" | "extraction_ms" | "output_weight_g">;
+  /** The bag a new brew would come out of, or null when every bag is spent. */
+  targetBagId: string | null;
+};
+
+/**
+ * Every recipe the user has starred, grouped by coffee. Reads the attempts
+ * directly rather than going through coffees.preferred_attempt_id, which only
+ * ever names one per coffee — that column is now a cache for the dashboard and
+ * the public pages, not the list of favourites.
+ */
+export async function listFavouriteRecipes(
+  supabase: Client,
+  userId: string,
+): Promise<FavouriteGroup<FavouriteRecipeItem>[]> {
+  const { data: attempts, error } = await supabase
+    .from("brew_attempts")
+    .select(
+      `${FAVOURITE_CARD_FIELDS}, coffee_id, coffee:coffees!brew_attempts_coffee_id_fkey(id, name, roaster, archived_at)`,
+    )
+    .eq("user_id", userId)
+    .not("favourite_at", "is", null)
+    .order("favourite_at", { ascending: false });
+  if (error) throw error;
+
+  // An archived coffee is one you've put away; its recipes go with it rather
+  // than sitting at the top of this page forever.
+  const rows = (attempts ?? []).filter((row) => row.coffee && !row.coffee.archived_at);
+  if (!rows.length) return [];
+
+  const { data: bags, error: bagsError } = await supabase
+    .from("coffee_bags")
+    .select("id, coffee_id, status, created_at")
+    .in("coffee_id", [...new Set(rows.map((row) => row.coffee_id))])
+    .eq("user_id", userId)
+    .order("created_at", { ascending: false });
+  if (bagsError) throw bagsError;
+
+  const targetBagByCoffee = new Map<string, string>();
+  for (const coffeeId of new Set(rows.map((row) => row.coffee_id))) {
+    const target = pickTargetBag((bags ?? []).filter((bag) => bag.coffee_id === coffeeId));
+    if (target) targetBagByCoffee.set(coffeeId, target.id);
+  }
+
+  return groupFavouritesByCoffee(
+    rows.map(({ coffee, coffee_id, favourite_at, ...attempt }) => ({
+      coffeeId: coffee_id,
+      coffeeName: coffee!.name,
+      roaster: coffee!.roaster,
+      brewable: targetBagByCoffee.has(coffee_id),
+      // Not null: the query asked for rows where it isn't.
+      favouriteAt: favourite_at!,
+      targetBagId: targetBagByCoffee.get(coffee_id) ?? null,
+      attempt,
+    })),
+  );
+}
+
+/** How many recipes are starred in all — what the dashboard needs to know
+ *  whether linking to the favourites page would show anything new. */
+export async function countFavouriteRecipes(supabase: Client, userId: string): Promise<number> {
+  const { count, error } = await supabase
+    .from("brew_attempts")
+    .select("id", { count: "exact", head: true })
+    .eq("user_id", userId)
+    .not("favourite_at", "is", null);
+  if (error) throw error;
+  return count ?? 0;
 }

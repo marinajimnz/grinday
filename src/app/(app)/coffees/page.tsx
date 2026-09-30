@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Library } from "lucide-react";
-import { IconAnadir, IconArchivar } from "@/components/icons/pencil-icons";
+import { IconAnadir, IconArchivar, IconFavorita } from "@/components/icons/pencil-icons";
 import { createClient } from "@/lib/supabase/server";
 import { listCoffees } from "@/features/coffees/queries";
 import { CoffeeCard } from "@/components/coffee/CoffeeCard";
@@ -41,6 +41,11 @@ export default async function CoffeesPage({
           <p className="mt-1 text-sm text-ink-muted">{dict.coffees.subtitle}</p>
         </div>
         <div className="flex gap-2">
+          {/* Next to the library, because this is where you stand when you're
+              thinking about the coffee rather than about the recipe. */}
+          <Button href="/recipes" aria-label={dict.recipes.open} variant="secondary" className="w-11 px-0">
+            <IconFavorita aria-hidden className="size-4" />
+          </Button>
           <Button href="/inventory" aria-label={dict.coffees.inventory} variant="secondary" className="w-11 px-0">
             <IconArchivar aria-hidden className="size-4" />
           </Button>

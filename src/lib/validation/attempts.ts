@@ -141,9 +141,11 @@ export const updateAttemptSchema = z.object({
   attempt: editableAttemptFieldsSchema,
 });
 
-export const setPreferredAttemptSchema = z.object({
-  coffeeId: z.uuid(),
-  attemptId: z.uuid().nullable(),
+// The coffee isn't passed in: a favourite is now a flag on the attempt, and the
+// attempt already knows which coffee it belongs to.
+export const setAttemptFavouriteSchema = z.object({
+  attemptId: z.uuid(),
+  favourite: z.boolean(),
 });
 
 export const setAttemptDashboardVisibilitySchema = z.object({

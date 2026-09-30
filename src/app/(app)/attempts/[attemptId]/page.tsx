@@ -66,7 +66,7 @@ export default async function AttemptDetailPage({
         <AttemptDetailPanel
           attempt={attempt}
           coffeeId={attempt.coffee.id}
-          isPreferred={attempt.coffee.preferred_attempt_id === attempt.id}
+          isFavourite={attempt.favourite_at != null}
         />
       </div>
 

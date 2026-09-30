@@ -253,8 +253,8 @@ test("seeds a new brew from the preferred recipe, not merely the newest attempt"
 
   await logAttempt("12");
   await expect(page.getByRole("heading", { name: "Intento #1" })).toBeVisible();
-  await page.getByRole("button", { name: "Marcar como preferido" }).click();
-  await expect(page.getByRole("button", { name: "Quitar de preferido" })).toBeVisible();
+  await page.getByRole("button", { name: "Marcar como favorita" }).click();
+  await expect(page.getByRole("button", { name: "Quitar de favoritas" })).toBeVisible();
 
   await logAttempt("18");
   await expect(page.getByRole("heading", { name: "Intento #2" })).toBeVisible();
@@ -265,7 +265,7 @@ test("seeds a new brew from the preferred recipe, not merely the newest attempt"
 
   // The badge only claims a preferred recipe when it was brewed with the
   // method just chosen — here it was, so it has to name #1.
-  await expect(page.getByText("Receta preferida · intento #1")).toBeVisible();
+  await expect(page.getByText("Receta favorita · intento #1")).toBeVisible();
 
   await page.getByRole("button", { name: new RegExp(name) }).click();
   await expect(page).toHaveURL(/\/brew\/live\/[0-9a-f-]+$/);

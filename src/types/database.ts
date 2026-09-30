@@ -118,6 +118,7 @@ export type Database = {
           equipment_id: string | null
           equipment_snapshot: Json
           extraction_ms: number | null
+          favourite_at: string | null
           grind_seconds: number | null
           grind_setting: number | null
           grinder_id: string | null
@@ -167,6 +168,7 @@ export type Database = {
           equipment_id?: string | null
           equipment_snapshot?: Json
           extraction_ms?: number | null
+          favourite_at?: string | null
           grind_seconds?: number | null
           grind_setting?: number | null
           grinder_id?: string | null
@@ -216,6 +218,7 @@ export type Database = {
           equipment_id?: string | null
           equipment_snapshot?: Json
           extraction_ms?: number | null
+          favourite_at?: string | null
           grind_seconds?: number | null
           grind_setting?: number | null
           grinder_id?: string | null
@@ -1062,35 +1065,6 @@ export type Database = {
         SetofOptions: {
           from: "*"
           to: "user_grinders"
-          isOneToOne: true
-          isSetofReturn: false
-        }
-      }
-      set_preferred_attempt: {
-        Args: { p_attempt_id: string; p_coffee_id: string }
-        Returns: {
-          altitude_max_m: number | null
-          altitude_min_m: number | null
-          archived_at: string | null
-          country: string | null
-          created_at: string
-          farm: string | null
-          id: string
-          name: string
-          preferred_attempt_id: string | null
-          process: string | null
-          producer: string | null
-          region: string | null
-          roast_level: string | null
-          roaster: string
-          tasting_notes: string[]
-          updated_at: string
-          user_id: string
-          varieties: string[]
-        }
-        SetofOptions: {
-          from: "*"
-          to: "coffees"
           isOneToOne: true
           isSetofReturn: false
         }
