@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/server";
 import {
   attemptFieldsSchema,
   createAttemptSchema,
+  editableAttemptFieldsSchema,
   registerAttemptMediaSchema,
   setAttemptDashboardVisibilitySchema,
   setPreferredAttemptSchema,
@@ -242,6 +243,32 @@ export async function createAttemptAction(
   return { success: true, data: { attemptId: inserted.id } };
 }
 
+// Only the columns the correction form manages: a cleared field becomes
+// null, everything the form doesn't show stays as it was.
+function toEditableAttemptRow(input: z.infer<typeof editableAttemptFieldsSchema>) {
+  return {
+    grind_setting: input.grindSetting ?? null,
+    grind_seconds: input.grindSeconds ?? null,
+    dose_mode: input.doseMode ?? null,
+    dose_feedback: input.doseFeedback ?? null,
+    basket_size: input.basketSize ?? null,
+    basket_type: input.basketType ?? null,
+    temperature_offset_c: input.temperatureOffsetC ?? null,
+    shot_mode: input.shotMode ?? null,
+    extraction_ms: input.extractionMs ?? null,
+    input_weight_g: input.inputWeightG ?? null,
+    output_weight_g: input.outputWeightG ?? null,
+    acidity: input.acidity ?? null,
+    sweetness: input.sweetness ?? null,
+    bitterness: input.bitterness ?? null,
+    body: input.body ?? null,
+    intensity: input.intensity ?? null,
+    balance: input.balance ?? null,
+    overall_rating: input.overallRating ?? null,
+    notes: input.notes ?? null,
+  } satisfies Partial<AttemptFields>;
+}
+
 export async function updateAttemptAction(rawInput: unknown): Promise<ActionResult> {
   const parsed = updateAttemptSchema.safeParse(rawInput);
   if (!parsed.success) {
@@ -252,7 +279,7 @@ export async function updateAttemptAction(rawInput: unknown): Promise<ActionResu
   const supabase = await createClient();
   const { data: updated, error } = await supabase
     .from("brew_attempts")
-    .update(toAttemptRow(attempt))
+    .update(toEditableAttemptRow(attempt))
     .eq("id", attemptId)
     .select("coffee_id")
     .single();

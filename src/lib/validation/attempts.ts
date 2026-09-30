@@ -109,9 +109,36 @@ export const createAttemptSchema = z.object({
     .optional(),
 });
 
+// What "Corregir" (EditAttemptForm → AttemptFieldsFieldset) can change —
+// and so the only columns an update writes. The recipe the guided flow
+// recorded (method, dose, water, temperature, cups, burrs, equipment…)
+// isn't on that form, so an update must leave it alone; clearing a field
+// that IS on the form still writes null.
+export const editableAttemptFieldsSchema = attemptFieldsSchema.pick({
+  grindSetting: true,
+  grindSeconds: true,
+  doseMode: true,
+  doseFeedback: true,
+  basketSize: true,
+  basketType: true,
+  temperatureOffsetC: true,
+  shotMode: true,
+  extractionMs: true,
+  inputWeightG: true,
+  outputWeightG: true,
+  acidity: true,
+  sweetness: true,
+  bitterness: true,
+  body: true,
+  intensity: true,
+  balance: true,
+  overallRating: true,
+  notes: true,
+});
+
 export const updateAttemptSchema = z.object({
   attemptId: z.uuid(),
-  attempt: attemptFieldsSchema,
+  attempt: editableAttemptFieldsSchema,
 });
 
 export const setPreferredAttemptSchema = z.object({

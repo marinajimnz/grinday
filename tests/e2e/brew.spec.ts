@@ -11,6 +11,10 @@ test.setTimeout(90_000);
 // methods that have a machine saved — so the espresso machine has to exist
 // before the flow is reachable at all.
 async function addEspressoMachine(page: import("@playwright/test").Page) {
+  await addEquipment(page, "Espresso", "E2E Espresso Machine");
+}
+
+async function addEquipment(page: import("@playwright/test").Page, method: string, modelName: string) {
   await page.goto("/settings/machines/new");
 
   // Same pre-hydration race as the coffee wizard's mode picker (see the note
@@ -21,14 +25,14 @@ async function addEspressoMachine(page: import("@playwright/test").Page) {
   const continueButton = page.getByRole("button", { name: "Continuar" });
   await expect(async () => {
     if (!(await continueButton.isEnabled())) {
-      await page.getByRole("button", { name: "Espresso" }).click();
+      await page.getByRole("button", { name: method }).click();
     }
     await expect(continueButton).toBeEnabled({ timeout: 2000 });
   }).toPass({ intervals: [500, 1000, 2000], timeout: 20000 });
 
   await continueButton.click();
-  await page.getByLabel("Espresso").fill("E2E Espresso Machine");
-  await page.getByLabel("Espresso").press("Enter");
+  await page.getByLabel(method).fill(modelName);
+  await page.getByLabel(method).press("Enter");
   await page.getByRole("button", { name: "Guardar" }).click();
   await expect(page).toHaveURL(/\/settings\/machines$/);
 }
@@ -267,4 +271,45 @@ test("seeds a new brew from the preferred recipe, not merely the newest attempt"
   await expect(page).toHaveURL(/\/brew\/live\/[0-9a-f-]+$/);
   await expect(page.getByText("Basado en intento #1")).toBeVisible();
   await expect(page.getByText("Basado en intento #2")).toHaveCount(0);
+});
+
+test("correcting an attempt keeps the recipe the guided flow recorded", async ({ page, testUser }) => {
+  void testUser;
+  const name = `Corregir Coffee ${Date.now()}`;
+
+  // A V60 on purpose: the correction used to rewrite every recipe column the
+  // form doesn't show, so method fell back to espresso and dose, water and
+  // temperature were wiped. On an espresso the method half would go unseen.
+  await addEquipment(page, "V60", "E2E V60");
+  await createCoffeeBasic(page, { name });
+  await expect(page).toHaveURL(/\/coffees\/[0-9a-f-]+$/);
+
+  await page.goto("/brew/new");
+  await expect(page.getByText("Paso 1 de 6")).toBeVisible();
+  await page.getByRole("button", { name: "V60" }).click();
+  await page.getByRole("button", { name: new RegExp(name) }).click();
+  await expect(page.getByRole("heading", { name: "Configura tu receta" })).toBeVisible();
+  // First-time defaults: 20 g of coffee, 320 g of water, 94 °C.
+  await page.getByRole("button", { name: "Siguiente" }).click();
+  await page.getByRole("button", { name: "Continuar sin cronometrar" }).click();
+  await page.getByRole("button", { name: "Continuar sin foto" }).click();
+  await expect(page.getByRole("heading", { name: "Resultado" })).toBeVisible();
+  await page.getByRole("button", { name: "Guardar receta" }).click();
+  await expect(page).toHaveURL(/\/attempts\/[0-9a-f-]+$/);
+
+  async function expectRecipe() {
+    await expect(page.getByText("V60", { exact: true })).toBeVisible();
+    await expect(page.getByText("20 g", { exact: true })).toBeVisible();
+    await expect(page.getByText("320 g", { exact: true })).toBeVisible();
+    await expect(page.getByText("94 °C", { exact: true })).toBeVisible();
+    await expect(page.getByText("1:16", { exact: true })).toBeVisible();
+  }
+  await expectRecipe();
+
+  await page.getByRole("button", { name: "Corregir" }).click();
+  await page.getByLabel("Notas").fill("Corregido después.");
+  await page.getByRole("button", { name: "Guardar cambios" }).click();
+
+  await expect(page.getByText("Corregido después.")).toBeVisible();
+  await expectRecipe();
 });

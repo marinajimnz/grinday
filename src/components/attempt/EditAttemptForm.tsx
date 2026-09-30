@@ -5,14 +5,14 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { AttemptFieldsFieldset } from "./AttemptFieldsFieldset";
-import { attemptFieldsSchema } from "@/lib/validation/attempts";
+import { editableAttemptFieldsSchema } from "@/lib/validation/attempts";
 import { updateAttemptAction } from "@/features/attempts/actions";
 import type { BrewAttemptRow } from "@/features/attempts/queries";
 import { useDictionary } from "@/components/i18n/LocaleProvider";
 import { LoadingLabel } from "@/components/ui/LoadingLabel";
 import { Button } from "@/components/ui/Button";
 
-const formSchema = z.object({ attempt: attemptFieldsSchema });
+const formSchema = z.object({ attempt: editableAttemptFieldsSchema });
 type FormValues = z.infer<typeof formSchema>;
 
 export function EditAttemptForm({
