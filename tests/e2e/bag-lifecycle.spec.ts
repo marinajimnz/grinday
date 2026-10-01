@@ -51,6 +51,23 @@ test("finishing a bag dates it, counts its cups, and sinks the coffee down the l
   // that does the finishing says "Marcar como terminada".
   await expect(bag.getByText("Terminada", { exact: true })).toHaveCount(0);
 
+  // All three actions have to be reachable, and on a 390px phone they do not
+  // fit on one row — 208 + 86 + 140px of button against 318px of card. Delete
+  // was off the right edge entirely once, and then dangling alone beside a
+  // gap. Checked by geometry rather than by eye: every button inside the card,
+  // and edit and delete sharing a line.
+  const card = await bag.boundingBox();
+  if (!card) throw new Error("Expected the bag card to have a box");
+  const boxes: Record<string, { x: number; y: number; width: number }> = {};
+  for (const name of ["Marcar como terminada", "Editar", "Eliminar bolsa"]) {
+    const box = await page.getByRole("button", { name }).first().boundingBox();
+    if (!box) throw new Error(`Expected "${name}" to have a box`);
+    expect(box.x).toBeGreaterThanOrEqual(card.x);
+    expect(box.x + box.width).toBeLessThanOrEqual(card.x + card.width + 1);
+    boxes[name] = box;
+  }
+  expect(boxes["Editar"].y).toBe(boxes["Eliminar bolsa"].y);
+
   // One tap: no trip through the edit form's status picker, and no date to
   // remember to fill in underneath it.
   await page.getByRole("button", { name: "Marcar como terminada" }).click();

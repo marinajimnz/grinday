@@ -93,20 +93,24 @@ export function BagDetailPanel({ bag, cups = 0 }: { bag: CoffeeBagRow; cups?: nu
     <div className="rounded-card border border-border bg-surface p-5" data-bag-id={bag.id}>
       {/* Three actions do not fit beside the badge on a phone — the third
           one pushed the other two off the edge. The badge keeps its own
-          line there and the buttons wrap underneath; from sm up they go
-          back to sharing the row. */}
+          line there and the buttons go underneath; from sm up they go back
+          to sharing the row. */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
         <div className="flex items-center gap-2">
           <BagStatusBadge status={bag.status} dict={dict} />
           {bag.lot_label && <span className="text-xs text-ink-muted">{bag.lot_label}</span>}
         </div>
-        <div className="flex flex-wrap gap-2 sm:shrink-0">
+        {/* The three do not fit on one phone row — 208 + 86 + 140px of button
+            against 318px of card — so on a phone they sit in two columns with
+            the wide one across the top, rather than wrapping and leaving the
+            third one adrift beside a gap. From sm up they share a row. */}
+        <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:shrink-0">
           {/* Finishing a bag is the thing you actually do to a bag, so it
               sits out here with edit and delete rather than three taps deep
               inside the edit form's status picker. */}
           <Button
             variant="secondary"
-            className="px-3"
+            className="col-span-2 px-3"
             disabled={isFinishing}
             onClick={handleToggleFinished}
           >
@@ -119,10 +123,7 @@ export function BagDetailPanel({ bag, cups = 0 }: { bag: CoffeeBagRow; cups?: nu
           </Button>
           <Button
             variant="destructive"
-            // Pushed to the far edge of the wrapped row so the red button
-            // isn't what leads the second line. On a wide screen the group
-            // is already right-aligned and the margin would only stretch it.
-            className="ms-auto px-3 sm:ms-0"
+            className="px-3"
             disabled={isDeleting}
             onClick={() => {
               setDeleteError(null);
@@ -194,7 +195,16 @@ export function BagDetailPanel({ bag, cups = 0 }: { bag: CoffeeBagRow; cups?: nu
                 ? ` · ${dict.coffees.estimatedDoseShort}: ${bag.estimated_dose_g} g`
                 : ""}
             </p>
-            <p className="mt-1 font-display text-lg text-ink">{formatRemaining(bag, dict)}</p>
+            {/* Only when there is a quantity. formatRemaining falls back to
+                "Sin seguimiento" when there isn't, which the line above has
+                already said — the panel printed it twice, once as the mode and
+                again as the figure. It also said it under "Gramos (báscula)"
+                for a bag that is tracked but has no weight recorded yet, which
+                was not a repetition but a contradiction. The inventory list
+                keeps the fallback: there the figure stands alone. */}
+            {bag.inventory_mode !== "none" && bag.remaining_g != null && (
+              <p className="mt-1 font-display text-lg text-ink">{formatRemaining(bag, dict)}</p>
+            )}
           </div>
         </div>
         {bag.inventory_mode !== "none" && (
