@@ -194,7 +194,16 @@ export function BagDetailPanel({ bag, cups = 0 }: { bag: CoffeeBagRow; cups?: nu
                 ? ` · ${dict.coffees.estimatedDoseShort}: ${bag.estimated_dose_g} g`
                 : ""}
             </p>
-            <p className="mt-1 font-display text-lg text-ink">{formatRemaining(bag, dict)}</p>
+            {/* Only when there is a quantity. formatRemaining falls back to
+                "Sin seguimiento" when there isn't, which the line above has
+                already said — the panel printed it twice, once as the mode and
+                again as the figure. It also said it under "Gramos (báscula)"
+                for a bag that is tracked but has no weight recorded yet, which
+                was not a repetition but a contradiction. The inventory list
+                keeps the fallback: there the figure stands alone. */}
+            {bag.inventory_mode !== "none" && bag.remaining_g != null && (
+              <p className="mt-1 font-display text-lg text-ink">{formatRemaining(bag, dict)}</p>
+            )}
           </div>
         </div>
         {bag.inventory_mode !== "none" && (
