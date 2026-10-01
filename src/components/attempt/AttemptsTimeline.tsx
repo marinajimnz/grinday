@@ -11,13 +11,7 @@ import type { BrewAttemptRow } from "@/features/attempts/queries";
 import { useDictionary, useLocale } from "@/components/i18n/LocaleProvider";
 import { formatDate } from "@/lib/i18n/format-date";
 
-export function AttemptsTimeline({
-  attempts,
-  preferredAttemptId,
-}: {
-  attempts: BrewAttemptRow[];
-  preferredAttemptId: string | null;
-}) {
+export function AttemptsTimeline({ attempts }: { attempts: BrewAttemptRow[] }) {
   const router = useRouter();
   const dict = useDictionary();
   const locale = useLocale();
@@ -44,7 +38,10 @@ export function AttemptsTimeline({
     <div className="pb-20">
       <ul className="space-y-3">
         {attempts.map((attempt) => {
-          const isPreferred = attempt.id === preferredAttemptId;
+          // Every starred attempt, not just the one coffees.preferred_attempt_id
+          // happens to cache: a coffee can have the V60 recipe and the moka one
+          // marked at the same time, and both belong in this list as favourites.
+          const isFavourite = attempt.favourite_at != null;
           const isSelected = selected.includes(attempt.id);
           const parentNo = attempt.parent_attempt_id
             ? attemptNoById.get(attempt.parent_attempt_id)
@@ -55,7 +52,7 @@ export function AttemptsTimeline({
               key={attempt.id}
               className={cn(
                 "flex items-center gap-3 rounded-card border bg-surface p-4",
-                isPreferred ? "border-coffee" : "border-border",
+                isFavourite ? "border-coffee" : "border-border",
               )}
             >
               <label className="flex items-center">
@@ -76,12 +73,12 @@ export function AttemptsTimeline({
                   <span className="font-display text-base text-ink">
                     {dict.attempts.attemptNo} #{attempt.attempt_no}
                   </span>
-                  {isPreferred && (
+                  {isFavourite && (
                     <IconFavorita aria-label={dict.attempts.preferred} className="size-4 text-coffee" />
                   )}
                   {/* The score goes to the far edge, as it does on the
                       dashboard row. Left beside the title it landed against
-                      the "preferida" star — the same filled star, in the
+                      the "favorita" star — the same filled star, in the
                       same colour — and the two read as one row of six. */}
                   <span className="ml-auto shrink-0">
                     <StarRating value={attempt.overall_rating} size="sm" />

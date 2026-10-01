@@ -3,6 +3,7 @@ import { Bookmark, Search } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { IconCafe, IconFavorito, IconPreparar } from "@/components/icons/pencil-icons";
 import { getDashboardRecipe, getRecentAttempts, hasAnyCoffee } from "@/features/dashboard/queries";
+import { countFavouriteRecipes } from "@/features/attempts/queries";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { NewBrewCta } from "@/components/dashboard/NewBrewCta";
 import { DraftResumeBanner } from "@/components/dashboard/DraftResumeBanner";
@@ -29,13 +30,14 @@ export default async function DashboardPage() {
     supabase.rpc("social_enabled_for_me"),
   ]);
 
-  const [recipe, recentAttempts] =
+  const [recipe, recentAttempts, favouriteCount] =
     hasCoffee && user
       ? await Promise.all([
           getDashboardRecipe(supabase, user.id),
           getRecentAttempts(supabase, user.id, 4, { excludeHiddenFromDashboard: true }),
+          countFavouriteRecipes(supabase, user.id),
         ])
-      : [null, []];
+      : [null, [], 0];
 
   const lastAttempt = recentAttempts[0];
 
@@ -113,16 +115,32 @@ export default async function DashboardPage() {
             <NewBrewCta />
 
             {recipe && (
-              <RecipeCard
-                attempt={recipe.attempt}
-                coffeeId={recipe.coffeeId}
-                coffeeName={recipe.coffeeName}
-                roaster={recipe.roaster}
-                targetBagId={recipe.targetBagId}
-                userId={user?.id ?? ""}
-                label={recipe.isPreferred ? undefined : dict.dashboard.lastAttempt}
-                icon={recipe.isPreferred ? undefined : IconPreparar}
-              />
+              <div>
+                <RecipeCard
+                  attempt={recipe.attempt}
+                  coffeeId={recipe.coffeeId}
+                  coffeeName={recipe.coffeeName}
+                  roaster={recipe.roaster}
+                  targetBagId={recipe.targetBagId}
+                  userId={user?.id ?? ""}
+                  label={recipe.isPreferred ? undefined : dict.dashboard.lastAttempt}
+                  icon={recipe.isPreferred ? undefined : IconPreparar}
+                />
+
+                {/* Only when there is more to see than what's already on screen:
+                    the card itself is one favourite when it is starred, none when
+                    it's standing in for one. */}
+                {favouriteCount > (recipe.isPreferred ? 1 : 0) && (
+                  <div className="flex justify-end">
+                    <Link
+                      href="/recipes"
+                      className="-mr-3 inline-flex min-h-11 items-center px-3 text-sm font-medium text-ink-muted underline"
+                    >
+                      {dict.recipes.viewAll}
+                    </Link>
+                  </div>
+                )}
+              </div>
             )}
 
             <div>

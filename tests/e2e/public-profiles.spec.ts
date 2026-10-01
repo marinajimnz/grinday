@@ -127,7 +127,7 @@ test("finds a public profile, opens its coffee and recipe, and never shows priva
     await expect(page.getByText("Etiopía")).toBeVisible();
     await expect(page.getByText("Floral")).toBeVisible();
 
-    await page.getByRole("heading", { name: "Receta preferida" }).waitFor();
+    await page.getByRole("heading", { name: "Receta favorita" }).waitFor();
     await page.locator('a[href*="/attempts/"]').first().click();
     await expect(page.getByRole("heading", { name: "Configuración" })).toBeVisible();
     await expect(page.getByRole("button", { name: "Probar esta receta" })).toBeVisible();

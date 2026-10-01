@@ -12,7 +12,7 @@ vi.mock("next/navigation", () => ({
 
 vi.mock("@/features/attempts/actions", () => ({
   deleteAttemptAction: vi.fn(),
-  setPreferredAttemptAction: vi.fn(),
+  setAttemptFavouriteAction: vi.fn(),
 }));
 
 vi.mock("@/features/brew/actions", () => ({
@@ -77,7 +77,7 @@ function makeAttempt(overrides: Partial<BrewAttemptRow> = {}): BrewAttemptRow {
 function renderPanel(attempt: BrewAttemptRow) {
   return render(
     <LocaleProvider locale="es" dict={es}>
-      <AttemptDetailPanel attempt={attempt} coffeeId="coffee-1" isPreferred={false} />
+      <AttemptDetailPanel attempt={attempt} coffeeId="coffee-1" isFavourite={false} />
     </LocaleProvider>,
   );
 }

@@ -85,10 +85,7 @@ export default async function CoffeeDetailPage({
                   </>
                 )}
               </div>
-              <AttemptsTimeline
-                attempts={attempts}
-                preferredAttemptId={coffee.preferred_attempt_id}
-              />
+              <AttemptsTimeline attempts={attempts} />
             </div>
           }
           bagsContent={
