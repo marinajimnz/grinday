@@ -23,6 +23,7 @@ export async function RecipeCard({
   userId,
   label,
   icon: Icon = IconFavorita,
+  brewable = true,
 }: {
   attempt: RecipeCardAttempt;
   coffeeId: string;
@@ -32,6 +33,9 @@ export async function RecipeCard({
   userId: string;
   label?: string;
   icon?: typeof IconFavorita;
+  /** False when every bag of this coffee is finished: the recipe is still
+   *  worth keeping, but there is nothing left to brew it from today. */
+  brewable?: boolean;
 }) {
   const dict = getDictionary(await getLocale());
 
@@ -53,21 +57,31 @@ export async function RecipeCard({
       <BrewSummary attempt={attempt} dict={dict} size="lg" className="mt-3" />
 
       <div className="mt-4 flex gap-2">
-        <Button href={`/attempts/${attempt.id}`} variant="secondary" className="flex-1">
+        <Button
+          href={`/attempts/${attempt.id}`}
+          variant="secondary"
+          className={brewable ? "flex-1" : "w-full"}
+        >
           {dict.dashboard.viewAttempt} #{attempt.attempt_no}
         </Button>
-        <PrepareWithRecipeButton
-          coffeeId={coffeeId}
-          coffeeBagId={targetBagId}
-          coffeeName={coffeeName}
-          roaster={roaster}
-          userId={userId}
-          sourceAttempt={attempt}
-          className="flex-1"
-        >
-          {dict.dashboard.prepareWithRecipe}
-        </PrepareWithRecipeButton>
+        {brewable && (
+          <PrepareWithRecipeButton
+            coffeeId={coffeeId}
+            coffeeBagId={targetBagId}
+            coffeeName={coffeeName}
+            roaster={roaster}
+            userId={userId}
+            sourceAttempt={attempt}
+            className="flex-1"
+          >
+            {dict.dashboard.prepareWithRecipe}
+          </PrepareWithRecipeButton>
+        )}
       </div>
+
+      {/* Said once, here, rather than as a disabled button that looks broken:
+          the recipe is fine, the coffee is the thing that ran out. */}
+      {!brewable && <p className="mt-2 text-xs text-ink-muted">{dict.recipes.noBagToBrew}</p>}
     </div>
   );
 }

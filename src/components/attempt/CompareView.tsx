@@ -29,12 +29,10 @@ function renderSectionRow(label: string, attempts: BrewAttemptRow[]) {
 
 export function CompareView({
   attempts,
-  preferredAttemptId,
   dict,
   locale,
 }: {
   attempts: BrewAttemptRow[];
-  preferredAttemptId: string | null;
   dict: Dictionary;
   locale: Locale;
 }) {
@@ -65,7 +63,7 @@ export function CompareView({
               >
                 <div className="flex items-center gap-1.5">
                   <span className="font-display text-lg text-ink">#{attempt.attempt_no}</span>
-                  {attempt.id === preferredAttemptId && (
+                  {attempt.favourite_at != null && (
                     <IconFavorita aria-label={dict.attempts.preferred} className="size-4 shrink-0 text-coffee" />
                   )}
                 </div>

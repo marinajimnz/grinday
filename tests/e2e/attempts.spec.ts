@@ -42,8 +42,8 @@ test("logs an attempt manually, marks it preferred, duplicates it, and compares 
   await expect(page).toHaveURL(/\/attempts\/[0-9a-f-]+$/);
   await expect(page.getByRole("heading", { name: "Intento #1" })).toBeVisible();
 
-  await page.getByRole("button", { name: "Marcar como preferido" }).click();
-  await expect(page.getByRole("button", { name: "Quitar de preferido" })).toBeVisible();
+  await page.getByRole("button", { name: "Marcar como favorita" }).click();
+  await expect(page.getByRole("button", { name: "Quitar de favoritas" })).toBeVisible();
 
   // Duplicating is a preparation, not a second manual log: it opens the same
   // live brew flow as "Preparar", already seeded from this attempt.
@@ -70,7 +70,7 @@ test("logs an attempt manually, marks it preferred, duplicates it, and compares 
   // The dashboard's recipe card prefers the coffee's pinned recipe over the
   // most recent attempt, so with #1 preferred and #2 the newest it has to
   // show #1 — that's the branch that costs a second query, and the only one
-  // where the card labels itself "Receta preferida" instead of "Último
+  // where the card labels itself "Receta favorita" instead of "Último
   // intento". The coffee's own URL is taken from this page first: the
   // dashboard reaches its coffee through the recipe card, not through a
   // roaster link, so the click below has nothing to find once we leave.
@@ -81,7 +81,7 @@ test("logs an attempt manually, marks it preferred, duplicates it, and compares 
   if (!coffeeHref) throw new Error("Expected the attempt page to link to its coffee");
 
   await page.goto("/");
-  await expect(page.getByText("Receta preferida")).toBeVisible();
+  await expect(page.getByText("Receta favorita")).toBeVisible();
   await expect(page.getByRole("link", { name: "Ver intento #1" })).toBeVisible();
   await expect(page.getByRole("button", { name: "Preparar receta" })).toBeVisible();
 
@@ -97,7 +97,7 @@ test("logs an attempt manually, marks it preferred, duplicates it, and compares 
   await expect(menu).toHaveCount(0);
 
   await page.goto(coffeeHref);
-  await expect(page.getByText("Receta preferida")).toBeVisible();
+  await expect(page.getByText("Receta favorita")).toBeVisible();
 
   const checkboxes = page.locator('input[type="checkbox"]');
   await checkboxes.nth(0).check();

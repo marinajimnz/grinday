@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/Button";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { TASTE_DIMENSIONS } from "@/features/attempts/constants";
 import { StarRating } from "@/components/ui/StarRating";
-import { deleteAttemptAction, setPreferredAttemptAction } from "@/features/attempts/actions";
+import { deleteAttemptAction, setAttemptFavouriteAction } from "@/features/attempts/actions";
 import type { BrewAttemptRow } from "@/features/attempts/queries";
 import { useDictionary, useLocale } from "@/components/i18n/LocaleProvider";
 import { formatDateTime } from "@/lib/i18n/format-date";
@@ -30,17 +30,17 @@ function Stat({ label, value }: { label: string; value: React.ReactNode }) {
 export function AttemptDetailPanel({
   attempt,
   coffeeId,
-  isPreferred,
+  isFavourite,
 }: {
   attempt: BrewAttemptRow;
   coffeeId: string;
-  isPreferred: boolean;
+  isFavourite: boolean;
 }) {
   const router = useRouter();
   const dict = useDictionary();
   const locale = useLocale();
   const [editing, setEditing] = useState(false);
-  const [isTogglingPreferred, startTogglePreferred] = useTransition();
+  const [isTogglingFavourite, startToggleFavourite] = useTransition();
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
   const [isDeleting, startDelete] = useTransition();
@@ -114,12 +114,12 @@ export function AttemptDetailPanel({
         <Button
           variant="secondary"
           className="border-coffee px-3 text-coffee"
-          disabled={isTogglingPreferred}
+          disabled={isTogglingFavourite}
           onClick={() =>
-            startTogglePreferred(async () => {
-              await setPreferredAttemptAction({
-                coffeeId,
-                attemptId: isPreferred ? null : attempt.id,
+            startToggleFavourite(async () => {
+              await setAttemptFavouriteAction({
+                attemptId: attempt.id,
+                favourite: !isFavourite,
               });
               router.refresh();
             })
@@ -127,9 +127,9 @@ export function AttemptDetailPanel({
         >
           <IconFavorita
             aria-hidden
-            className={isPreferred ? "size-4 text-coffee" : "size-4 fill-none"}
+            className={isFavourite ? "size-4 text-coffee" : "size-4 fill-none"}
           />
-          {isPreferred ? dict.attempts.removeFromPreferred : dict.attempts.markAsPreferred}
+          {isFavourite ? dict.attempts.removeFromFavourites : dict.attempts.markAsFavourite}
         </Button>
       </div>
 

@@ -171,6 +171,23 @@ const es = {
     invalid: "Elige un motivo.",
     error: "No se ha podido enviar. Inténtalo de nuevo.",
   },
+  recipes: {
+    title: "Recetas favoritas",
+    // Says what the page is for, which is not "look at these" but "make one
+    // of these again".
+    subtitle: "Las recetas que has marcado, por café, para volver a hacerlas.",
+    // Not a bare "Ver todas": the dashboard already has one of those, under
+    // "Intentos recientes", and two links with the same name going to two
+    // different places is the kind of thing only a mouse forgives.
+    viewAll: "Ver todas las recetas",
+    open: "Recetas favoritas",
+    emptyTitle: "Todavía no has marcado ninguna receta",
+    emptyDescription:
+      "Cuando un café te sale como querías, ábrelo y márcalo como favorita. Aparecerá aquí, y podrás repetirlo de un toque.",
+    noBagToBrew: "No te queda bolsa de este café para prepararla.",
+    countOne: "1 receta",
+    countMany: "{count} recetas",
+  },
   favorites: {
     open: "Mis favoritos",
     title: "Mis favoritos",
@@ -218,7 +235,7 @@ const es = {
     roasterCoffees: "Cafés de la tostadora",
     recommendedRecipe: "Receta recomendada",
     seeDetail: "Ver detalle",
-    preferredRecipe: "Receta preferida",
+    preferredRecipe: "Receta favorita",
     byUser: "de @{username}",
     viewConfiguration: "Ver configuración",
     configuration: "Configuración",
@@ -260,7 +277,7 @@ const es = {
     promptWelcomeIntro:
       "Aquí las recetas se comparten: puedes buscar a otras personas y tostadoras, guardar tus perfiles favoritos y probar sus recetas con un toque. Es mucho más divertido cuando las recetas son públicas.",
     sharedTitle: "Si haces tu perfil público, otras cuentas verán:",
-    sharedCoffees: "tus cafés con su receta preferida",
+    sharedCoffees: "tus cafés con su receta favorita",
     sharedEquipment: "tu equipo (molinillo y cafeteras)",
     sharedAttempts: "tus últimos intentos",
     neverTitle: "Nunca se comparten:",
@@ -341,7 +358,7 @@ const es = {
     // receta" wrapped to two lines and made the pair uneven.
     prepareWithRecipe: "Preparar receta",
     prepare: "Preparar",
-    preferredRecipe: "Receta preferida",
+    preferredRecipe: "Receta favorita",
     grindSetting: "Molido",
     grindTime: "Molienda",
     extraction: "Extracción",
@@ -680,11 +697,11 @@ const es = {
   },
   brew: {
     title: "Preparar",
-    subtitle: "Elige el café. Si tiene receta preferida, partimos de ahí.",
+    subtitle: "Elige el café. Si tiene receta favorita, partimos de ahí.",
     noCoffeeTitle: "No hay ningún café listo para preparar",
     noCoffeeDescription: "Añade un café con una bolsa sin terminar desde la biblioteca.",
-    preferredRecipeAttempt: "Receta preferida · intento",
-    noPreferredYet: "Sin receta preferida todavía",
+    preferredRecipeAttempt: "Receta favorita · intento",
+    noPreferredYet: "Sin receta favorita todavía",
     basedOnAttempt: "Basado en intento",
     draftGoneTitle: "Este borrador ya no existe",
     draftGoneDescription:
@@ -791,8 +808,11 @@ const es = {
     tasting: "Cata",
     attemptNo: "Intento",
     correct: "Corregir",
-    removeFromPreferred: "Quitar de preferido",
-    markAsPreferred: "Marcar como preferido",
+    // "Preferida" only ever fitted one per coffee. Now the same beans can
+    // carry the V60 recipe and the moka one, and a set of them are
+    // "favoritas" without any of them being the preferred one.
+    removeFromFavourites: "Quitar de favoritas",
+    markAsFavourite: "Marcar como favorita",
     duplicateAndAdjust: "Duplicar y ajustar",
     doseFeedback: "Feedback de dosis",
     temperatureOffsetShort: "Offset temperatura",
@@ -803,7 +823,7 @@ const es = {
     noAttemptsYet: "Todavía no hay ningún intento registrado para este café.",
     selectAttemptToCompare: "Seleccionar intento",
     selectAttemptToCompareSuffix: "para comparar",
-    preferred: "Preferido",
+    preferred: "Favorita",
     derivesFrom: "· deriva de",
     compare: "Comparar",
     technical: "Técnico",
@@ -825,7 +845,7 @@ const es = {
     insufficientGroup: "Datos insuficientes todavía — necesitas al menos 3 intentos puntuados en este grupo.",
     topCoffees: "Top cafés",
     topCoffeesDescription: "Por puntuación media (mínimo 3 intentos puntuados)",
-    hasPreferredRecipe: "tiene receta preferida marcada",
+    hasPreferredRecipe: "tiene receta favorita marcada",
     byCountry: "Por país",
     byProcess: "Por proceso",
     byRoast: "Por tueste",

@@ -9,7 +9,7 @@ import {
   editableAttemptFieldsSchema,
   registerAttemptMediaSchema,
   setAttemptDashboardVisibilitySchema,
-  setPreferredAttemptSchema,
+  setAttemptFavouriteSchema,
   updateAttemptSchema,
 } from "@/lib/validation/attempts";
 import type { Database, Json } from "@/types/database";
@@ -290,25 +290,33 @@ export async function updateAttemptAction(rawInput: unknown): Promise<ActionResu
   return { success: true, data: undefined };
 }
 
-export async function setPreferredAttemptAction(
+// One star, one meaning: this recipe is worth making again. It lives on the
+// attempt, so a coffee can have several — the V60 one and the moka one — and
+// coffees.preferred_attempt_id follows along on its own, recomputed by the
+// trigger the migration installs. Nothing here writes that column.
+export async function setAttemptFavouriteAction(
   rawInput: unknown,
 ): Promise<ActionResult> {
-  const parsed = setPreferredAttemptSchema.safeParse(rawInput);
+  const parsed = setAttemptFavouriteSchema.safeParse(rawInput);
   if (!parsed.success) {
     return { success: false, message: parsed.error.issues[0]?.message ?? "Datos inválidos" };
   }
-  const { coffeeId, attemptId } = parsed.data;
+  const { attemptId, favourite } = parsed.data;
 
   const supabase = await createClient();
-  const { error } = await supabase.rpc("set_preferred_attempt", {
-    p_coffee_id: coffeeId,
-    // The generated type doesn't know this Postgres param accepts NULL
-    // (uuid params carry no nullability info to the type generator).
-    p_attempt_id: attemptId as unknown as string,
-  });
+  const { data, error } = await supabase
+    .from("brew_attempts")
+    .update({ favourite_at: favourite ? new Date().toISOString() : null })
+    .eq("id", attemptId)
+    .select("coffee_id")
+    .maybeSingle();
   if (error) return { success: false, message: error.message };
+  if (!data) return { success: false, message: "No hemos encontrado ese intento." };
 
-  revalidatePath(`/coffees/${coffeeId}`);
+  revalidatePath(`/attempts/${attemptId}`);
+  revalidatePath(`/coffees/${data.coffee_id}`);
+  revalidatePath("/coffees");
+  revalidatePath("/recipes");
   revalidatePath("/");
   return { success: true, data: undefined };
 }

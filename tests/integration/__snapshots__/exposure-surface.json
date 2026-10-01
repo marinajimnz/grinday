@@ -441,14 +441,6 @@
       ]
     },
     {
-      "signature": "set_preferred_attempt(p_coffee_id uuid, p_attempt_id uuid)",
-      "security_definer": false,
-      "callable_by": [
-        "anon",
-        "authenticated"
-      ]
-    },
-    {
       "signature": "set_profile_role(p_profile_id uuid, p_role text, p_reason text)",
       "security_definer": true,
       "callable_by": [
@@ -555,6 +547,11 @@
       "callable_by": [
         "authenticated"
       ]
+    },
+    {
+      "signature": "sync_coffee_preferred_attempt()",
+      "security_definer": true,
+      "callable_by": []
     },
     {
       "signature": "unsave_profile(p_username text)",
