@@ -70,6 +70,10 @@ npx supabase gen types typescript --linked > src/types/database.ts
   Si cambia a propósito lo que queda expuesto, se actualiza la foto con
   `npm run test:integration -- -u` y el diff se revisa en el PR.
 
+GitHub Actions (`.github/workflows/ci.yml`) corre `typecheck`, `lint` y
+`test:unit` en cada push y PR. E2E e integración necesitan el proyecto de
+Supabase, así que siguen siendo manuales.
+
 ## Estado del roadmap
 
 - [x] Fase 0 — Fundación.

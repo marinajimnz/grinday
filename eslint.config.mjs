@@ -15,6 +15,9 @@ const eslintConfig = defineConfig([
     // Serwist-generated service worker (gitignored, but present after a build).
     "public/sw.js",
     "public/sw.js.map",
+    // Claude Code worktrees: full copies of the repo, so linting them
+    // repeats every finding once per copy.
+    ".claude/**",
   ]),
 ]);
 
