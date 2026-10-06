@@ -1,10 +1,15 @@
 import { BREW_METHOD_CATEGORY, type BrewMethod } from "@/features/equipment/constants";
+import type { BasketType } from "@/features/attempts/constants";
+import { daysSinceRoast } from "@/features/coffees/roastAge";
 
 export type GrindAdvice = {
   // "fast" → grind finer, "slow" → grind coarser.
   verdict: "fast" | "slow" | "onTarget";
   // "little" for a nudge, "lot" when it missed by more than a quarter.
   amount?: "little" | "lot";
+  // Pressurized basket: the time is set mostly by the basket's own outlet,
+  // so a fast or slow shot isn't a grind problem and "finer" won't fix it.
+  pressurized?: boolean;
   actualSeconds: number;
   targetSeconds: number;
 };
@@ -28,6 +33,7 @@ export function getGrindAdvice(
   method: BrewMethod,
   extractionMs: number | null,
   targetTimeMs: number | undefined,
+  basketType?: BasketType,
 ): GrindAdvice | null {
   const tolerance = TOLERANCE[BREW_METHOD_CATEGORY[method]];
   if (!tolerance || extractionMs == null || !targetTimeMs || extractionMs <= 0) return null;
@@ -44,6 +50,30 @@ export function getGrindAdvice(
   return {
     verdict: diffMs < 0 ? "fast" : "slow",
     amount: Math.abs(diffMs) > targetTimeMs * BIG_MISS_SHARE ? "lot" : "little",
+    ...(basketType === "pressurized" && { pressurized: true }),
     ...base,
   };
+}
+
+// Past this, beans have lost much of the gas that builds resistance in a
+// non-pressurized basket, and a pressurized one is a fair way to rescue them.
+const STALE_AFTER_DAYS = 42;
+
+/**
+ * Whether to suggest the non-pressurized basket: a pressurized one chosen
+ * by someone who grinds their own (a grinder in the recipe), for beans
+ * that aren't stale. A pressurized basket is for pre-ground or tired
+ * coffee; fresh beans ground on the spot do better without it, and only
+ * then does the grind actually steer the shot. An unknown roast date
+ * doesn't stop the suggestion — grinding at home is the stronger sign.
+ */
+export function shouldSuggestNonPressurized(recipe: {
+  basketType?: BasketType;
+  grinderId?: string;
+  grinderModelName?: string;
+}, roastDate: string | null | undefined, today?: string): boolean {
+  if (recipe.basketType !== "pressurized") return false;
+  if (!recipe.grinderId && !recipe.grinderModelName) return false;
+  const days = daysSinceRoast(roastDate, today);
+  return days === null || days <= STALE_AFTER_DAYS;
 }

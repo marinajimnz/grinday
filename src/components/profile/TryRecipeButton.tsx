@@ -51,6 +51,7 @@ export function TryRecipeButton({
               coffeeBagId: data.coffeeBagId,
               coffeeName: data.coffeeName,
               roaster: data.roaster,
+              roastDate: data.roastDate,
               method: data.method,
               sourceAttempt: data.sourceAttempt,
               defaultEquipment: data.defaultEquipment,

@@ -84,6 +84,11 @@ export type BrewDraft = {
   coffeeBagId: string;
   coffeeName: string;
   roaster: string;
+  // The bag's roast date, when the draft was started: how fresh the beans
+  // are, which is what the basket choice depends on. Absent on drafts from
+  // before it was kept, and wherever the brew was started without the bag
+  // at hand — both read as "not known".
+  roastDate?: string | null;
   parentAttemptId?: string;
   parentAttemptNo?: number;
   // Brewed from someone else's public recipe ("Try this recipe"): which
@@ -256,6 +261,7 @@ export function buildDraftFromRecipe(params: {
   coffeeBagId: string;
   coffeeName: string;
   roaster: string;
+  roastDate?: string | null;
   method: BrewMethod;
   userId?: string;
   sourceAttempt?: RecipeSourceAttempt | null;
@@ -276,6 +282,7 @@ export function buildDraftFromRecipe(params: {
     coffeeBagId: params.coffeeBagId,
     coffeeName: params.coffeeName,
     roaster: params.roaster,
+    roastDate: params.roastDate,
     parentAttemptId: p?.id,
     parentAttemptNo: p?.attempt_no,
     recipe: {

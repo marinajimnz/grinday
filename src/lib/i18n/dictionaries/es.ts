@@ -822,6 +822,10 @@ const es = {
     grindAdviceCoarserLittle: "La próxima vez, prueba a moler un poco más grueso.",
     grindAdviceCoarserLot: "La próxima vez, prueba a moler bastante más grueso.",
     grindAdviceKeep: "Deja la molienda como está.",
+    grindAdvicePressurized:
+      "Con filtro presurizado la molienda influye poco: el tiempo lo marca sobre todo el filtro. Si mueles grano fresco, prueba el despresurizado.",
+    basketHintNonPressurized:
+      "Con grano fresco recién molido, el despresurizado suele dar mejor espresso, y ahí la molienda sí cambia el resultado. El presurizado es para café ya molido o pasado.",
   },
   attempts: {
     newTitle: "Nuevo intento",
