@@ -4,12 +4,13 @@ import { cookies } from "next/headers";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { isLocale, LOCALE_COOKIE, type Locale } from "@/lib/i18n/types";
+import { fail } from "@/lib/i18n/serverErrors";
 
 type ActionResult = { success: true } | { success: false; message: string };
 
 export async function updateLocaleAction(locale: Locale): Promise<ActionResult> {
   if (!isLocale(locale)) {
-    return { success: false, message: "Idioma no válido" };
+    return fail("invalidLanguage");
   }
 
   const supabase = await createClient();
@@ -17,12 +18,12 @@ export async function updateLocaleAction(locale: Locale): Promise<ActionResult> 
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) {
-    return { success: false, message: "No autenticado" };
+    return fail("unauthenticated");
   }
 
   const { error } = await supabase.from("profiles").update({ locale }).eq("id", user.id);
   if (error) {
-    return { success: false, message: error.message };
+    return fail("generic", error);
   }
 
   const cookieStore = await cookies();

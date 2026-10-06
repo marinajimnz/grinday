@@ -6,6 +6,7 @@ import { setVisibilitySchema, updateProfileSchema } from "@/lib/validation/profi
 import { getLocale } from "@/lib/i18n/locale";
 import { getDictionary } from "@/lib/i18n/get-dictionary";
 import type { Dictionary } from "@/lib/i18n/dictionaries/es";
+import { fail } from "@/lib/i18n/serverErrors";
 
 type ActionResult = { success: true } | { success: false; field?: "bio"; message: string };
 
@@ -40,7 +41,7 @@ export async function updateProfileAction(input: unknown): Promise<ActionResult>
     if (issue?.message === "bio_too_long") {
       return { success: false, field: "bio", message: dict.publicProfile.bioTooLong };
     }
-    return { success: false, message: issue?.message ?? "Datos inválidos" };
+    return fail("invalidData");
   }
 
   const supabase = await createClient();
@@ -48,7 +49,7 @@ export async function updateProfileAction(input: unknown): Promise<ActionResult>
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) {
-    return { success: false, message: "No autenticado" };
+    return fail("unauthenticated");
   }
 
   const { displayName, bio } = parsed.data;
@@ -84,7 +85,7 @@ export async function setVisibilityAction(input: unknown): Promise<ActionResult>
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) {
-    return { success: false, message: "No autenticado" };
+    return fail("unauthenticated");
   }
 
   const { error } = await supabase

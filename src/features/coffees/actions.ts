@@ -16,6 +16,7 @@ import {
 } from "@/lib/validation/coffees";
 import type { Database } from "@/types/database";
 import { todayISO } from "@/lib/time";
+import { fail } from "@/lib/i18n/serverErrors";
 
 type Client = SupabaseClient<Database>;
 
@@ -109,7 +110,7 @@ export async function createCoffeeAndBagAction(
 ): Promise<ActionResult<{ coffeeId: string; bagId: string }>> {
   const parsed = createCoffeeAndBagSchema.safeParse(rawInput);
   if (!parsed.success) {
-    return { success: false, message: parsed.error.issues[0]?.message ?? "Datos inválidos" };
+    return fail("invalidData");
   }
   const { coffee, bag, existingCoffeeId } = parsed.data;
 
@@ -117,7 +118,7 @@ export async function createCoffeeAndBagAction(
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return { success: false, message: "No autenticado" };
+  if (!user) return fail("unauthenticated");
 
   let coffeeId = existingCoffeeId;
 
@@ -127,7 +128,7 @@ export async function createCoffeeAndBagAction(
       .insert({ ...toCoffeeRow(coffee), user_id: user.id })
       .select("id")
       .single();
-    if (coffeeError) return { success: false, message: coffeeError.message };
+    if (coffeeError) return fail("generic", coffeeError);
     coffeeId = inserted.id;
   }
 
@@ -136,7 +137,7 @@ export async function createCoffeeAndBagAction(
     .insert({ ...toBagRow(bag), coffee_id: coffeeId, user_id: user.id })
     .select("id")
     .single();
-  if (bagError) return { success: false, message: bagError.message };
+  if (bagError) return fail("generic", bagError);
 
   await seedInventoryEvent(supabase, insertedBag.id, user.id, bag.packageWeightG);
 
@@ -150,7 +151,7 @@ export async function addBagAction(
 ): Promise<ActionResult<{ bagId: string }>> {
   const parsed = addBagSchema.safeParse(rawInput);
   if (!parsed.success) {
-    return { success: false, message: parsed.error.issues[0]?.message ?? "Datos inválidos" };
+    return fail("invalidData");
   }
   const { coffeeId, bag } = parsed.data;
 
@@ -158,14 +159,14 @@ export async function addBagAction(
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return { success: false, message: "No autenticado" };
+  if (!user) return fail("unauthenticated");
 
   const { data: insertedBag, error } = await supabase
     .from("coffee_bags")
     .insert({ ...toBagRow(bag), coffee_id: coffeeId, user_id: user.id })
     .select("id")
     .single();
-  if (error) return { success: false, message: error.message };
+  if (error) return fail("generic", error);
 
   await seedInventoryEvent(supabase, insertedBag.id, user.id, bag.packageWeightG);
 
@@ -177,7 +178,7 @@ export async function addBagAction(
 export async function updateCoffeeAction(rawInput: unknown): Promise<ActionResult> {
   const parsed = updateCoffeeSchema.safeParse(rawInput);
   if (!parsed.success) {
-    return { success: false, message: parsed.error.issues[0]?.message ?? "Datos inválidos" };
+    return fail("invalidData");
   }
   const { coffeeId, coffee } = parsed.data;
 
@@ -186,7 +187,7 @@ export async function updateCoffeeAction(rawInput: unknown): Promise<ActionResul
     .from("coffees")
     .update(toCoffeeRow(coffee))
     .eq("id", coffeeId);
-  if (error) return { success: false, message: error.message };
+  if (error) return fail("generic", error);
 
   revalidatePath(`/coffees/${coffeeId}`);
   revalidatePath("/coffees");
@@ -196,7 +197,7 @@ export async function updateCoffeeAction(rawInput: unknown): Promise<ActionResul
 export async function updateBagAction(rawInput: unknown): Promise<ActionResult> {
   const parsed = updateBagSchema.safeParse(rawInput);
   if (!parsed.success) {
-    return { success: false, message: parsed.error.issues[0]?.message ?? "Datos inválidos" };
+    return fail("invalidData");
   }
   const { bagId, bag } = parsed.data;
 
@@ -207,7 +208,7 @@ export async function updateBagAction(rawInput: unknown): Promise<ActionResult> 
     .eq("id", bagId)
     .select("coffee_id")
     .single();
-  if (error) return { success: false, message: error.message };
+  if (error) return fail("generic", error);
 
   revalidatePath(`/bags/${bagId}`);
   if (updated) revalidatePath(`/coffees/${updated.coffee_id}`);
@@ -237,15 +238,15 @@ export async function setBagFinishedAction(
     .select("id, coffee_id, opened_at")
     .eq("id", bagId)
     .maybeSingle();
-  if (readError) return { success: false, message: readError.message };
-  if (!bag) return { success: false, message: "Bolsa no encontrada" };
+  if (readError) return fail("generic", readError);
+  if (!bag) return fail("bagNotFound");
 
   const update = finished
     ? { status: "finished" as const, finished_at: todayISO() }
     : { status: bag.opened_at ? ("open" as const) : ("sealed" as const), finished_at: null };
 
   const { error } = await supabase.from("coffee_bags").update(update).eq("id", bagId);
-  if (error) return { success: false, message: error.message };
+  if (error) return fail("generic", error);
 
   revalidatePath(`/bags/${bagId}`);
   revalidatePath(`/coffees/${bag.coffee_id}`);
@@ -259,7 +260,7 @@ export async function archiveCoffeeAction(coffeeId: string): Promise<ActionResul
     .from("coffees")
     .update({ archived_at: new Date().toISOString() })
     .eq("id", coffeeId);
-  if (error) return { success: false, message: error.message };
+  if (error) return fail("generic", error);
 
   revalidatePath("/coffees");
   revalidatePath("/");
@@ -279,7 +280,7 @@ export async function unarchiveCoffeeAction(coffeeId: string): Promise<ActionRes
     .from("coffees")
     .update({ archived_at: null })
     .eq("id", coffeeId);
-  if (error) return { success: false, message: error.message };
+  if (error) return fail("generic", error);
 
   const { data: archivedBags } = await supabase
     .from("coffee_bags")
@@ -314,7 +315,7 @@ export async function getCoffeeDeletionImpactAction(
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return { success: false, message: "No autenticado" };
+  if (!user) return fail("unauthenticated");
 
   const [{ count: bags }, { count: attempts }] = await Promise.all([
     supabase.from("coffee_bags").select("id", { count: "exact", head: true }).eq("coffee_id", coffeeId),
@@ -380,12 +381,12 @@ export async function deleteCoffeeAction(coffeeId: string): Promise<ActionResult
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return { success: false, message: "No autenticado" };
+  if (!user) return fail("unauthenticated");
 
   await removeCoffeePhotos(supabase, coffeeId, user.id);
 
   const { error } = await supabase.from("coffees").delete().eq("id", coffeeId);
-  if (error) return { success: false, message: error.message };
+  if (error) return fail("generic", error);
 
   revalidatePath("/coffees");
   revalidatePath("/");
@@ -403,7 +404,7 @@ export async function deleteBagAction(bagId: string): Promise<ActionResult> {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return { success: false, message: "No autenticado" };
+  if (!user) return fail("unauthenticated");
 
   await removeBagPhotos(supabase, bagId, user.id);
 
@@ -413,7 +414,7 @@ export async function deleteBagAction(bagId: string): Promise<ActionResult> {
     .eq("id", bagId)
     .select("coffee_id")
     .maybeSingle();
-  if (error) return { success: false, message: error.message };
+  if (error) return fail("generic", error);
 
   if (deleted) revalidatePath(`/coffees/${deleted.coffee_id}`);
   revalidatePath("/coffees");
@@ -456,7 +457,7 @@ export async function getBagDeletionImpactAction(
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return { success: false, message: "No autenticado" };
+  if (!user) return fail("unauthenticated");
 
   const { count } = await supabase
     .from("brew_attempts")
@@ -472,7 +473,7 @@ export async function registerCoffeeMediaAction(
 ): Promise<ActionResult<{ mediaId: string }>> {
   const parsed = registerMediaSchema.safeParse(rawInput);
   if (!parsed.success) {
-    return { success: false, message: parsed.error.issues[0]?.message ?? "Datos inválidos" };
+    return fail("invalidData");
   }
   const { coffeeBagId, kind, storagePath, altText } = parsed.data;
 
@@ -480,7 +481,7 @@ export async function registerCoffeeMediaAction(
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return { success: false, message: "No autenticado" };
+  if (!user) return fail("unauthenticated");
 
   const { data, error } = await supabase
     .from("coffee_media")
@@ -493,7 +494,7 @@ export async function registerCoffeeMediaAction(
     })
     .select("id")
     .single();
-  if (error) return { success: false, message: error.message };
+  if (error) return fail("generic", error);
 
   revalidatePath(`/bags/${coffeeBagId}`);
   // A package_front photo becomes the coffee's cover image on the library
@@ -512,7 +513,7 @@ export async function deleteCoffeeMediaAction(
     .select("storage_path")
     .eq("id", mediaId)
     .single();
-  if (fetchError) return { success: false, message: fetchError.message };
+  if (fetchError) return fail("generic", fetchError);
 
   const { error: storageError } = await supabase.storage
     .from("coffee-photos")
@@ -522,7 +523,7 @@ export async function deleteCoffeeMediaAction(
   }
 
   const { error } = await supabase.from("coffee_media").delete().eq("id", mediaId);
-  if (error) return { success: false, message: error.message };
+  if (error) return fail("generic", error);
 
   revalidatePath(`/bags/${coffeeBagId}`);
   return { success: true, data: undefined };

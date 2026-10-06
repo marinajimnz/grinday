@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { startBrewFromAttemptSchema, startBrewSchema } from "@/lib/validation/brew";
 import { getLastAttemptForCoffeeAndMethod, RECIPE_SOURCE_ATTEMPT_FIELDS } from "@/features/attempts/queries";
 import { getDefaultEquipmentForMethod, getDefaultGrinder } from "@/features/equipment/queries";
+import { fail } from "@/lib/i18n/serverErrors";
 
 type ActionResult<T = undefined> =
   | { success: true; data: T }
@@ -29,7 +30,7 @@ export type StartBrewData = {
 export async function startBrewAction(rawInput: unknown): Promise<ActionResult<StartBrewData>> {
   const parsed = startBrewSchema.safeParse(rawInput);
   if (!parsed.success) {
-    return { success: false, message: parsed.error.issues[0]?.message ?? "Datos inválidos" };
+    return fail("invalidData");
   }
   const { coffeeId, method } = parsed.data;
 
@@ -37,7 +38,7 @@ export async function startBrewAction(rawInput: unknown): Promise<ActionResult<S
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return { success: false, message: "No autenticado" };
+  if (!user) return fail("unauthenticated");
 
   const { data: coffee, error: coffeeError } = await supabase
     .from("coffees")
@@ -45,21 +46,21 @@ export async function startBrewAction(rawInput: unknown): Promise<ActionResult<S
     .eq("id", coffeeId)
     .eq("user_id", user.id)
     .maybeSingle();
-  if (coffeeError) return { success: false, message: coffeeError.message };
-  if (!coffee) return { success: false, message: "Café no encontrado" };
+  if (coffeeError) return fail("generic", coffeeError);
+  if (!coffee) return fail("coffeeNotFound");
 
   const { data: bags, error: bagsError } = await supabase
     .from("coffee_bags")
     .select("id, status, created_at, roast_date")
     .eq("coffee_id", coffeeId)
     .order("created_at", { ascending: false });
-  if (bagsError) return { success: false, message: bagsError.message };
+  if (bagsError) return fail("generic", bagsError);
 
   const bag =
     bags?.find((b) => b.status === "open") ??
     bags?.find((b) => b.status === "sealed") ??
     bags?.[0];
-  if (!bag) return { success: false, message: "Este café no tiene ninguna bolsa disponible" };
+  if (!bag) return fail("noBagAvailable");
 
   // The picker labels a coffee "Receta favorita · intento #N" and the page
   // above it promises "si tiene receta favorita, partimos de ahí" — but the
@@ -115,7 +116,7 @@ export async function startBrewFromAttemptAction(
 ): Promise<ActionResult<StartBrewData>> {
   const parsed = startBrewFromAttemptSchema.safeParse(rawInput);
   if (!parsed.success) {
-    return { success: false, message: parsed.error.issues[0]?.message ?? "Datos inválidos" };
+    return fail("invalidData");
   }
   const { attemptId } = parsed.data;
 
@@ -123,7 +124,7 @@ export async function startBrewFromAttemptAction(
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return { success: false, message: "No autenticado" };
+  if (!user) return fail("unauthenticated");
 
   const { data: attempt, error: attemptError } = await supabase
     .from("brew_attempts")
@@ -133,21 +134,21 @@ export async function startBrewFromAttemptAction(
     .eq("id", attemptId)
     .eq("user_id", user.id)
     .maybeSingle();
-  if (attemptError) return { success: false, message: attemptError.message };
-  if (!attempt || !attempt.coffee) return { success: false, message: "Intento no encontrado" };
+  if (attemptError) return fail("generic", attemptError);
+  if (!attempt || !attempt.coffee) return fail("attemptNotFound");
 
   const { data: bags, error: bagsError } = await supabase
     .from("coffee_bags")
     .select("id, status, created_at, roast_date")
     .eq("coffee_id", attempt.coffee_id)
     .order("created_at", { ascending: false });
-  if (bagsError) return { success: false, message: bagsError.message };
+  if (bagsError) return fail("generic", bagsError);
 
   const bag =
     bags?.find((b) => b.status === "open") ??
     bags?.find((b) => b.status === "sealed") ??
     bags?.[0];
-  if (!bag) return { success: false, message: "Este café no tiene ninguna bolsa disponible" };
+  if (!bag) return fail("noBagAvailable");
 
   return {
     success: true,
