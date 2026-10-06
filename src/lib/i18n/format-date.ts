@@ -1,10 +1,19 @@
 import type { Locale } from "./types";
+import { APP_TIME_ZONE, todayISO } from "@/lib/time";
 
 const INTL_LOCALE: Record<Locale, string> = { es: "es-ES", en: "en-US" };
+
+// Every date and time is shown on the app's clock, never the machine's.
+// These run twice for a client component — once on the server (UTC on
+// Vercel) and again in the browser — and without a fixed zone the two
+// disagreed: the server sent 10:00, the browser corrected it to 12:00, and
+// React logged a hydration mismatch on every attempt page.
+const ZONE = { timeZone: APP_TIME_ZONE } as const;
 
 export function formatDate(value: string | Date, locale: Locale) {
   const date = typeof value === "string" ? new Date(value) : value;
   return date.toLocaleDateString(INTL_LOCALE[locale], {
+    ...ZONE,
     day: "2-digit",
     month: "short",
     year: "numeric",
@@ -13,8 +22,14 @@ export function formatDate(value: string | Date, locale: Locale) {
 
 export function formatDateTime(value: string | Date, locale: Locale) {
   const date = typeof value === "string" ? new Date(value) : value;
-  return date.toLocaleString(INTL_LOCALE[locale]);
+  return date.toLocaleString(INTL_LOCALE[locale], ZONE);
 }
+
+// "YYYY-MM-DD" as a day count, for subtracting calendar days.
+const dayNumber = (isoDate: string) => {
+  const [y, m, d] = isoDate.split("-").map(Number);
+  return Date.UTC(y, m - 1, d) / 86_400_000;
+};
 
 // "hoy" / "ayer" for today and yesterday, then a date — used for compact
 // activity-feed rows where a full timestamp is too noisy.
@@ -33,13 +48,15 @@ export function formatRelativeDay(
   labels: { today: string; yesterday: string },
 ) {
   const date = typeof value === "string" ? new Date(value) : value;
-  const startOfDay = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
-  const now = new Date();
-  const diffDays = Math.round((startOfDay(now) - startOfDay(date)) / 86_400_000);
+  // Both days read off the app's clock, so "hoy" means today in Madrid
+  // whichever machine is asking.
+  const day = todayISO(APP_TIME_ZONE, date);
+  const today = todayISO(APP_TIME_ZONE, new Date());
+  const diffDays = dayNumber(today) - dayNumber(day);
   if (diffDays === 0) return labels.today;
   if (diffDays === 1) return labels.yesterday;
-  if (date.getFullYear() === now.getFullYear()) {
-    return date.toLocaleDateString(INTL_LOCALE[locale], { day: "2-digit", month: "short" });
+  if (day.slice(0, 4) === today.slice(0, 4)) {
+    return date.toLocaleDateString(INTL_LOCALE[locale], { ...ZONE, day: "2-digit", month: "short" });
   }
   return formatDate(date, locale);
 }
