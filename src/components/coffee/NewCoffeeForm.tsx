@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { ModeSelectCards } from "./wizard/ModeSelectCards";
@@ -62,7 +62,7 @@ export function NewCoffeeForm() {
 
   // Bag status is a computed field, not a choice — a brand-new bag is
   // "open" the moment it has an opened date, "sealed" otherwise.
-  const openedAt = watch("bag.openedAt");
+  const openedAt = useWatch({ control, name: "bag.openedAt" });
   useEffect(() => {
     setValue("bag.status", openedAt ? "open" : "sealed");
   }, [openedAt, setValue]);
