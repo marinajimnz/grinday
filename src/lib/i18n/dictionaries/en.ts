@@ -343,6 +343,18 @@ const en: Dictionary = {
   errors: {
     title: "Something went wrong here",
     description: "We couldn't load this screen. Try again — and if it keeps failing, your data is safe.",
+    server: {
+      unauthenticated: "Your session has expired. Please sign in again.",
+      invalidData: "Some of the data isn't valid. Check it and try again.",
+      generic: "Something went wrong. Please try again.",
+      coffeeNotFound: "That coffee couldn't be found.",
+      bagNotFound: "That bag couldn't be found.",
+      attemptNotFound: "That attempt couldn't be found.",
+      noBagAvailable: "This coffee has no bag left to brew from.",
+      invalidLanguage: "That language isn't available.",
+      invalidUser: "That username isn't valid.",
+      invalidFavourite: "That saved item isn't valid.",
+    },
   },
   dashboard: {
     title: "Home",
@@ -416,6 +428,7 @@ const en: Dictionary = {
     currentPassword: "Current password",
     newPassword: "New password",
     currentPasswordIncorrect: "The current password is incorrect",
+    passwordSameAsCurrent: "The new password has to be different from the current one.",
     passwordChanged: "Password updated.",
     exportData: "Export your data",
     exportDescription: "A copy of your coffees, bags, and attempts. Useful as a manual backup.",

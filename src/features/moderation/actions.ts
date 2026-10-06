@@ -5,6 +5,7 @@ import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { getLocale } from "@/lib/i18n/locale";
 import { getDictionary } from "@/lib/i18n/get-dictionary";
+import { fail } from "@/lib/i18n/serverErrors";
 
 export type ActionResult<T = undefined> = { success: true; data?: T } | { success: false; message: string };
 
@@ -22,7 +23,7 @@ async function call<T>(
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return { success: false, message: "No autenticado" };
+  if (!user) return fail("unauthenticated");
 
   const { data, error } = await fn(supabase);
   if (error) {
@@ -188,7 +189,7 @@ export async function reportProfileAction(input: {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return { success: false, message: "No autenticado" };
+  if (!user) return fail("unauthenticated");
 
   const { error } = await supabase.rpc("report_profile", {
     p_username: parsed.data.username,
