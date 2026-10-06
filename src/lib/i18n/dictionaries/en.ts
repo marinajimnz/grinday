@@ -878,6 +878,13 @@ const en: Dictionary = {
     noneYet: "—",
     breakdowns: "Breakdown",
   },
+  pageTitles: {
+    attempts: "Attempts",
+    attempt: "Attempt",
+    coffee: "Coffee",
+    bag: "Bag",
+    login: "Sign in",
+  },
   offline: {
     title: "Offline",
     subtitle: "This screen shows when there's no connection. The last thing that loaded stays here.",

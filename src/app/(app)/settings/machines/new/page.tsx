@@ -1,6 +1,9 @@
 import { NewEquipmentWizard } from "@/components/equipment/NewEquipmentWizard";
 import { getLocale } from "@/lib/i18n/locale";
 import { getDictionary } from "@/lib/i18n/get-dictionary";
+import { titleFrom } from "@/lib/i18n/metadata";
+
+export const generateMetadata = titleFrom((d) => d.equipment.newEquipmentTitle);
 
 export default async function NewEquipmentPage() {
   const dict = getDictionary(await getLocale());

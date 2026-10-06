@@ -4,6 +4,9 @@ import { getRecentAttempts } from "@/features/dashboard/queries";
 import { RecentAttemptsList } from "@/components/dashboard/RecentAttemptsList";
 import { getLocale } from "@/lib/i18n/locale";
 import { getDictionary } from "@/lib/i18n/get-dictionary";
+import { titleFrom } from "@/lib/i18n/metadata";
+
+export const generateMetadata = titleFrom((d) => d.pageTitles.attempts);
 
 export default async function AttemptsPage() {
   const supabase = await createClient();

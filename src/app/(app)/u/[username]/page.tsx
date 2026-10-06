@@ -19,9 +19,18 @@ import { OwnProfileBanner } from "@/components/profile/OwnProfileBanner";
 import { BackButton } from "@/components/ui/BackButton";
 import { getLocale } from "@/lib/i18n/locale";
 import { getDictionary } from "@/lib/i18n/get-dictionary";
+import type { Metadata } from "next";
 
 function countLabel(count: number, one: string, many: string) {
   return count === 1 ? one : many.replace("{count}", String(count));
+}
+
+// Only what's already in the address bar — never anything the profile
+// lookup returned, so a private or missing profile's tab says no more
+// than the URL does.
+export async function generateMetadata({ params }: { params: Promise<{ username: string }> }): Promise<Metadata> {
+  const { username } = await params;
+  return { title: `@${decodeURIComponent(username)}` };
 }
 
 // Another account's public profile. Everything on it comes from

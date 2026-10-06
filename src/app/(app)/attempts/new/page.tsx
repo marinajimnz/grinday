@@ -5,6 +5,9 @@ import { createClient } from "@/lib/supabase/server";
 import { CreateAttemptForm } from "@/components/attempt/CreateAttemptForm";
 import { getLocale } from "@/lib/i18n/locale";
 import { getDictionary } from "@/lib/i18n/get-dictionary";
+import { titleFrom } from "@/lib/i18n/metadata";
+
+export const generateMetadata = titleFrom((d) => d.attempts.newTitle);
 
 export default async function NewAttemptPage({
   searchParams,

@@ -17,6 +17,9 @@ import { cn } from "@/lib/cn";
 import { formatDateTime } from "@/lib/i18n/format-date";
 import { getLocale } from "@/lib/i18n/locale";
 import { getDictionary } from "@/lib/i18n/get-dictionary";
+import { titleFrom } from "@/lib/i18n/metadata";
+
+export const generateMetadata = titleFrom((d) => d.admin.title);
 
 const TABS = ["solicitudes", "denuncias", "tostadoras", "perfiles", "handles", "registro"] as const;
 type Tab = (typeof TABS)[number];

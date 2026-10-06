@@ -12,6 +12,9 @@ import { formatDate } from "@/lib/i18n/format-date";
 import type { BrewMethod } from "@/features/equipment/constants";
 import { getLocale } from "@/lib/i18n/locale";
 import { getDictionary } from "@/lib/i18n/get-dictionary";
+import { titleFrom } from "@/lib/i18n/metadata";
+
+export const generateMetadata = titleFrom((d) => d.pageTitles.attempt);
 
 // One attempt on someone's public profile: its full setup — the same recipe
 // block your own attempts show — the equipment it was brewed with, and its
