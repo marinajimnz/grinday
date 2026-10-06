@@ -2,6 +2,9 @@ import { MfaChallengeForm } from "@/components/settings/MfaChallengeForm";
 import { SignOutButton } from "@/components/settings/SignOutButton";
 import { getLocale } from "@/lib/i18n/locale";
 import { getDictionary } from "@/lib/i18n/get-dictionary";
+import { titleFrom } from "@/lib/i18n/metadata";
+
+export const generateMetadata = titleFrom((d) => d.mfa.title);
 
 // Reached only through the proxy: a signed-in session whose account has two-
 // step verification on but hasn't entered its code yet is sent here from

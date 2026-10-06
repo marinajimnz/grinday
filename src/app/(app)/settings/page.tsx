@@ -11,6 +11,9 @@ import { getLocale } from "@/lib/i18n/locale";
 import { getDictionary } from "@/lib/i18n/get-dictionary";
 import { IconCuenta, IconGrano, IconMaquinas, IconPerfil } from "@/components/icons/pencil-icons";
 import { ShieldCheck } from "lucide-react";
+import { titleFrom } from "@/lib/i18n/metadata";
+
+export const generateMetadata = titleFrom((d) => d.settings.title);
 
 export default async function SettingsPage() {
   const dict = getDictionary(await getLocale());

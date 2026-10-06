@@ -10,6 +10,9 @@ import { Button } from "@/components/ui/Button";
 import { getLocale } from "@/lib/i18n/locale";
 import { formatRelativeDay } from "@/lib/i18n/format-date";
 import { getDictionary } from "@/lib/i18n/get-dictionary";
+import { titleFrom } from "@/lib/i18n/metadata";
+
+export const generateMetadata = titleFrom((d) => d.recipes.title);
 
 // Every recipe you have starred, grouped by coffee. The dashboard shows one —
 // the coffee you're drinking now — and this is the rest: a V60 recipe and a

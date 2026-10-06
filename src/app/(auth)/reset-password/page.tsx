@@ -1,6 +1,9 @@
 import { ResetPasswordForm } from "@/components/settings/ResetPasswordForm";
 import { getLocale } from "@/lib/i18n/locale";
 import { getDictionary } from "@/lib/i18n/get-dictionary";
+import { titleFrom } from "@/lib/i18n/metadata";
+
+export const generateMetadata = titleFrom((d) => d.resetPassword.title);
 
 export default async function ResetPasswordPage() {
   const dict = getDictionary(await getLocale());

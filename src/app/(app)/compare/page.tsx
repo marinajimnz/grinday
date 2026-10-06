@@ -7,6 +7,9 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { MAX_COMPARE_ATTEMPTS, MIN_COMPARE_ATTEMPTS } from "@/features/attempts/constants";
 import { getLocale } from "@/lib/i18n/locale";
 import { getDictionary } from "@/lib/i18n/get-dictionary";
+import { titleFrom } from "@/lib/i18n/metadata";
+
+export const generateMetadata = titleFrom((d) => d.comparePage.title);
 
 export default async function ComparePage({
   searchParams,

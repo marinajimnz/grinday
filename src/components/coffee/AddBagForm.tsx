@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { BagFieldsFieldset } from "./BagFieldsFieldset";
@@ -29,6 +29,7 @@ export function AddBagForm({
 
   const {
     register,
+    control,
     watch,
     setValue,
     handleSubmit,
@@ -39,7 +40,7 @@ export function AddBagForm({
   });
 
   // Bag status is a computed field, not a choice — see BagFieldsFieldset.
-  const openedAt = watch("bag.openedAt");
+  const openedAt = useWatch({ control, name: "bag.openedAt" });
   useEffect(() => {
     setValue("bag.status", openedAt ? "open" : "sealed");
   }, [openedAt, setValue]);

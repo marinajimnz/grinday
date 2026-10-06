@@ -892,6 +892,14 @@ const es = {
     noneYet: "—",
     breakdowns: "Desglose",
   },
+  // Tab titles for pages whose heading isn't already a dictionary entry.
+  pageTitles: {
+    attempts: "Intentos",
+    attempt: "Intento",
+    coffee: "Café",
+    bag: "Bolsa",
+    login: "Iniciar sesión",
+  },
   offline: {
     title: "Sin conexión",
     subtitle: "Esta pantalla se muestra cuando no hay red. Lo último que se pudo cargar sigue aquí.",

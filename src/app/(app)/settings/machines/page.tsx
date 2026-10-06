@@ -5,6 +5,9 @@ import { getDictionary } from "@/lib/i18n/get-dictionary";
 import { getUserBrewEquipment, getUserGrinders } from "@/features/equipment/queries";
 import { GrinderCard } from "@/components/equipment/GrinderCard";
 import { MethodsCard } from "@/components/equipment/MethodsCard";
+import { titleFrom } from "@/lib/i18n/metadata";
+
+export const generateMetadata = titleFrom((d) => d.settings.machinesTitle);
 
 export default async function MachinesSettingsPage() {
   const supabase = await createClient();

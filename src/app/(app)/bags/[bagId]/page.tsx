@@ -7,6 +7,9 @@ import { BagDetailPanel } from "@/components/coffee/BagDetailPanel";
 import { BagMediaSection } from "@/components/coffee/BagMediaSection";
 import { getLocale } from "@/lib/i18n/locale";
 import { getDictionary } from "@/lib/i18n/get-dictionary";
+import { titleFrom } from "@/lib/i18n/metadata";
+
+export const generateMetadata = titleFrom((d) => d.pageTitles.bag);
 
 export default async function BagDetailPage({
   params,
