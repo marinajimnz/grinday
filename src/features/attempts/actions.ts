@@ -344,9 +344,16 @@ export async function setAttemptDashboardVisibilityAction(
 
 // Cascades to attempt_media and inventory_events (both "on delete cascade"),
 // and clears coffees.preferred_attempt_id if this was the starred one (that
-// FK is "on delete set null") — nothing is left orphaned.
+// FK is "on delete set null"). The cascade only reaches the attempt_media
+// rows, though, not the files they point at: those are in Storage, which no
+// foreign key reaches. This used to stop there and leave every photo of a
+// deleted attempt behind — unreachable from the app, but still stored. So
+// the paths are read first (the cascade takes the rows with it), and the
+// files go once the attempt is gone.
 export async function deleteAttemptAction(attemptId: string): Promise<ActionResult> {
   const supabase = await createClient();
+  const { data: media } = await supabase.from("attempt_media").select("storage_path").eq("attempt_id", attemptId);
+
   const { data: deleted, error } = await supabase
     .from("brew_attempts")
     .delete()
@@ -354,6 +361,15 @@ export async function deleteAttemptAction(attemptId: string): Promise<ActionResu
     .select("coffee_id")
     .maybeSingle();
   if (error) return fail("generic", error);
+
+  // Only once the attempt is really gone — a failed delete keeps its
+  // photos. Best-effort, like the coffee and bag deletes: a file that
+  // couldn't be removed shouldn't undo deleting the attempt.
+  const paths = (media ?? []).map((m) => m.storage_path);
+  if (deleted && paths.length) {
+    const { error: storageError } = await supabase.storage.from("coffee-photos").remove(paths);
+    if (storageError) console.error("[attempts] failed to delete attempt photos:", storageError.message);
+  }
 
   if (deleted) revalidatePath(`/coffees/${deleted.coffee_id}`);
   revalidatePath("/");

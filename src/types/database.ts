@@ -519,6 +519,21 @@ export type Database = {
           },
         ]
       }
+      login_failures: {
+        Row: {
+          failed_at: string
+          key: string
+        }
+        Insert: {
+          failed_at?: string
+          key: string
+        }
+        Update: {
+          failed_at?: string
+          key?: string
+        }
+        Relationships: []
+      }
       moderation_events: {
         Row: {
           action: string

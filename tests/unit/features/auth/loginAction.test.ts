@@ -5,7 +5,21 @@ const signInWithPassword = vi.fn();
 const profiles = new Map([["marina", "user-1"]]);
 const emails = new Map([["user-1", "marina@example.com"]]);
 
-vi.mock("next/headers", () => ({ headers: vi.fn() }));
+vi.mock("next/headers", () => ({ headers: async () => new Headers({ "x-forwarded-for": "203.0.113.7" }) }));
+
+const throttle = {
+  throttled: false,
+  isThrottled: vi.fn(async () => throttle.throttled),
+  recordFailure: vi.fn(),
+  clearFailures: vi.fn(),
+};
+vi.mock("@/features/auth/loginThrottle", () => ({
+  throttleKeys: (identifier: string, ip: string | null) => ({ identifier: `id:${identifier}`, ip: `ip:${ip}` }),
+  clientIp: (h: Headers) => h.get("x-forwarded-for"),
+  isThrottled: (...args: unknown[]) => throttle.isThrottled(...(args as [])),
+  recordFailure: (...args: unknown[]) => throttle.recordFailure(...(args as [])),
+  clearFailures: (...args: unknown[]) => throttle.clearFailures(...(args as [])),
+}));
 vi.mock("@/lib/i18n/locale", () => ({ getLocale: async () => "es" }));
 vi.mock("@/lib/supabase/server", () => ({
   createClient: async () => ({ auth: { signInWithPassword } }),
@@ -33,6 +47,9 @@ describe("loginAction", () => {
   beforeEach(() => {
     signInWithPassword.mockReset();
     signInWithPassword.mockResolvedValue({ error: null });
+    throttle.throttled = false;
+    throttle.recordFailure.mockClear();
+    throttle.clearFailures.mockClear();
   });
 
   it("signs in by username on the server, without returning the email", async () => {
@@ -62,6 +79,30 @@ describe("loginAction", () => {
       success: false,
       message: es.login.identifierRequired,
     });
+    expect(signInWithPassword).not.toHaveBeenCalled();
+  });
+
+  it("counts a failure against the identifier and the IP, and clears it on success", async () => {
+    signInWithPassword.mockResolvedValueOnce({ error: { message: "Invalid login credentials" } });
+    await actions.loginAction("marina", "nope");
+    expect(throttle.recordFailure).toHaveBeenCalledWith(expect.anything(), { identifier: "id:marina", ip: "ip:203.0.113.7" });
+
+    await actions.loginAction("marina", "secret");
+    expect(throttle.clearFailures).toHaveBeenCalledTimes(1);
+  });
+
+  it("counts an unknown username as a failure too", async () => {
+    await actions.loginAction("nobody", "secret");
+    expect(throttle.recordFailure).toHaveBeenCalledTimes(1);
+  });
+
+  it("refuses without even trying once throttled — for real and unknown accounts alike", async () => {
+    throttle.throttled = true;
+    const real = await actions.loginAction("marina", "secret");
+    const unknown = await actions.loginAction("nobody", "secret");
+
+    expect(real).toEqual({ success: false, message: es.login.tooManyAttempts });
+    expect(unknown).toEqual(real);
     expect(signInWithPassword).not.toHaveBeenCalled();
   });
 

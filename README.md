@@ -152,7 +152,12 @@ El acceso requiere iniciar sesión (`/login`) — no hay modo invitado. El
 campo de login acepta un `username` o un email. Todo el inicio de sesión
 ocurre en el servidor (`loginAction`): el username se resuelve a su email con
 el cliente de service-role y la sesión se abre allí, así que el email de una
-cuenta nunca llega al navegador. Desde **Ajustes → Cuenta** se ve el email vinculado y
+cuenta nunca llega al navegador. Como Supabase Auth ve entonces todos los
+inicios de sesión llegando desde el servidor, su límite por IP no distingue
+a nadie; la app lleva su propio límite en `login_failures` (migración 0052):
+10 fallos por usuario/email y 30 por IP en 15 minutos, guardados como hash
+con clave. Si la tabla no existe o no se puede leer, el login sigue
+funcionando sin límite en vez de bloquear a todo el mundo. Desde **Ajustes → Cuenta** se ve el email vinculado y
 hay un botón para cerrar sesión.
 
 Desde la misma pantalla, **Exportar tus datos** descarga un backup manual:

@@ -659,6 +659,12 @@
       "authenticated_column_grants": []
     },
     {
+      "table": "login_failures",
+      "rls": true,
+      "table_grants": [],
+      "authenticated_column_grants": []
+    },
+    {
       "table": "moderation_events",
       "rls": true,
       "table_grants": [
