@@ -33,6 +33,14 @@ export function loadDashboardSnapshot(): DashboardSnapshot | null {
   }
 }
 
+export function clearDashboardSnapshot() {
+  try {
+    localStorage.removeItem(KEY);
+  } catch (err) {
+    console.error("[dashboard-snapshot] failed to clear:", err);
+  }
+}
+
 export function listPendingDraftIds(): string[] {
   try {
     return Object.keys(localStorage)

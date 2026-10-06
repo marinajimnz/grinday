@@ -131,6 +131,12 @@ vez que se visita el dashboard. Sin conexión, la navegación cae en
 `/offline`, que muestra ese resumen y avisa de cualquier intento de brew
 guardado localmente (`grinday:brew-draft:*`) pendiente de sincronizar.
 
+Al cerrar sesión o borrar la cuenta se vacían las cachés de páginas del
+Service Worker y ese resumen (`src/lib/clearDeviceData.ts`), para que en un
+dispositivo compartido nadie encuentre sin conexión lo de la cuenta anterior.
+Se quedan los archivos de la app, el tema y los borradores, que ya van por
+cuenta y pueden tener una preparación sin sincronizar.
+
 La foto del intento se hace en su propio paso (5 de 6), entre el cronómetro
 y la puntuación: al probar el café ya no está como salió. Es el único paso
 del flujo que necesita conexión — la foto se sube a Storage en el momento,
@@ -198,7 +204,10 @@ tiene se quedan vacías.
    soporta Turbopack todavía).
 3. En **Environment Variables**, añade las mismas claves de `.env.local`:
    `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`,
-   `SUPABASE_SERVICE_ROLE_KEY`, `SUPABASE_DB_PASSWORD`.
+   `SUPABASE_SERVICE_ROLE_KEY`, `SUPABASE_DB_PASSWORD`. Con un dominio propio,
+   añade también `NEXT_PUBLIC_SITE_URL` (p. ej. `https://midominio.com`): es la
+   dirección de los enlaces del email de recuperar contraseña. Sin ella se usa
+   el dominio de producción de Vercel; nunca la cabecera `Host` de la petición.
 4. Deploy. Vercel asigna un dominio `*.vercel.app`; para un dominio propio,
    **Project → Settings → Domains** y sigue las instrucciones de DNS (puedes
    comprarlo en Vercel o apuntar uno que ya tengas).
