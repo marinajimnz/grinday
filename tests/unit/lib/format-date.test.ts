@@ -1,42 +1,57 @@
-import { describe, expect, it } from "vitest";
-import { formatRelativeDay } from "@/lib/i18n/format-date";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { formatDate, formatDateTime, formatRelativeDay } from "@/lib/i18n/format-date";
 
 const LABELS = { today: "hoy", yesterday: "ayer" };
-const daysAgo = (n: number) => {
-  const d = new Date();
-  d.setDate(d.getDate() - n);
-  return d;
-};
 
+// Instants are written in UTC on purpose: what's on screen must follow the
+// app's clock (Europe/Madrid, UTC+2 in summer, +1 in winter), not whichever
+// zone the server or the test runner happens to be in.
 describe("formatRelativeDay", () => {
+  beforeEach(() => {
+    vi.useFakeTimers({ toFake: ["Date"] });
+    // 6 October 2026, 12:00 in Madrid.
+    vi.setSystemTime(new Date("2026-10-06T10:00:00Z"));
+  });
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
   it("names today and yesterday instead of dating them", () => {
-    expect(formatRelativeDay(new Date(), "es", LABELS)).toBe("hoy");
-    expect(formatRelativeDay(daysAgo(1), "es", LABELS)).toBe("ayer");
+    expect(formatRelativeDay("2026-10-06T08:00:00Z", "es", LABELS)).toBe("hoy");
+    expect(formatRelativeDay("2026-10-05T08:00:00Z", "es", LABELS)).toBe("ayer");
   });
 
   it("leaves the year off a brew from this year", () => {
     // Every row in an active journal says the same year, and the row has no
     // width to spare for it — see the note on the function.
-    const formatted = formatRelativeDay(daysAgo(30), "es", LABELS);
+    const formatted = formatRelativeDay("2026-09-06T10:00:00Z", "es", LABELS);
     expect(formatted).not.toMatch(/\d{4}/);
-    expect(formatted).toMatch(/^\d{2} /);
+    expect(formatted).toMatch(/^06 /);
   });
 
   it("keeps the year once it actually distinguishes something", () => {
-    const old = new Date();
-    old.setFullYear(old.getFullYear() - 1);
-    expect(formatRelativeDay(old, "es", LABELS)).toMatch(String(old.getFullYear()));
+    expect(formatRelativeDay("2025-10-06T10:00:00Z", "es", LABELS)).toMatch("2025");
   });
 
-  it("counts whole days, not elapsed hours", () => {
-    // 00:05 today is "hoy" even though it is minutes old, and 23:55
-    // yesterday is "ayer" even though it is barely older.
-    const justAfterMidnight = new Date();
-    justAfterMidnight.setHours(0, 5, 0, 0);
-    expect(formatRelativeDay(justAfterMidnight, "es", LABELS)).toBe("hoy");
+  it("counts whole days on Madrid's calendar, not elapsed hours or UTC days", () => {
+    // 00:05 today in Madrid is still the 5th in UTC — and it's "hoy".
+    expect(formatRelativeDay("2026-10-05T22:05:00Z", "es", LABELS)).toBe("hoy");
+    // 23:55 yesterday in Madrid is barely older, and it's "ayer".
+    expect(formatRelativeDay("2026-10-05T21:55:00Z", "es", LABELS)).toBe("ayer");
+  });
+});
 
-    const lateYesterday = daysAgo(1);
-    lateYesterday.setHours(23, 55, 0, 0);
-    expect(formatRelativeDay(lateYesterday, "es", LABELS)).toBe("ayer");
+describe("formatDateTime and formatDate", () => {
+  it("show Madrid's time, whatever the machine's zone", () => {
+    expect(formatDateTime("2026-10-04T10:00:00Z", "es")).toBe("4/10/2026, 12:00:00");
+  });
+
+  it("put a late-night brew on the day it was in Madrid", () => {
+    // 23:30 UTC on the 5th is 01:30 on the 6th in Madrid.
+    expect(formatDate("2026-10-05T23:30:00Z", "es")).toMatch(/^06 /);
+  });
+
+  it("keep a bare date on its own day", () => {
+    expect(formatDate("2026-09-24", "es")).toMatch(/^24 /);
   });
 });
