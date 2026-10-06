@@ -172,6 +172,13 @@ JSON completo (cafés, bolsas, intentos) o CSV solo de intentos
 recomendada para respaldar antes de borrar datos del navegador o migrar de
 dispositivo.
 
+**Eliminar la cuenta** (al final de la misma pantalla, plegado) pide escribir
+el @usuario —o el email si no hay— y la contraseña actual. Borra el usuario de
+Supabase Auth, y la cascada de claves foráneas se lleva todos sus datos; el
+registro de moderación conserva sus entradas con la cuenta a `null`. Después
+borra su carpeta de Storage (`{userId}/…`), que ninguna clave alcanza. Las
+cuentas de administración no pueden borrarse desde ahí.
+
 **Importar un backup** (misma pantalla, `POST /api/import`) devuelve ese JSON
 a la cuenta, la misma u otra. Primero enseña qué añadiría (`?dryRun=1`) y no
 escribe nada hasta confirmar. Fusiona, no reemplaza: lo que ya está —mismo id,

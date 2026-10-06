@@ -8,6 +8,7 @@ import { ChangePasswordForm } from "@/components/settings/ChangePasswordForm";
 import { SettingsAccordionCard } from "@/components/settings/SettingsAccordionCard";
 import { TwoFactorCard } from "@/components/settings/TwoFactorCard";
 import { ImportBackupCard } from "@/components/settings/ImportBackupCard";
+import { DeleteAccountCard } from "@/components/settings/DeleteAccountCard";
 import { buttonClassName } from "@/components/ui/Button";
 import { getLocale } from "@/lib/i18n/locale";
 import { getDictionary } from "@/lib/i18n/get-dictionary";
@@ -88,6 +89,17 @@ export default async function AccountSettingsPage() {
 
       <div className="mt-6">
         <ImportBackupCard />
+      </div>
+
+      {/* Last, and folded: the one thing on this page that can't be undone. */}
+      <div className="mt-10">
+        <SettingsAccordionCard title={dict.settings.deleteAccountTitle}>
+          {profile?.role === "admin" ? (
+            <p className="text-sm text-ink-muted">{dict.settings.deleteAccountAdmin}</p>
+          ) : (
+            <DeleteAccountCard identifier={profile?.username ?? user.email ?? ""} />
+          )}
+        </SettingsAccordionCard>
       </div>
     </div>
   );

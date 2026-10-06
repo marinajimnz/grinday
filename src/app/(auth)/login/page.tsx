@@ -6,13 +6,25 @@ import { titleFrom } from "@/lib/i18n/metadata";
 
 export const generateMetadata = titleFrom((d) => d.pageTitles.login);
 
-export default async function LoginPage() {
+export default async function LoginPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ accountDeleted?: string }>;
+}) {
   const dict = getDictionary(await getLocale());
+  // Where deleting an account lands: said once, so it's clear it worked.
+  const { accountDeleted } = await searchParams;
 
   return (
     <div className="w-full max-w-sm">
       <h1 className="font-display text-center text-5xl text-ink">grindaily</h1>
       <p className="mt-2 text-center text-sm text-ink-muted">{dict.login.tagline}</p>
+
+      {accountDeleted === "1" && (
+        <p role="status" className="mt-6 text-center text-sm text-ink">
+          {dict.login.accountDeleted}
+        </p>
+      )}
 
       <div className="mt-8 rounded-card border border-border bg-surface p-5">
         <LoginForm />
