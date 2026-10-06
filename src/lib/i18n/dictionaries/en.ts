@@ -35,6 +35,7 @@ const en: Dictionary = {
     submitting: "Signing in...",
     error: "Incorrect username or password",
     identifierRequired: "Enter your username or email",
+    tooManyAttempts: "Too many failed attempts. Wait a few minutes and try again.",
     newHerePrompt: "New here?",
     newHereCta: "Sign up",
     forgotPasswordLink: "Forgot your password?",

@@ -33,6 +33,7 @@ const es = {
     submitting: "Entrando...",
     error: "Usuario o contraseña incorrectos",
     identifierRequired: "Escribe tu usuario o email",
+    tooManyAttempts: "Demasiados intentos fallidos. Espera unos minutos y vuelve a probar.",
     newHerePrompt: "¿Eres nuevx?",
     newHereCta: "Regístrate",
     forgotPasswordLink: "¿Olvidaste tu contraseña?",
