@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { LogOut } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import { clearDeviceData } from "@/lib/clearDeviceData";
 import { useDictionary } from "@/components/i18n/LocaleProvider";
 import { Button } from "@/components/ui/Button";
 
@@ -21,6 +22,7 @@ export function SignOutButton() {
         setIsSigningOut(true);
         const supabase = createClient();
         await supabase.auth.signOut();
+        await clearDeviceData();
         router.push("/login");
         router.refresh();
       }}

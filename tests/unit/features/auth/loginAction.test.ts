@@ -5,6 +5,7 @@ const signInWithPassword = vi.fn();
 const profiles = new Map([["marina", "user-1"]]);
 const emails = new Map([["user-1", "marina@example.com"]]);
 
+vi.mock("server-only", () => ({}));
 vi.mock("next/headers", () => ({ headers: async () => new Headers({ "x-forwarded-for": "203.0.113.7" }) }));
 
 const throttle = {
