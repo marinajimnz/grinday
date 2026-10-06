@@ -160,6 +160,16 @@ JSON completo (cafés, bolsas, intentos) o CSV solo de intentos
 recomendada para respaldar antes de borrar datos del navegador o migrar de
 dispositivo.
 
+**Importar un backup** (misma pantalla, `POST /api/import`) devuelve ese JSON
+a la cuenta, la misma u otra. Primero enseña qué añadiría (`?dryRun=1`) y no
+escribe nada hasta confirmar. Fusiona, no reemplaza: lo que ya está —mismo id,
+o el mismo intento por su `idempotency_key`— no se toca, así que importar dos
+veces el mismo archivo no duplica nada y, si algo falla a medias, basta con
+repetir. Si un id ya lo tiene otra cuenta, la fila entra con uno nuevo y sus
+referencias se reescriben. Lo que no viaja en el export (fotos, equipo,
+historial de inventario) no vuelve; las referencias a equipo que la cuenta no
+tiene se quedan vacías.
+
 ## Despliegue en Vercel
 
 1. En [vercel.com](https://vercel.com), **Add New → Project** e importa el

@@ -7,6 +7,7 @@ import { ChangeEmailForm } from "@/components/settings/ChangeEmailForm";
 import { ChangePasswordForm } from "@/components/settings/ChangePasswordForm";
 import { SettingsAccordionCard } from "@/components/settings/SettingsAccordionCard";
 import { TwoFactorCard } from "@/components/settings/TwoFactorCard";
+import { ImportBackupCard } from "@/components/settings/ImportBackupCard";
 import { buttonClassName } from "@/components/ui/Button";
 import { getLocale } from "@/lib/i18n/locale";
 import { getDictionary } from "@/lib/i18n/get-dictionary";
@@ -83,6 +84,10 @@ export default async function AccountSettingsPage() {
             {dict.settings.downloadCsv}
           </a>
         </div>
+      </div>
+
+      <div className="mt-6">
+        <ImportBackupCard />
       </div>
     </div>
   );
