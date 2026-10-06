@@ -3,9 +3,8 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { createClient } from "@/lib/supabase/client";
 import { Field, inputClassName } from "@/components/ui/Field";
-import { resolveLoginEmailAction } from "@/features/auth/actions";
+import { loginAction } from "@/features/auth/actions";
 import { useDictionary } from "@/components/i18n/LocaleProvider";
 import { Button } from "@/components/ui/Button";
 
@@ -25,21 +24,12 @@ export function LoginForm() {
         setIsSubmitting(true);
         setError(null);
 
-        const resolved = await resolveLoginEmailAction(identifier);
-        if (!resolved.success) {
-          setIsSubmitting(false);
-          setError(resolved.message);
-          return;
-        }
-
-        const supabase = createClient();
-        const { error: signInError } = await supabase.auth.signInWithPassword({
-          email: resolved.email,
-          password,
-        });
+        // The whole sign-in runs on the server, so a username's email is
+        // never sent to the browser — see loginAction.
+        const result = await loginAction(identifier, password);
         setIsSubmitting(false);
-        if (signInError) {
-          setError(dict.login.error);
+        if (!result.success) {
+          setError(result.message);
           return;
         }
         router.push("/");
