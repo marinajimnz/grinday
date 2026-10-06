@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import { BagDetailPanel } from "@/components/coffee/BagDetailPanel";
 import { LocaleProvider } from "@/components/i18n/LocaleProvider";
@@ -67,5 +67,25 @@ describe("BagDetailPanel inventory", () => {
     renderPanel(makeBag({ inventory_mode: "manual_grams", remaining_g: 180 }));
 
     expect(screen.getByText("180 g")).toBeDefined();
+  });
+});
+
+describe("BagDetailPanel roast age", () => {
+  beforeEach(() => {
+    vi.useFakeTimers({ toFake: ["Date"] });
+    vi.setSystemTime(new Date("2026-10-06T10:00:00Z"));
+  });
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it("says how long ago it was roasted, under the date", () => {
+    renderPanel(makeBag({ roast_date: "2026-09-24" }));
+    expect(screen.getByText("hace 12 días")).toBeInTheDocument();
+  });
+
+  it("stops counting once the bag is finished", () => {
+    renderPanel(makeBag({ roast_date: "2026-09-24", status: "finished", finished_at: "2026-10-01" }));
+    expect(screen.queryByText(/hace \d+ días/)).not.toBeInTheDocument();
   });
 });

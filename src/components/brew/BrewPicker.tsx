@@ -4,6 +4,7 @@ import Image from "next/image";
 import type { BrewableCoffee } from "@/features/attempts/queries";
 import type { BrewMethod } from "@/features/equipment/constants";
 import { useDictionary } from "@/components/i18n/LocaleProvider";
+import { daysSinceRoast, formatRoastAge } from "@/features/coffees/roastAge";
 import { IconCafe as CoffeeIcon, IconFavorita } from "@/components/icons/pencil-icons";
 
 export function BrewPicker({
@@ -20,6 +21,13 @@ export function BrewPicker({
   disabled?: boolean;
 }) {
   const dict = useDictionary();
+
+  // Right where you pick what to brew: a coffee three days off roast and
+  // one five weeks off brew differently, and the date alone makes you count.
+  function roastAge(roastDate: string | null) {
+    const days = daysSinceRoast(roastDate);
+    return days === null ? null : ` · ${formatRoastAge(days, dict.coffees.roastAge)}`;
+  }
 
   return (
     <ul className="space-y-3">
@@ -46,7 +54,10 @@ export function BrewPicker({
               )}
             </div>
             <div className="min-w-0 flex-1">
-              <p className="text-xs text-ink-muted">{coffee.roaster}</p>
+              <p className="text-xs text-ink-muted">
+                {coffee.roaster}
+                {roastAge(coffee.roastDate)}
+              </p>
               <p className="truncate font-display text-base text-ink">{coffee.name}</p>
               {coffee.preferredAttempt?.method === method ? (
                 <p className="mt-0.5 flex items-center gap-1 text-xs text-coffee">
