@@ -29,16 +29,12 @@ function GrindAdviceCard({ advice }: { advice: GrindAdvice }) {
   const title = { fast: t.grindAdviceFast, slow: t.grindAdviceSlow, onTarget: t.grindAdviceOnTarget }[advice.verdict]
     .replace("{actual}", String(advice.actualSeconds))
     .replace("{target}", String(advice.targetSeconds));
-  const body =
-    advice.verdict === "onTarget"
-      ? t.grindAdviceKeep
-      : advice.verdict === "fast"
-        ? advice.amount === "lot"
-          ? t.grindAdviceFinerLot
-          : t.grindAdviceFinerLittle
-        : advice.amount === "lot"
-          ? t.grindAdviceCoarserLot
-          : t.grindAdviceCoarserLittle;
+  const body = (() => {
+    if (advice.verdict === "onTarget") return t.grindAdviceKeep;
+    if (advice.pressurized) return t.grindAdvicePressurized;
+    if (advice.verdict === "fast") return advice.amount === "lot" ? t.grindAdviceFinerLot : t.grindAdviceFinerLittle;
+    return advice.amount === "lot" ? t.grindAdviceCoarserLot : t.grindAdviceCoarserLittle;
+  })();
   const Icon = advice.verdict === "onTarget" ? CircleCheck : Lightbulb;
 
   return (
@@ -101,7 +97,7 @@ export function BrewResultFields({
   // a time typed in afterwards is a reading again.
   const grindAdvice =
     timed || extractionMs !== (recipe.targetTimeMs ?? null)
-      ? getGrindAdvice(method, extractionMs, recipe.targetTimeMs)
+      ? getGrindAdvice(method, extractionMs, recipe.targetTimeMs, recipe.basketType)
       : null;
 
   const fields: SteppableField[] = [

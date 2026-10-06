@@ -316,3 +316,36 @@ describe("BrewLiveScreen grind advice", () => {
     expect(screen.queryByRole("status")).not.toBeInTheDocument();
   });
 });
+
+describe("BrewLiveScreen basket advice", () => {
+  beforeEach(() => {
+    localStorage.clear();
+  });
+
+  it("swaps 'grind finer' for the basket when a pressurized shot ran fast", async () => {
+    saveFinishedBrew({
+      recipe: { method: "espresso", doseG: 18, targetWeightG: 36, targetTimeMs: 28000, basketType: "pressurized" },
+      extractionMs: 20000,
+      photoStepDone: true,
+    });
+    renderScreen();
+
+    expect(await screen.findByText(es.brew.grindAdvicePressurized)).toBeInTheDocument();
+    expect(screen.queryByText(es.brew.grindAdviceFinerLot)).not.toBeInTheDocument();
+  });
+
+  it("suggests the non-pressurized basket on the recipe step to someone who grinds", async () => {
+    saveFinishedBrew({
+      recipe: { method: "espresso", doseG: 18, targetWeightG: 36, basketType: "pressurized", grinderId: "g-1" },
+      roastDate: null,
+      startedAtEpochMs: null,
+      stoppedAtEpochMs: null,
+      extractionMs: null,
+    });
+    renderScreen();
+
+    expect(await screen.findByText(es.brew.basketHintNonPressurized)).toBeInTheDocument();
+    await userEvent.click(screen.getByRole("button", { name: es.enums.basketType.non_pressurized }));
+    expect(screen.queryByText(es.brew.basketHintNonPressurized)).not.toBeInTheDocument();
+  });
+});

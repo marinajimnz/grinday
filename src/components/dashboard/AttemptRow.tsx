@@ -70,6 +70,7 @@ export function AttemptRow({ attempt }: { attempt: RecentAttempt }) {
         coffeeBagId: result.data.coffeeBagId,
         coffeeName: result.data.coffeeName,
         roaster: result.data.roaster,
+        roastDate: result.data.roastDate,
         method,
         sourceAttempt: result.data.sourceAttempt,
       });
