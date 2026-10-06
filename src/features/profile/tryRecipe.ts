@@ -16,6 +16,7 @@ export type TryRecipeData = {
   coffeeBagId: string;
   coffeeName: string;
   roaster: string;
+  roastDate: string | null;
   method: BrewMethod;
   // The author's numbers, stripped of anything that points at their
   // account: no equipment or grinder ids, no snapshot of their gear.
@@ -111,11 +112,12 @@ export async function tryPublicRecipeAction(input: unknown): Promise<Result> {
   // brewing from it then opens like any other.
   const { data: bags, error: bagsError } = await supabase
     .from("coffee_bags")
-    .select("id, status")
+    .select("id, status, roast_date")
     .eq("coffee_id", coffee.id)
     .order("created_at", { ascending: false });
   if (bagsError) return { success: false, message: t.genericError };
-  let bagId = (bags?.find((b) => b.status === "open") ?? bags?.find((b) => b.status === "sealed") ?? bags?.[0])?.id;
+  const existingBag = bags?.find((b) => b.status === "open") ?? bags?.find((b) => b.status === "sealed") ?? bags?.[0];
+  let bagId = existingBag?.id;
   if (!bagId) {
     const { data: bag, error } = await supabase
       .from("coffee_bags")
@@ -140,6 +142,8 @@ export async function tryPublicRecipeAction(input: unknown): Promise<Result> {
       userId: user.id,
       coffeeId: coffee.id,
       coffeeBagId: bagId,
+      // A bag made just now has no roast date; only one that was there does.
+      roastDate: existingBag?.roast_date ?? null,
       coffeeName: coffee.name,
       roaster: coffee.roaster,
       method,

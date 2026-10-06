@@ -39,6 +39,7 @@ export function NewBrewWizard({
         coffeeBagId: result.data.coffeeBagId,
         coffeeName: result.data.coffeeName,
         roaster: result.data.roaster,
+        roastDate: result.data.roastDate,
         method,
         sourceAttempt: result.data.sourceAttempt,
         defaultEquipment: result.data.defaultEquipment,

@@ -8,13 +8,17 @@ import { BASKET_TYPES, CUP_COUNTS, HEAT_INTENSITIES, MAX_CUP_COUNT } from "@/fea
 import { IconCafe } from "@/components/icons/pencil-icons";
 import type { BrewDraftRecipe } from "@/features/brew/draft";
 import { useDictionary } from "@/components/i18n/LocaleProvider";
+import { shouldSuggestNonPressurized } from "@/features/brew/grindAdvice";
 
 export function RecipeFields({
   value,
   onChange,
+  roastDate,
 }: {
   value: BrewDraftRecipe;
   onChange: (next: BrewDraftRecipe) => void;
+  /** The bag's roast date, if known — stale beans are where pressurized fits. */
+  roastDate?: string | null;
 }) {
   const dict = useDictionary();
   const method = value.method ?? "espresso";
@@ -207,6 +211,13 @@ export function RecipeFields({
               );
             })}
           </div>
+          {/* Said here, while the basket can still be swapped — not after
+              the shot, when all it can do is explain why it went wrong. */}
+          {shouldSuggestNonPressurized(value, roastDate) && (
+            <p role="note" className="mt-2 text-xs text-ink-muted">
+              {dict.brew.basketHintNonPressurized}
+            </p>
+          )}
         </div>
       )}
 

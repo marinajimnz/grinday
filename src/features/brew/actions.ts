@@ -15,6 +15,7 @@ export type StartBrewData = {
   coffeeBagId: string;
   coffeeName: string;
   roaster: string;
+  roastDate: string | null;
   sourceAttempt: Awaited<ReturnType<typeof getLastAttemptForCoffeeAndMethod>>;
   defaultEquipment: { id: string; model_name: string } | null;
   defaultGrinder: { id: string; model_name: string } | null;
@@ -49,7 +50,7 @@ export async function startBrewAction(rawInput: unknown): Promise<ActionResult<S
 
   const { data: bags, error: bagsError } = await supabase
     .from("coffee_bags")
-    .select("id, status, created_at")
+    .select("id, status, created_at, roast_date")
     .eq("coffee_id", coffeeId)
     .order("created_at", { ascending: false });
   if (bagsError) return { success: false, message: bagsError.message };
@@ -91,6 +92,7 @@ export async function startBrewAction(rawInput: unknown): Promise<ActionResult<S
       userId: user.id,
       coffeeId: coffee.id,
       coffeeBagId: bag.id,
+      roastDate: bag.roast_date,
       coffeeName: coffee.name,
       roaster: coffee.roaster,
       sourceAttempt,
@@ -136,7 +138,7 @@ export async function startBrewFromAttemptAction(
 
   const { data: bags, error: bagsError } = await supabase
     .from("coffee_bags")
-    .select("id, status, created_at")
+    .select("id, status, created_at, roast_date")
     .eq("coffee_id", attempt.coffee_id)
     .order("created_at", { ascending: false });
   if (bagsError) return { success: false, message: bagsError.message };
@@ -153,6 +155,7 @@ export async function startBrewFromAttemptAction(
       userId: user.id,
       coffeeId: attempt.coffee.id,
       coffeeBagId: bag.id,
+      roastDate: bag.roast_date,
       coffeeName: attempt.coffee.name,
       roaster: attempt.coffee.roaster,
       sourceAttempt: attempt,

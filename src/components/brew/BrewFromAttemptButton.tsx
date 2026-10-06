@@ -46,6 +46,7 @@ export function BrewFromAttemptButton({
         coffeeBagId: result.data.coffeeBagId,
         coffeeName: result.data.coffeeName,
         roaster: result.data.roaster,
+        roastDate: result.data.roastDate,
         method: (result.data.sourceAttempt?.method as BrewMethod) ?? "espresso",
         sourceAttempt: result.data.sourceAttempt,
       });

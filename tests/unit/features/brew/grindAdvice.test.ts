@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { getGrindAdvice } from "@/features/brew/grindAdvice";
+import { getGrindAdvice, shouldSuggestNonPressurized } from "@/features/brew/grindAdvice";
 
 describe("getGrindAdvice", () => {
   it("says grind finer when an espresso runs fast", () => {
@@ -45,5 +45,46 @@ describe("getGrindAdvice", () => {
     expect(getGrindAdvice("espresso", null, 28000)).toBeNull();
     expect(getGrindAdvice("espresso", 24000, undefined)).toBeNull();
     expect(getGrindAdvice("espresso", 0, 28000)).toBeNull();
+  });
+});
+
+describe("getGrindAdvice with a pressurized basket", () => {
+  it("still reports the miss, but flags that the grind isn't the lever", () => {
+    expect(getGrindAdvice("espresso", 20000, 28000, "pressurized")).toMatchObject({
+      verdict: "fast",
+      pressurized: true,
+    });
+  });
+
+  it("changes nothing on target, or with a non-pressurized basket", () => {
+    expect(getGrindAdvice("espresso", 28000, 28000, "pressurized")).not.toHaveProperty("pressurized");
+    expect(getGrindAdvice("espresso", 20000, 28000, "non_pressurized")).not.toHaveProperty("pressurized");
+  });
+});
+
+describe("shouldSuggestNonPressurized", () => {
+  const TODAY = "2026-10-06";
+  const grinding = { basketType: "pressurized" as const, grinderId: "g-1" };
+
+  it("suggests it to someone grinding fresh beans into a pressurized basket", () => {
+    expect(shouldSuggestNonPressurized(grinding, "2026-09-24", TODAY)).toBe(true);
+  });
+
+  it("still suggests it when the roast date isn't known", () => {
+    expect(shouldSuggestNonPressurized(grinding, null, TODAY)).toBe(true);
+    expect(shouldSuggestNonPressurized({ basketType: "pressurized", grinderModelName: "Niche" }, undefined, TODAY)).toBe(true);
+  });
+
+  it("leaves pressurized alone for stale beans", () => {
+    expect(shouldSuggestNonPressurized(grinding, "2026-08-01", TODAY)).toBe(false);
+  });
+
+  it("leaves it alone without a grinder — that's pre-ground coffee", () => {
+    expect(shouldSuggestNonPressurized({ basketType: "pressurized" }, "2026-09-24", TODAY)).toBe(false);
+  });
+
+  it("has nothing to say about any other basket", () => {
+    expect(shouldSuggestNonPressurized({ ...grinding, basketType: "non_pressurized" }, null, TODAY)).toBe(false);
+    expect(shouldSuggestNonPressurized({ grinderId: "g-1" }, null, TODAY)).toBe(false);
   });
 });

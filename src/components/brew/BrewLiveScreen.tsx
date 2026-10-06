@@ -306,7 +306,7 @@ export function BrewLiveScreen({ draftId }: { draftId: string }) {
           <StepHeader step={3} name={dict.brew.stepNameRecipe} heading={dict.brew.stepRecipeTitle} />
           <p className="mt-1 text-sm text-ink-muted">{dict.brew.recipeRememberedNote}</p>
           <div className="mt-6 space-y-6">
-            <RecipeFields value={draft.recipe} onChange={updateRecipe} />
+            <RecipeFields value={draft.recipe} onChange={updateRecipe} roastDate={draft.roastDate} />
             <Button type="button" onClick={() => setShowTimer(true)} fullWidth>
               {dict.common.next}
             </Button>

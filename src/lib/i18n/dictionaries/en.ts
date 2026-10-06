@@ -809,6 +809,10 @@ const en: Dictionary = {
     grindAdviceCoarserLittle: "Next time, try grinding a little coarser.",
     grindAdviceCoarserLot: "Next time, try grinding quite a bit coarser.",
     grindAdviceKeep: "Leave the grind where it is.",
+    grindAdvicePressurized:
+      "With a pressurized basket the grind matters little: the basket sets most of the time. If you grind fresh beans, try the non-pressurized one.",
+    basketHintNonPressurized:
+      "With fresh beans ground on the spot, the non-pressurized basket usually makes better espresso, and there the grind really changes the shot. Pressurized is for pre-ground or stale coffee.",
   },
   attempts: {
     newTitle: "New attempt",
