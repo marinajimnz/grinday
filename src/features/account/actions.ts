@@ -7,6 +7,7 @@ import { changeEmailSchema, changePasswordSchema, changeUsernameSchema } from "@
 import { getLocale } from "@/lib/i18n/locale";
 import { getDictionary } from "@/lib/i18n/get-dictionary";
 import { fail } from "@/lib/i18n/serverErrors";
+import { removeUserFiles } from "./removeUserFiles";
 
 type ActionResult = { success: true } | { success: false; message: string };
 
@@ -119,5 +120,68 @@ export async function changePasswordAction(input: unknown): Promise<ActionResult
     return fail("generic", error);
   }
 
+  return { success: true };
+}
+
+/**
+ * Deletes the account and everything in it, for good. Asks for two things
+ * the session alone doesn't prove: the account's own identifier typed out
+ * (its username, or its email when it has none) and the current password —
+ * a session left open on a shared device mustn't be enough.
+ *
+ * Deleting the auth user is what deletes the data: every table holding an
+ * account's rows references auth.users with "on delete cascade" (coffees,
+ * bags, attempts, media rows, equipment, profile, favourites both ways,
+ * reports, roaster applications), and the moderation log keeps its entries
+ * with the account set to null, as it was built to. What no foreign key
+ * reaches is Storage, so the photos go separately — after the account, so
+ * a failed delete leaves everything as it was. If that second step fails,
+ * the files are unreachable by anyone, and `npm run cleanup:photos` finds
+ * them as orphans.
+ *
+ * Admin accounts can't do this from here: losing the last admin by
+ * accident would leave moderation with nobody to run it.
+ */
+export async function deleteAccountAction(input: { confirmation: string; password: string }): Promise<ActionResult> {
+  const dict = getDictionary(await getLocale());
+
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user?.email) return fail("unauthenticated");
+
+  const { data: profile } = await supabase.from("profiles").select("username, role").eq("id", user.id).single();
+  if (profile?.role === "admin") {
+    return { success: false, message: dict.settings.deleteAccountAdmin };
+  }
+
+  const expected = profile?.username ?? user.email;
+  if (input.confirmation.trim().toLowerCase() !== expected.toLowerCase()) {
+    return { success: false, message: dict.settings.deleteAccountMismatch };
+  }
+
+  const { error: signInError } = await supabase.auth.signInWithPassword({
+    email: user.email,
+    password: input.password,
+  });
+  if (signInError) {
+    return { success: false, message: dict.settings.currentPasswordIncorrect };
+  }
+
+  const admin = createAdminClient();
+  const { error } = await admin.auth.admin.deleteUser(user.id);
+  if (error) return fail("generic", error);
+
+  try {
+    await removeUserFiles(admin, user.id);
+  } catch (storageError) {
+    console.error("[account] deleted the account but not all of its photos", storageError);
+  }
+
+  // The session belongs to a user that no longer exists. "local" clears its
+  // cookies here without asking Supabase to revoke it — there's nothing left
+  // there to revoke.
+  await supabase.auth.signOut({ scope: "local" });
   return { success: true };
 }
