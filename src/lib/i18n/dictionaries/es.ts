@@ -594,6 +594,11 @@ const es = {
     saveCoffee: "Guardar café",
     theBag: "La bolsa",
     roastDate: "Fecha de tueste",
+    // How old the coffee is: inline after other text, under the roast
+    // date itself, and on a brew (counted to the day it was made).
+    roastAge: { today: "tostado hoy", one: "tostado hace 1 día", many: "tostado hace {count} días" },
+    roastAgeShort: { today: "hoy", one: "hace 1 día", many: "hace {count} días" },
+    roastAgeAtBrew: { today: "el día del tueste", one: "1 día tras el tueste", many: "{count} días tras el tueste" },
     purchaseDate: "Fecha de compra",
     openedDate: "Fecha de apertura",
     firstBrewDate: "Primer intento",

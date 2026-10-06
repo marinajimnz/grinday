@@ -19,6 +19,7 @@ import { formatDeletionImpact, type DeletionImpact } from "@/features/coffees/de
 import type { CoffeeBagRow } from "@/features/coffees/queries";
 import { useDictionary, useLocale } from "@/components/i18n/LocaleProvider";
 import { formatDate } from "@/lib/i18n/format-date";
+import { daysSinceRoast, formatRoastAge } from "@/features/coffees/roastAge";
 
 export function BagDetailPanel({ bag, cups = 0 }: { bag: CoffeeBagRow; cups?: number }) {
   const router = useRouter();
@@ -50,6 +51,8 @@ export function BagDetailPanel({ bag, cups = 0 }: { bag: CoffeeBagRow; cups?: nu
   }
 
   const isFinished = bag.status === "finished";
+  // Same rule as the bag's row: only while there's coffee left to brew.
+  const roastDays = isFinished ? null : daysSinceRoast(bag.roast_date);
 
   function handleToggleFinished() {
     setFinishError(null);
@@ -154,6 +157,9 @@ export function BagDetailPanel({ bag, cups = 0 }: { bag: CoffeeBagRow; cups?: nu
         <div>
           <dt className="text-ink-muted">{dict.coffees.roastShort}</dt>
           <dd className="text-ink">{fmt(bag.roast_date)}</dd>
+          {roastDays !== null && (
+            <dd className="text-xs text-ink-muted">{formatRoastAge(roastDays, dict.coffees.roastAgeShort)}</dd>
+          )}
         </div>
         <div>
           <dt className="text-ink-muted">{dict.coffees.purchaseShort}</dt>

@@ -201,3 +201,25 @@ describe("AttemptDetailPanel grind", () => {
     ).not.toBeInTheDocument();
   });
 });
+
+describe("AttemptDetailPanel roast age", () => {
+  it("says how old the coffee was on the day it was brewed", () => {
+    render(
+      <LocaleProvider locale="es" dict={es}>
+        <AttemptDetailPanel
+          attempt={makeAttempt({ created_at: "2026-01-14T09:00:00.000Z" })}
+          coffeeId="coffee-1"
+          isFavourite={false}
+          roastDate="2026-01-02"
+        />
+      </LocaleProvider>,
+    );
+
+    expect(screen.getByText("12 días tras el tueste")).toBeInTheDocument();
+  });
+
+  it("says nothing when the bag has no roast date", () => {
+    renderPanel(makeAttempt());
+    expect(screen.queryByText(/tras el tueste/)).not.toBeInTheDocument();
+  });
+});

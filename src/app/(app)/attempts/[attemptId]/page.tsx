@@ -70,6 +70,7 @@ export default async function AttemptDetailPage({
           attempt={attempt}
           coffeeId={attempt.coffee.id}
           isFavourite={attempt.favourite_at != null}
+          roastDate={attempt.bag?.roast_date ?? null}
         />
       </div>
 
