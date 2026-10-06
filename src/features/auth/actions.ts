@@ -7,44 +7,59 @@ import { registerSchema } from "@/lib/validation/auth";
 import { getLocale } from "@/lib/i18n/locale";
 import { getDictionary } from "@/lib/i18n/get-dictionary";
 
-type ResolveResult = { success: true; email: string } | { success: false; message: string };
-
 /**
- * The login form takes one "usuario o email" field. An email is used as-is;
- * a plain username has to be resolved to the account's real (or synthetic)
- * email first, since Supabase Auth itself only ever signs in by email. That
- * lookup needs the service-role client — RLS on `profiles` only lets a user
- * read their own row, and there's no session yet at login time anyway.
+ * The account's real (or synthetic) email for what was typed in the login
+ * form's one "usuario o email" field: an email as-is, a username looked up.
+ * Supabase Auth only signs in by email, and the lookup needs the
+ * service-role client — RLS on `profiles` only lets a user read their own
+ * row, and there's no session yet at login time anyway.
+ *
+ * Deliberately not exported. In a "use server" file every export is an
+ * endpoint anyone can call, and this one used to be: it handed the email
+ * of any @username — public ones are listed in search — to whoever asked.
+ * Now the email never leaves the server; only the actions below use it.
  */
-export async function resolveLoginEmailAction(identifier: string): Promise<ResolveResult> {
+async function resolveEmail(identifier: string): Promise<string | null> {
   const trimmed = identifier.trim();
-  if (!trimmed) {
-    return { success: false, message: "Escribe tu usuario o email" };
-  }
-  if (trimmed.includes("@")) {
-    return { success: true, email: trimmed };
-  }
+  if (trimmed.includes("@")) return trimmed;
 
   const admin = createAdminClient();
-  const { data: profile, error } = await admin
+  const { data: profile } = await admin
     .from("profiles")
     .select("id")
     .eq("username", trimmed.toLowerCase())
     .maybeSingle();
+  if (!profile) return null;
 
+  const { data: userData } = await admin.auth.admin.getUserById(profile.id);
+  return userData.user?.email ?? null;
+}
+
+type LoginResult = { success: true } | { success: false; message: string };
+
+/**
+ * Signs in with a username or an email, all on the server: the session
+ * cookies are set here, and the browser only ever learns whether it worked.
+ * An unknown username and a wrong password get the same answer, so this
+ * can't be used to find out which usernames exist.
+ */
+export async function loginAction(identifier: string, password: string): Promise<LoginResult> {
+  const dict = getDictionary(await getLocale());
+  if (!identifier.trim()) {
+    return { success: false, message: dict.login.identifierRequired };
+  }
+
+  const email = await resolveEmail(identifier);
+  if (!email) {
+    return { success: false, message: dict.login.error };
+  }
+
+  const supabase = await createClient();
+  const { error } = await supabase.auth.signInWithPassword({ email, password });
   if (error) {
-    return { success: false, message: error.message };
+    return { success: false, message: dict.login.error };
   }
-  if (!profile) {
-    return { success: false, message: "Usuario o contraseña incorrectos" };
-  }
-
-  const { data: userData, error: userError } = await admin.auth.admin.getUserById(profile.id);
-  if (userError || !userData.user?.email) {
-    return { success: false, message: "Usuario o contraseña incorrectos" };
-  }
-
-  return { success: true, email: userData.user.email };
+  return { success: true };
 }
 
 type RegisterResult =
@@ -130,15 +145,15 @@ export async function requestPasswordResetAction(identifier: string): Promise<Re
     return { success: false, message: dict.forgotPassword.identifierRequired };
   }
 
-  const resolved = await resolveLoginEmailAction(trimmed);
-  if (resolved.success) {
+  const email = await resolveEmail(trimmed);
+  if (email) {
     const requestHeaders = await headers();
     const host = requestHeaders.get("x-forwarded-host") ?? requestHeaders.get("host");
     const protocol = requestHeaders.get("x-forwarded-proto") ?? (host?.startsWith("localhost") ? "http" : "https");
     const origin = `${protocol}://${host}`;
 
     const supabase = await createClient();
-    await supabase.auth.resetPasswordForEmail(resolved.email, {
+    await supabase.auth.resetPasswordForEmail(email, {
       redirectTo: `${origin}/reset-password`,
     });
   }

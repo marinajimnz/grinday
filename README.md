@@ -149,9 +149,10 @@ DevTools → Application → Service Workers.
 ## Cuenta y datos
 
 El acceso requiere iniciar sesión (`/login`) — no hay modo invitado. El
-campo de login acepta un `username` (resuelto a su email real en
-`resolveLoginEmailAction`, server-side vía el cliente de service-role) o un
-email directamente. Desde **Ajustes → Cuenta** se ve el email vinculado y
+campo de login acepta un `username` o un email. Todo el inicio de sesión
+ocurre en el servidor (`loginAction`): el username se resuelve a su email con
+el cliente de service-role y la sesión se abre allí, así que el email de una
+cuenta nunca llega al navegador. Desde **Ajustes → Cuenta** se ve el email vinculado y
 hay un botón para cerrar sesión.
 
 Desde la misma pantalla, **Exportar tus datos** descarga un backup manual:
