@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/server";
 import { registerSchema } from "@/lib/validation/auth";
 import { getLocale } from "@/lib/i18n/locale";
 import { getDictionary } from "@/lib/i18n/get-dictionary";
+import { clearFailures, clientIp, isThrottled, recordFailure, throttleKeys } from "./loginThrottle";
 
 /**
  * The account's real (or synthetic) email for what was typed in the login
@@ -42,6 +43,11 @@ type LoginResult = { success: true } | { success: false; message: string };
  * cookies are set here, and the browser only ever learns whether it worked.
  * An unknown username and a wrong password get the same answer, so this
  * can't be used to find out which usernames exist.
+ *
+ * Throttled by the app itself (loginThrottle.ts): with the sign-in on the
+ * server, Supabase Auth's own per-IP limit only ever sees the server. An
+ * unknown username counts as a failure like a wrong password does, so being
+ * throttled says nothing about whether the account exists either.
  */
 export async function loginAction(identifier: string, password: string): Promise<LoginResult> {
   const dict = getDictionary(await getLocale());
@@ -49,16 +55,21 @@ export async function loginAction(identifier: string, password: string): Promise
     return { success: false, message: dict.login.identifierRequired };
   }
 
+  const admin = createAdminClient();
+  const keys = throttleKeys(identifier, clientIp(await headers()));
+  if (await isThrottled(admin, keys)) {
+    return { success: false, message: dict.login.tooManyAttempts };
+  }
+
   const email = await resolveEmail(identifier);
-  if (!email) {
+  const supabase = await createClient();
+  const signedIn = email !== null && !(await supabase.auth.signInWithPassword({ email, password })).error;
+  if (!signedIn) {
+    await recordFailure(admin, keys);
     return { success: false, message: dict.login.error };
   }
 
-  const supabase = await createClient();
-  const { error } = await supabase.auth.signInWithPassword({ email, password });
-  if (error) {
-    return { success: false, message: dict.login.error };
-  }
+  await clearFailures(admin, keys);
   return { success: true };
 }
 
