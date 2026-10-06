@@ -380,6 +380,7 @@ export function BrewLiveScreen({ draftId }: { draftId: string }) {
             recipe={draft.recipe}
             onRecipeChange={updateRecipe}
             extractionMs={draft.extractionMs}
+            timed={hasTimerRun(draft)}
             onExtractionChange={(extractionMs) => persist({ ...draft, extractionMs })}
             value={draft.postShot}
             onChange={updatePostShot}

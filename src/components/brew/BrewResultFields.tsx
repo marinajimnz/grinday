@@ -1,5 +1,6 @@
 "use client";
 
+import { CircleCheck, Lightbulb } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { Field, inputClassName } from "@/components/ui/Field";
 import { TasteScale } from "@/components/ui/TasteScale";
@@ -7,6 +8,7 @@ import { SettingsAccordionCard } from "@/components/settings/SettingsAccordionCa
 import { SteppableFieldGrid, type SteppableField } from "./SteppableFieldGrid";
 import { TASTE_DIMENSIONS } from "@/features/attempts/constants";
 import { computeRatios, getRecipeFieldConfig, formatRatio } from "@/features/brew/recipeFieldConfig";
+import { getGrindAdvice, type GrindAdvice } from "@/features/brew/grindAdvice";
 import type { BrewDraftRecipe, BrewDraftPostShot } from "@/features/brew/draft";
 import { useDictionary } from "@/components/i18n/LocaleProvider";
 
@@ -18,10 +20,43 @@ function SectionHeading({ children }: { children: React.ReactNode }) {
   );
 }
 
+// Right under the time it's about, and right above the grinder settings
+// it's about changing. It reads what's in the field, so correcting the time
+// by hand moves the advice with it.
+function GrindAdviceCard({ advice }: { advice: GrindAdvice }) {
+  const dict = useDictionary();
+  const t = dict.brew;
+  const title = { fast: t.grindAdviceFast, slow: t.grindAdviceSlow, onTarget: t.grindAdviceOnTarget }[advice.verdict]
+    .replace("{actual}", String(advice.actualSeconds))
+    .replace("{target}", String(advice.targetSeconds));
+  const body =
+    advice.verdict === "onTarget"
+      ? t.grindAdviceKeep
+      : advice.verdict === "fast"
+        ? advice.amount === "lot"
+          ? t.grindAdviceFinerLot
+          : t.grindAdviceFinerLittle
+        : advice.amount === "lot"
+          ? t.grindAdviceCoarserLot
+          : t.grindAdviceCoarserLittle;
+  const Icon = advice.verdict === "onTarget" ? CircleCheck : Lightbulb;
+
+  return (
+    <div role="status" className="flex gap-3 rounded-card border border-coffee/40 bg-surface p-4">
+      <Icon aria-hidden className="mt-0.5 size-5 shrink-0 text-coffee" />
+      <div>
+        <p className="text-sm font-medium text-ink">{title}</p>
+        <p className="mt-0.5 text-sm text-ink-muted">{body}</p>
+      </div>
+    </div>
+  );
+}
+
 export function BrewResultFields({
   recipe,
   onRecipeChange,
   extractionMs,
+  timed,
   onExtractionChange,
   value,
   onChange,
@@ -29,6 +64,9 @@ export function BrewResultFields({
   recipe: BrewDraftRecipe;
   onRecipeChange: (next: BrewDraftRecipe) => void;
   extractionMs: number | null;
+  // Whether the clock actually ran. An untimed brew starts from the
+  // recipe's target time, and agreeing with yourself isn't a reading.
+  timed: boolean;
   onExtractionChange: (ms: number | null) => void;
   value: BrewDraftPostShot;
   onChange: (next: BrewDraftPostShot) => void;
@@ -59,6 +97,12 @@ export function BrewResultFields({
   });
   const actualSeconds = extractionMs !== null ? Math.round(extractionMs / 100) / 10 : undefined;
   const targetSeconds = recipe.targetTimeMs !== undefined ? recipe.targetTimeMs / 1000 : undefined;
+  // Untimed and still showing the target means nobody measured anything;
+  // a time typed in afterwards is a reading again.
+  const grindAdvice =
+    timed || extractionMs !== (recipe.targetTimeMs ?? null)
+      ? getGrindAdvice(method, extractionMs, recipe.targetTimeMs)
+      : null;
 
   const fields: SteppableField[] = [
     {
@@ -166,6 +210,8 @@ export function BrewResultFields({
       <p className="text-xs text-ink-muted">{dict.brew.resultEditableNote}</p>
 
       <SteppableFieldGrid fields={fields} />
+
+      {grindAdvice && <GrindAdviceCard advice={grindAdvice} />}
 
       <SettingsAccordionCard title={dict.brew.grinderConfigTitle} defaultExpanded={hasGrinderConfig}>
         <p className="mb-4 text-xs text-ink-muted">{dict.brew.grinderConfigHint}</p>

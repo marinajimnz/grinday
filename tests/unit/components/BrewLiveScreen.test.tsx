@@ -265,3 +265,54 @@ describe("BrewLiveScreen timer pause and reset", () => {
     expect(screen.queryByRole("button", { name: es.brew.reset })).not.toBeInTheDocument();
   });
 });
+
+describe("BrewLiveScreen grind advice", () => {
+  beforeEach(() => {
+    localStorage.clear();
+  });
+
+  const espressoWithTarget = { method: "espresso" as const, doseG: 18, targetWeightG: 36, targetTimeMs: 28000 };
+
+  it("tells you to grind finer when the timed shot ran fast", async () => {
+    saveFinishedBrew({ recipe: espressoWithTarget, extractionMs: 22000, photoStepDone: true });
+    renderScreen();
+
+    expect(await screen.findByText("Salió rápido: 22 s de 28 s")).toBeInTheDocument();
+    expect(screen.getByText(es.brew.grindAdviceFinerLittle)).toBeInTheDocument();
+  });
+
+  it("tells you to grind coarser when it ran well over", async () => {
+    saveFinishedBrew({ recipe: espressoWithTarget, extractionMs: 38000, photoStepDone: true });
+    renderScreen();
+
+    expect(await screen.findByText(es.brew.grindAdviceCoarserLot)).toBeInTheDocument();
+  });
+
+  it("says nothing about an untimed brew still showing the target", async () => {
+    // Skipping the timer fills the time with the target — that's the
+    // recipe agreeing with itself, not a shot that landed on time.
+    saveFinishedBrew({
+      recipe: espressoWithTarget,
+      startedAtEpochMs: null,
+      accumulatedMs: 0,
+      extractionMs: 28000,
+      photoStepDone: true,
+    });
+    renderScreen();
+
+    expect(await screen.findByRole("heading", { name: es.brew.stepResultTitle })).toBeInTheDocument();
+    expect(screen.queryByText(es.brew.grindAdviceKeep)).not.toBeInTheDocument();
+  });
+
+  it("stays out of a French press, whose time is the recipe's choice", async () => {
+    saveFinishedBrew({
+      recipe: { method: "prensa", doseG: 30, waterG: 500, targetTimeMs: 240000 },
+      extractionMs: 120000,
+      photoStepDone: true,
+    });
+    renderScreen();
+
+    expect(await screen.findByRole("heading", { name: es.brew.stepResultTitle })).toBeInTheDocument();
+    expect(screen.queryByRole("status")).not.toBeInTheDocument();
+  });
+});
