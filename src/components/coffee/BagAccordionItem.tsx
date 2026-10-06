@@ -9,6 +9,7 @@ import { BagMediaSection } from "./BagMediaSection";
 import type { CoffeeBagRow, CoffeeMediaRow } from "@/features/coffees/queries";
 import { useDictionary, useLocale } from "@/components/i18n/LocaleProvider";
 import { formatDate } from "@/lib/i18n/format-date";
+import { daysSinceRoast, formatRoastAge } from "@/features/coffees/roastAge";
 
 export function BagAccordionItem({
   bag,
@@ -23,6 +24,9 @@ export function BagAccordionItem({
   const locale = useLocale();
   const [expanded, setExpanded] = useState(false);
   const purchase = bag.purchase_date ? formatDate(bag.purchase_date, locale) : null;
+  // Only while there's coffee left in it: how old a finished bag got says
+  // nothing about the next cup.
+  const roastDays = bag.status === "finished" ? null : daysSinceRoast(bag.roast_date);
 
   if (expanded) {
     return (
@@ -62,6 +66,7 @@ export function BagAccordionItem({
           <span className="text-sm text-ink">
             {purchase ? `${dict.coffees.purchaseOn} ${purchase}` : dict.coffees.noDate}
           </span>
+
           {/* What the bag actually gave you, without opening it. */}
           {cups > 0 && (
             <span className="inline-flex items-center gap-1 text-sm text-ink-muted">
@@ -70,6 +75,13 @@ export function BagAccordionItem({
             </span>
           )}
         </div>
+        {/* Its own line: squeezed in after the date it wrapped on a phone
+            and started the second line with a stray separator. */}
+        {roastDays !== null && (
+          <p className="mt-1 text-sm text-ink-muted first-letter:uppercase">
+            {formatRoastAge(roastDays, dict.coffees.roastAge)}
+          </p>
+        )}
       </div>
       <ChevronRight aria-hidden className="size-4 shrink-0 text-ink-muted" />
     </button>

@@ -16,6 +16,7 @@ import { deleteAttemptAction, setAttemptFavouriteAction } from "@/features/attem
 import type { BrewAttemptRow } from "@/features/attempts/queries";
 import { useDictionary, useLocale } from "@/components/i18n/LocaleProvider";
 import { formatDateTime } from "@/lib/i18n/format-date";
+import { daysSinceRoastAt, formatRoastAge } from "@/features/coffees/roastAge";
 
 function Stat({ label, value }: { label: string; value: React.ReactNode }) {
   if (value === null || value === undefined || value === "") return null;
@@ -31,15 +32,19 @@ export function AttemptDetailPanel({
   attempt,
   coffeeId,
   isFavourite,
+  roastDate = null,
 }: {
   attempt: BrewAttemptRow;
   coffeeId: string;
   isFavourite: boolean;
+  /** The bag's roast date, to say how old the coffee was on the day. */
+  roastDate?: string | null;
 }) {
   const router = useRouter();
   const dict = useDictionary();
   const locale = useLocale();
   const [editing, setEditing] = useState(false);
+  const roastDaysAtBrew = daysSinceRoastAt(roastDate, attempt.created_at);
   const [isTogglingFavourite, startToggleFavourite] = useTransition();
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
@@ -92,6 +97,11 @@ export function AttemptDetailPanel({
             {dict.attempts.attemptNo} #{attempt.attempt_no}
           </h1>
           <p className="text-xs text-ink-muted">{formatDateTime(attempt.created_at, locale)}</p>
+          {roastDaysAtBrew !== null && (
+            <p className="text-xs text-ink-muted first-letter:uppercase">
+              {formatRoastAge(roastDaysAtBrew, dict.coffees.roastAgeAtBrew)}
+            </p>
+          )}
         </div>
         <Button variant="secondary" className="px-3" onClick={() => setEditing(true)}>
           <Pencil aria-hidden className="size-4" />

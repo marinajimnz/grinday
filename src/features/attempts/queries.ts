@@ -29,7 +29,9 @@ export async function getAttempt(supabase: Client, attemptId: string, userId: st
     // Disambiguate: coffees<->brew_attempts has two FKs (coffee_id, and
     // coffees.preferred_attempt_id pointing back), so the embed is ambiguous
     // unless we name the constraint to use.
-    .select("*, coffee:coffees!brew_attempts_coffee_id_fkey(id, name, roaster, preferred_attempt_id)")
+    .select(
+      "*, coffee:coffees!brew_attempts_coffee_id_fkey(id, name, roaster, preferred_attempt_id), bag:coffee_bags(roast_date)",
+    )
     .eq("id", attemptId)
     .eq("user_id", userId)
     .maybeSingle();
@@ -70,6 +72,8 @@ export type BrewableCoffee = {
   name: string;
   roaster: string;
   bagId: string;
+  /** The roast date of that bag — how old the coffee you'd brew is. */
+  roastDate: string | null;
   coverPhotoUrl: string | null;
   preferredAttempt: Pick<BrewAttemptRow, "id" | "attempt_no" | "method"> | null;
 };
@@ -115,7 +119,7 @@ export async function listBrewableCoffees(supabase: Client, userId: string): Pro
 
   const { data: bags, error: bagsError } = await supabase
     .from("coffee_bags")
-    .select("id, coffee_id, status, created_at")
+    .select("id, coffee_id, status, created_at, roast_date")
     .in(
       "coffee_id",
       coffees.map((c) => c.id),
@@ -133,7 +137,7 @@ export async function listBrewableCoffees(supabase: Client, userId: string): Pro
     : { data: [] };
   const preferredById = new Map((preferredAttempts ?? []).map((a) => [a.id, a]));
 
-  const targetBagByCoffee = new Map<string, { id: string; coffee_id: string }>();
+  const targetBagByCoffee = new Map<string, { id: string; coffee_id: string; roast_date: string | null }>();
   for (const coffee of coffees) {
     const coffeeBags = (bags ?? []).filter((b) => b.coffee_id === coffee.id);
     // Open first, then sealed — and then nothing. The fallback used to be
@@ -177,6 +181,7 @@ export async function listBrewableCoffees(supabase: Client, userId: string): Pro
       name: coffee.name,
       roaster: coffee.roaster,
       bagId: target.id,
+      roastDate: target.roast_date,
       coverPhotoUrl: coverUrlByBag.get(target.id) ?? null,
       preferredAttempt: coffee.preferred_attempt_id
         ? (preferredById.get(coffee.preferred_attempt_id) ?? null)
