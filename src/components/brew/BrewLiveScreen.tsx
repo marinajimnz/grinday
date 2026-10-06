@@ -132,11 +132,14 @@ export function BrewLiveScreen({ draftId }: { draftId: string }) {
   // step, which dropped you on the attempt page having never been asked
   // what it tasted like — the one thing a journal is for. So it ends the
   // brew the way "Parar" does, minus a reading, and the same photo and
-  // result steps follow. extractionMs stays null and the result step
-  // offers it as a field, so a time remembered afterwards can still go in.
+  // result steps follow. With no reading, the recipe's target time stands
+  // in for it — that's the time the brew was aimed at, and a blank field
+  // on the result step reads as if the recipe had none. It stays editable
+  // there, so a time remembered afterwards can still go in; a recipe
+  // without a target leaves it null for the same reason.
   function handleSkipTimer() {
     if (!draft) return;
-    persist({ ...draft, stoppedAtEpochMs: Date.now(), extractionMs: null });
+    persist({ ...draft, stoppedAtEpochMs: Date.now(), extractionMs: draft.recipe.targetTimeMs ?? null });
   }
 
   function handleSave() {

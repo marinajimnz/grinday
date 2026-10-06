@@ -127,7 +127,8 @@ describe("BrewLiveScreen timer step", () => {
     await userEvent.click(await screen.findByRole("button", { name: es.common.next }));
     await userEvent.click(screen.getByRole("button", { name: es.brew.skipTimer }));
 
-    // The brew is over, and it has no reading — which is the truth of it.
+    // The brew is over, and with no target to fall back on it has no
+    // reading — which is the truth of it.
     const draft = loadDraft(DRAFT_ID);
     expect(draft?.stoppedAtEpochMs).not.toBeNull();
     expect(draft?.extractionMs).toBeNull();
@@ -138,6 +139,23 @@ describe("BrewLiveScreen timer step", () => {
     await userEvent.click(screen.getByRole("button", { name: es.brew.continueWithoutPhoto }));
     expect(await screen.findByRole("heading", { name: es.brew.stepResultTitle })).toBeInTheDocument();
     expect(screen.getByRole("radiogroup", { name: es.brew.overallRating })).toBeInTheDocument();
+  });
+
+  it("fills in the recipe's target time when the brew goes untimed", async () => {
+    // A recipe that says 27s and a result step that says nothing reads as
+    // if the recipe had no time at all. Without a reading, the target is
+    // the best account of how long it ran.
+    saveFinishedBrew({
+      recipe: { method: "espresso", doseG: 18, targetWeightG: 36, targetTimeMs: 27000 },
+      startedAtEpochMs: null,
+      stoppedAtEpochMs: null,
+      extractionMs: null,
+    });
+    renderScreen();
+    await userEvent.click(await screen.findByRole("button", { name: es.common.next }));
+    await userEvent.click(screen.getByRole("button", { name: es.brew.skipTimer }));
+
+    expect(loadDraft(DRAFT_ID)?.extractionMs).toBe(27000);
   });
 
   it("hides it once the timer is running, so a mis-tap can't discard the timing", async () => {
