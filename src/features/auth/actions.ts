@@ -7,6 +7,7 @@ import { registerSchema } from "@/lib/validation/auth";
 import { getLocale } from "@/lib/i18n/locale";
 import { getDictionary } from "@/lib/i18n/get-dictionary";
 import { clearFailures, clientIp, isThrottled, recordFailure, throttleKeys } from "./loginThrottle";
+import { siteUrl } from "@/lib/siteUrl";
 
 /**
  * The account's real (or synthetic) email for what was typed in the login
@@ -158,15 +159,17 @@ export async function requestPasswordResetAction(identifier: string): Promise<Re
 
   const email = await resolveEmail(trimmed);
   if (email) {
-    const requestHeaders = await headers();
-    const host = requestHeaders.get("x-forwarded-host") ?? requestHeaders.get("host");
-    const protocol = requestHeaders.get("x-forwarded-proto") ?? (host?.startsWith("localhost") ? "http" : "https");
-    const origin = `${protocol}://${host}`;
-
-    const supabase = await createClient();
-    await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${origin}/reset-password`,
-    });
+    // The link's address is the app's own, fixed — never the request's
+    // Host header, which a caller can set to anything (see siteUrl).
+    const origin = siteUrl();
+    if (!origin) {
+      console.error("[password-reset] no site URL configured; set NEXT_PUBLIC_SITE_URL. No email sent.");
+    } else {
+      const supabase = await createClient();
+      await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${origin}/reset-password`,
+      });
+    }
   }
 
   return { success: true };
