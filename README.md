@@ -69,6 +69,12 @@ npx supabase gen types typescript --linked > src/types/database.ts
   Si cambia a propósito lo que queda expuesto, se actualiza la foto con
   `npm run test:integration -- -u` y el diff se revisa en el PR.
 
+- `npm run cleanup:photos` — busca fotos en Storage que ya no referencia
+  ninguna fila (de intentos borrados antes de que el borrado se llevara sus
+  fotos) y con más de 30 días (`ORPHAN_MIN_AGE_DAYS`), para no tocar las de
+  un borrador aún sin guardar. Solo informa; con `-- --delete` las borra, y
+  eso no se puede deshacer.
+
 GitHub Actions (`.github/workflows/ci.yml`) corre `typecheck`, `lint` y
 `test:unit` en cada push y PR. E2E e integración necesitan el proyecto de
 Supabase, así que siguen siendo manuales.
