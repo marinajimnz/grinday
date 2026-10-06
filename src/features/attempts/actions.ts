@@ -14,6 +14,7 @@ import {
 } from "@/lib/validation/attempts";
 import type { Database, Json } from "@/types/database";
 import { todayISO } from "@/lib/time";
+import { fail } from "@/lib/i18n/serverErrors";
 
 type ActionResult<T = undefined> =
   | { success: true; data: T }
@@ -113,7 +114,7 @@ export async function createAttemptAction(
 ): Promise<ActionResult<{ attemptId: string }>> {
   const parsed = createAttemptSchema.safeParse(rawInput);
   if (!parsed.success) {
-    return { success: false, message: parsed.error.issues[0]?.message ?? "Datos inválidos" };
+    return fail("invalidData");
   }
   const { coffeeBagId, parentAttemptId, recipeSourceAttemptId, idempotencyKey, attempt, media } = parsed.data;
 
@@ -121,7 +122,7 @@ export async function createAttemptAction(
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return { success: false, message: "No autenticado" };
+  if (!user) return fail("unauthenticated");
 
   // Idempotent replay: a retried save (manual "Reintentar", or auto-retry on
   // reconnect) for the same draft must land exactly once. If this key was
@@ -146,8 +147,8 @@ export async function createAttemptAction(
     .select("id, coffee_id, inventory_mode, estimated_dose_g, status, opened_at, first_brew_at")
     .eq("id", coffeeBagId)
     .maybeSingle();
-  if (bagError) return { success: false, message: bagError.message };
-  if (!bag) return { success: false, message: "Bolsa no encontrada" };
+  if (bagError) return fail("generic", bagError);
+  if (!bag) return fail("bagNotFound");
 
   const equipmentSnapshot: Json = {
     method: attempt.method ?? "espresso",
@@ -184,7 +185,7 @@ export async function createAttemptAction(
         return { success: true, data: { attemptId: existing.id } };
       }
     }
-    return { success: false, message: error.message };
+    return fail("generic", error);
   }
 
   await attachBrewPhotos(supabase, user.id, inserted.id, media ?? []);
@@ -272,7 +273,7 @@ function toEditableAttemptRow(input: z.infer<typeof editableAttemptFieldsSchema>
 export async function updateAttemptAction(rawInput: unknown): Promise<ActionResult> {
   const parsed = updateAttemptSchema.safeParse(rawInput);
   if (!parsed.success) {
-    return { success: false, message: parsed.error.issues[0]?.message ?? "Datos inválidos" };
+    return fail("invalidData");
   }
   const { attemptId, attempt } = parsed.data;
 
@@ -283,7 +284,7 @@ export async function updateAttemptAction(rawInput: unknown): Promise<ActionResu
     .eq("id", attemptId)
     .select("coffee_id")
     .single();
-  if (error) return { success: false, message: error.message };
+  if (error) return fail("generic", error);
 
   revalidatePath(`/attempts/${attemptId}`);
   if (updated) revalidatePath(`/coffees/${updated.coffee_id}`);
@@ -299,7 +300,7 @@ export async function setAttemptFavouriteAction(
 ): Promise<ActionResult> {
   const parsed = setAttemptFavouriteSchema.safeParse(rawInput);
   if (!parsed.success) {
-    return { success: false, message: parsed.error.issues[0]?.message ?? "Datos inválidos" };
+    return fail("invalidData");
   }
   const { attemptId, favourite } = parsed.data;
 
@@ -310,8 +311,8 @@ export async function setAttemptFavouriteAction(
     .eq("id", attemptId)
     .select("coffee_id")
     .maybeSingle();
-  if (error) return { success: false, message: error.message };
-  if (!data) return { success: false, message: "No hemos encontrado ese intento." };
+  if (error) return fail("generic", error);
+  if (!data) return fail("attemptNotFound");
 
   revalidatePath(`/attempts/${attemptId}`);
   revalidatePath(`/coffees/${data.coffee_id}`);
@@ -326,7 +327,7 @@ export async function setAttemptDashboardVisibilityAction(
 ): Promise<ActionResult> {
   const parsed = setAttemptDashboardVisibilitySchema.safeParse(rawInput);
   if (!parsed.success) {
-    return { success: false, message: parsed.error.issues[0]?.message ?? "Datos inválidos" };
+    return fail("invalidData");
   }
   const { attemptId, hidden } = parsed.data;
 
@@ -335,7 +336,7 @@ export async function setAttemptDashboardVisibilityAction(
     .from("brew_attempts")
     .update({ hidden_from_dashboard: hidden })
     .eq("id", attemptId);
-  if (error) return { success: false, message: error.message };
+  if (error) return fail("generic", error);
 
   revalidatePath("/");
   return { success: true, data: undefined };
@@ -352,7 +353,7 @@ export async function deleteAttemptAction(attemptId: string): Promise<ActionResu
     .eq("id", attemptId)
     .select("coffee_id")
     .maybeSingle();
-  if (error) return { success: false, message: error.message };
+  if (error) return fail("generic", error);
 
   if (deleted) revalidatePath(`/coffees/${deleted.coffee_id}`);
   revalidatePath("/");
@@ -365,7 +366,7 @@ export async function registerAttemptMediaAction(
 ): Promise<ActionResult<{ mediaId: string }>> {
   const parsed = registerAttemptMediaSchema.safeParse(rawInput);
   if (!parsed.success) {
-    return { success: false, message: parsed.error.issues[0]?.message ?? "Datos inválidos" };
+    return fail("invalidData");
   }
   const { attemptId, kind, storagePath, altText } = parsed.data;
 
@@ -373,7 +374,7 @@ export async function registerAttemptMediaAction(
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return { success: false, message: "No autenticado" };
+  if (!user) return fail("unauthenticated");
 
   const { data, error } = await supabase
     .from("attempt_media")
@@ -386,7 +387,7 @@ export async function registerAttemptMediaAction(
     })
     .select("id")
     .single();
-  if (error) return { success: false, message: error.message };
+  if (error) return fail("generic", error);
 
   revalidatePath(`/attempts/${attemptId}`);
   return { success: true, data: { mediaId: data.id } };
@@ -402,7 +403,7 @@ export async function deleteAttemptMediaAction(
     .select("storage_path")
     .eq("id", mediaId)
     .single();
-  if (fetchError) return { success: false, message: fetchError.message };
+  if (fetchError) return fail("generic", fetchError);
 
   const { error: storageError } = await supabase.storage
     .from("coffee-photos")
@@ -412,7 +413,7 @@ export async function deleteAttemptMediaAction(
   }
 
   const { error } = await supabase.from("attempt_media").delete().eq("id", mediaId);
-  if (error) return { success: false, message: error.message };
+  if (error) return fail("generic", error);
 
   revalidatePath(`/attempts/${attemptId}`);
   return { success: true, data: undefined };

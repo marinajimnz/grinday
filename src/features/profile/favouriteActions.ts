@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { getLocale } from "@/lib/i18n/locale";
 import { getDictionary } from "@/lib/i18n/get-dictionary";
+import { fail } from "@/lib/i18n/serverErrors";
 
 type ActionResult = { success: true } | { success: false; message: string };
 
@@ -18,7 +19,7 @@ async function run(
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return { success: false, message: "No autenticado" };
+  if (!user) return fail("unauthenticated");
 
   const { error } = await call(supabase);
   if (error) {
@@ -35,18 +36,18 @@ async function run(
 
 export async function saveProfileAction(username: string): Promise<ActionResult> {
   const value = String(username).trim().toLowerCase();
-  if (!USERNAME.test(value)) return { success: false, message: "Usuario no válido" };
+  if (!USERNAME.test(value)) return fail("invalidUser");
   return run((supabase) => supabase.rpc("save_profile", { p_username: value }));
 }
 
 export async function unsaveProfileAction(username: string): Promise<ActionResult> {
   const value = String(username).trim().toLowerCase();
-  if (!USERNAME.test(value)) return { success: false, message: "Usuario no válido" };
+  if (!USERNAME.test(value)) return fail("invalidUser");
   return run((supabase) => supabase.rpc("unsave_profile", { p_username: value }));
 }
 
 /** For a saved profile that's no longer available, which has no username to go by. */
 export async function removeFavouriteAction(bookmarkId: string): Promise<ActionResult> {
-  if (!UUID.test(String(bookmarkId))) return { success: false, message: "Favorito no válido" };
+  if (!UUID.test(String(bookmarkId))) return fail("invalidFavourite");
   return run((supabase) => supabase.rpc("remove_favourite", { p_bookmark_id: bookmarkId }));
 }

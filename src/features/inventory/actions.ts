@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { adjustInventorySchema } from "@/lib/validation/inventory";
+import { fail } from "@/lib/i18n/serverErrors";
 
 type ActionResult<T = undefined> =
   | { success: true; data: T }
@@ -11,7 +12,7 @@ type ActionResult<T = undefined> =
 export async function adjustInventoryAction(rawInput: unknown): Promise<ActionResult> {
   const parsed = adjustInventorySchema.safeParse(rawInput);
   if (!parsed.success) {
-    return { success: false, message: parsed.error.issues[0]?.message ?? "Datos inválidos" };
+    return fail("invalidData");
   }
   const { coffeeBagId, newRemainingG, note } = parsed.data;
 
@@ -19,15 +20,15 @@ export async function adjustInventoryAction(rawInput: unknown): Promise<ActionRe
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return { success: false, message: "No autenticado" };
+  if (!user) return fail("unauthenticated");
 
   const { data: bag, error: bagError } = await supabase
     .from("coffee_bags")
     .select("id, remaining_g")
     .eq("id", coffeeBagId)
     .maybeSingle();
-  if (bagError) return { success: false, message: bagError.message };
-  if (!bag) return { success: false, message: "Bolsa no encontrada" };
+  if (bagError) return fail("generic", bagError);
+  if (!bag) return fail("bagNotFound");
 
   const currentRemaining = bag.remaining_g ?? 0;
   const delta = newRemainingG - currentRemaining;
@@ -40,7 +41,7 @@ export async function adjustInventoryAction(rawInput: unknown): Promise<ActionRe
       delta_g: delta,
       note: note ?? null,
     });
-    if (error) return { success: false, message: error.message };
+    if (error) return fail("generic", error);
   }
 
   revalidatePath(`/bags/${coffeeBagId}`);

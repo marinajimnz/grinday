@@ -9,6 +9,7 @@ import { BREW_METHODS, type BrewMethod } from "@/features/equipment/constants";
 import type { RecipeSourceAttempt } from "@/features/brew/draft";
 import { getLocale } from "@/lib/i18n/locale";
 import { getDictionary } from "@/lib/i18n/get-dictionary";
+import { fail } from "@/lib/i18n/serverErrors";
 
 export type TryRecipeData = {
   userId: string;
@@ -65,7 +66,7 @@ export async function tryPublicRecipeAction(input: unknown): Promise<Result> {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return { success: false, message: "No autenticado" };
+  if (!user) return fail("unauthenticated");
 
   const source = await getPublicAttempt(supabase, username, attemptId);
   if (!source) return { success: false, message: t.tryRecipeUnavailable };

@@ -9,7 +9,7 @@ export async function GET(request: Request) {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) {
-    return NextResponse.json({ message: "No autenticado" }, { status: 401 });
+    return NextResponse.json({ error: "unauthenticated" }, { status: 401 });
   }
 
   // coffees/brew_attempts got a public-read RLS policy in Fase 8 (public

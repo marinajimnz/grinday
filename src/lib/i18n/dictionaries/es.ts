@@ -346,6 +346,19 @@ const es = {
   errors: {
     title: "Algo ha fallado por aquí",
     description: "No hemos podido cargar esta pantalla. Vuelve a intentarlo; si sigue igual, tus datos están a salvo.",
+    // What a failed server action says (see lib/i18n/serverErrors.ts).
+    server: {
+      unauthenticated: "Tu sesión ha caducado. Vuelve a iniciar sesión.",
+      invalidData: "Hay algún dato que no es válido. Revísalo e inténtalo de nuevo.",
+      generic: "Algo ha fallado. Inténtalo de nuevo.",
+      coffeeNotFound: "No hemos encontrado ese café.",
+      bagNotFound: "No hemos encontrado esa bolsa.",
+      attemptNotFound: "No hemos encontrado ese intento.",
+      noBagAvailable: "Este café no tiene ninguna bolsa disponible.",
+      invalidLanguage: "Ese idioma no está disponible.",
+      invalidUser: "Ese nombre de usuario no es válido.",
+      invalidFavourite: "Ese favorito no es válido.",
+    },
   },
   dashboard: {
     title: "Inicio",
@@ -427,6 +440,7 @@ const es = {
     currentPassword: "Contraseña actual",
     newPassword: "Contraseña nueva",
     currentPasswordIncorrect: "La contraseña actual no es correcta",
+    passwordSameAsCurrent: "La contraseña nueva tiene que ser distinta de la actual.",
     passwordChanged: "Contraseña actualizada.",
     exportData: "Exportar tus datos",
     exportDescription: "Una copia de tus cafés, bolsas e intentos. Útil como respaldo manual.",
