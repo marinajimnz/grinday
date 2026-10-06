@@ -8,6 +8,9 @@ import { PublicAttemptRow } from "@/components/profile/PublicProfileSections";
 import { BackButton } from "@/components/ui/BackButton";
 import { getLocale } from "@/lib/i18n/locale";
 import { getDictionary } from "@/lib/i18n/get-dictionary";
+import { titleFrom } from "@/lib/i18n/metadata";
+
+export const generateMetadata = titleFrom((d) => d.pageTitles.coffee);
 
 // A coffee on someone's public profile: what it is (origin, process,
 // roast, tasting notes) and how they've brewed it — its preferred recipe

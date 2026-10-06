@@ -5,6 +5,9 @@ import { RoasterApplicationPanel } from "@/components/roaster/RoasterApplication
 import { BackButton } from "@/components/ui/BackButton";
 import { getLocale } from "@/lib/i18n/locale";
 import { getDictionary } from "@/lib/i18n/get-dictionary";
+import { titleFrom } from "@/lib/i18n/metadata";
+
+export const generateMetadata = titleFrom((d) => d.roaster.title);
 
 // Only for regular accounts (and roasters, to see where they stand), and
 // only while the public side is on for them.

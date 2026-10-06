@@ -1,9 +1,8 @@
 # Grindaily (Coffee Journal)
 
 Diario personal de café: bolsas, intentos de espresso y recetas reproducibles.
-PWA con Next.js (App Router) + Supabase. Ver la especificación completa en
-`docs/spec.md` (pendiente de copiar) — construido por fases según el
-roadmap de la Fase 0 a la Fase 7.
+PWA con Next.js (App Router) + Supabase, construida por fases (ver «Estado
+del roadmap» más abajo).
 
 ## Stack
 

@@ -2,6 +2,9 @@ import { RegisterForm } from "@/components/settings/RegisterForm";
 import { AuthLanguageToggle } from "@/components/i18n/AuthLanguageToggle";
 import { getLocale } from "@/lib/i18n/locale";
 import { getDictionary } from "@/lib/i18n/get-dictionary";
+import { titleFrom } from "@/lib/i18n/metadata";
+
+export const generateMetadata = titleFrom((d) => d.register.title);
 
 export default async function RegisterPage() {
   const dict = getDictionary(await getLocale());

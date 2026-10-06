@@ -28,6 +28,9 @@ import { SettingsAccordionCard } from "@/components/settings/SettingsAccordionCa
 import { getLocale } from "@/lib/i18n/locale";
 import { getDictionary } from "@/lib/i18n/get-dictionary";
 import type { Dictionary } from "@/lib/i18n/dictionaries/es";
+import { titleFrom } from "@/lib/i18n/metadata";
+
+export const generateMetadata = titleFrom((d) => d.stats.title);
 
 const PERIOD_HEADING: Record<StatsPeriod, keyof Dictionary["stats"]> = {
   week: "yourWeek",

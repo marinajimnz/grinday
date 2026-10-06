@@ -1,4 +1,7 @@
 import { BrewLiveScreen } from "@/components/brew/BrewLiveScreen";
+import { titleFrom } from "@/lib/i18n/metadata";
+
+export const generateMetadata = titleFrom((d) => d.brew.title);
 
 export default async function BrewLivePage({
   params,

@@ -16,7 +16,9 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Grindaily",
+  // Each page sets its own title in the account's language (see
+  // lib/i18n/metadata.ts); the home screen and /offline keep the bare name.
+  title: { template: "%s · Grindaily", default: "Grindaily" },
   description:
     "Vuelve a preparar un café como te gustó la última vez, sin depender de la memoria.",
 };

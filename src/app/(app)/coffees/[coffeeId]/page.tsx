@@ -13,6 +13,9 @@ import { RecipeCard } from "@/components/attempt/RecipeCard";
 import { Button } from "@/components/ui/Button";
 import { getLocale } from "@/lib/i18n/locale";
 import { getDictionary } from "@/lib/i18n/get-dictionary";
+import { titleFrom } from "@/lib/i18n/metadata";
+
+export const generateMetadata = titleFrom((d) => d.pageTitles.coffee);
 
 export default async function CoffeeDetailPage({
   params,
