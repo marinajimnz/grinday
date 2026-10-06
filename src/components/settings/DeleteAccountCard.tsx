@@ -7,6 +7,7 @@ import { Field, inputClassName } from "@/components/ui/Field";
 import { Button } from "@/components/ui/Button";
 import { LoadingLabel } from "@/components/ui/LoadingLabel";
 import { deleteAccountAction } from "@/features/account/actions";
+import { clearDeviceData } from "@/lib/clearDeviceData";
 import { useDictionary } from "@/components/i18n/LocaleProvider";
 
 // Last on the page and folded away, so nobody meets it by accident. Two
@@ -37,6 +38,7 @@ export function DeleteAccountCard({ identifier }: { identifier: string }) {
             setError(result.message);
             return;
           }
+          await clearDeviceData();
           router.replace("/login?accountDeleted=1");
           router.refresh();
         });
