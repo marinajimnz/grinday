@@ -744,6 +744,7 @@ const es = {
     notAuthenticated: "No autenticado",
     deletePhoto: "Eliminar foto",
     noPhotosYet: "Sin fotos todavía.",
+    sharedCoffeePhoto: "Foto de otra bolsa de este café. Sube una foto frontal para usar otra en esta bolsa.",
     noAttemptPhotosYet: "Todavía no hay fotos de este intento.",
     photo: "Foto",
     decrease: "Reducir",

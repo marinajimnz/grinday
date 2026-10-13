@@ -42,4 +42,15 @@ describe("PhotoTile", () => {
 
     expect(onRemove).not.toHaveBeenCalled();
   });
+
+  it("has no remove control when the photo is read-only", () => {
+    render(
+      <LocaleProvider locale="es" dict={es}>
+        <PhotoTile src="/photo.jpg" alt="Paquete" />
+      </LocaleProvider>,
+    );
+
+    expect(screen.getByRole("img", { name: "Paquete" })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: es.ui.deletePhoto })).not.toBeInTheDocument();
+  });
 });

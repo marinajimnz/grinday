@@ -3,6 +3,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/types/database";
 import { attachSignedUrls } from "@/lib/supabase/storage";
 import { pickTargetBag } from "./brewTarget";
+import { listCoverUrlsByCoffee } from "@/features/coffees/queries";
 import { groupFavouritesByCoffee } from "./favourites";
 import type { FavouriteGroup, FavouriteRecipe } from "./favourites";
 import type { RecipeSourceAttempt } from "@/features/brew/draft";
@@ -148,28 +149,14 @@ export async function listBrewableCoffees(supabase: Client, userId: string): Pro
     if (target) targetBagByCoffee.set(coffee.id, target);
   }
 
-  // Same idea as the coffee library's card cover photo: the "package_front"
-  // shot on whichever bag is the one you'd actually brew from — makes the
-  // picker in /brew/new recognizable at a glance instead of every row
-  // showing the same generic cup icon.
-  const targetBagIds = [...targetBagByCoffee.values()].map((b) => b.id);
-  const coverUrlByBag = new Map<string, string>();
-  if (targetBagIds.length) {
-    const { data: coverMedia, error: coverError } = await supabase
-      .from("coffee_media")
-      .select("coffee_bag_id, storage_path")
-      .in("coffee_bag_id", targetBagIds)
-      .eq("kind", "package_front")
-      .order("created_at", { ascending: true });
-    if (coverError) throw coverError;
-
-    const withUrls = await attachSignedUrls(supabase, coverMedia ?? []);
-    for (const item of withUrls) {
-      if (item.url && !coverUrlByBag.has(item.coffee_bag_id)) {
-        coverUrlByBag.set(item.coffee_bag_id, item.url);
-      }
-    }
-  }
+  // Same idea as the coffee library's card cover photo, seen from the bag
+  // you'd actually brew from — makes the picker in /brew/new recognizable at
+  // a glance instead of every row showing the same generic cup icon.
+  const coverUrlByCoffee = await listCoverUrlsByCoffee(
+    supabase,
+    bags ?? [],
+    new Map([...targetBagByCoffee].map(([coffeeId, bag]) => [coffeeId, bag.id])),
+  );
 
   const result: BrewableCoffee[] = [];
   for (const coffee of coffees) {
@@ -182,7 +169,7 @@ export async function listBrewableCoffees(supabase: Client, userId: string): Pro
       roaster: coffee.roaster,
       bagId: target.id,
       roastDate: target.roast_date,
-      coverPhotoUrl: coverUrlByBag.get(target.id) ?? null,
+      coverPhotoUrl: coverUrlByCoffee.get(coffee.id) ?? null,
       preferredAttempt: coffee.preferred_attempt_id
         ? (preferredById.get(coffee.preferred_attempt_id) ?? null)
         : null,

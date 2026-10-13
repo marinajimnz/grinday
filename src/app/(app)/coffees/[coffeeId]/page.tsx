@@ -2,7 +2,12 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { ChevronLeft } from "lucide-react";
-import { countCupsByBag, getCoffeeWithBags, listMediaForBags } from "@/features/coffees/queries";
+import {
+  countCupsByBag,
+  getCoffeeWithBags,
+  listMediaForBags,
+  sharedCoverFromMedia,
+} from "@/features/coffees/queries";
 import { listAttemptsForCoffee } from "@/features/attempts/queries";
 import { CoffeeDetailPanel } from "@/components/coffee/CoffeeDetailPanel";
 import { BagAccordionItem } from "@/components/coffee/BagAccordionItem";
@@ -48,6 +53,7 @@ export default async function CoffeeDetailPage({
     listMediaForBags(supabase, bagIds),
     countCupsByBag(supabase, bagIds),
   ]);
+  const allMedia = [...mediaByBag.values()].flat();
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-8 md:px-8">
@@ -103,6 +109,7 @@ export default async function CoffeeDetailPage({
                       key={bag.id}
                       bag={bag}
                       media={mediaByBag.get(bag.id) ?? []}
+                      sharedPhoto={sharedCoverFromMedia(bag.id, allMedia)}
                       cups={cupsByBag.get(bag.id) ?? 0}
                     />
                   ))
