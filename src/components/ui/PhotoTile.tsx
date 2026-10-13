@@ -11,7 +11,8 @@ import { useDictionary } from "@/components/i18n/LocaleProvider";
 // app whose photos are taken on a phone. It's on screen from the start
 // wherever there's no hover to reveal it, and stays a hover reveal where
 // there is one. The button is drawn small so it doesn't sit on top of the
-// coffee, and padded out to a 44px target so it can still be hit.
+// coffee, and padded out to a 44px target so it can still be hit. Without
+// `onRemove` the photo is read-only and there's no control at all.
 export function PhotoTile({
   src,
   alt,
@@ -20,7 +21,7 @@ export function PhotoTile({
 }: {
   src: string | null;
   alt: string;
-  onRemove: () => void;
+  onRemove?: () => void;
   disabled?: boolean;
 }) {
   const dict = useDictionary();
@@ -37,15 +38,17 @@ export function PhotoTile({
           unoptimized
         />
       )}
-      <button
-        type="button"
-        disabled={disabled}
-        onClick={onRemove}
-        aria-label={dict.ui.deletePhoto}
-        className="absolute right-1.5 top-1.5 flex size-8 items-center justify-center rounded-full bg-ink/70 text-surface transition-opacity after:absolute after:-inset-1.5 after:content-[''] focus-visible:opacity-100 disabled:opacity-60 [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover:opacity-100"
-      >
-        <X className="size-4" aria-hidden />
-      </button>
+      {onRemove && (
+        <button
+          type="button"
+          disabled={disabled}
+          onClick={onRemove}
+          aria-label={dict.ui.deletePhoto}
+          className="absolute right-1.5 top-1.5 flex size-8 items-center justify-center rounded-full bg-ink/70 text-surface transition-opacity after:absolute after:-inset-1.5 after:content-[''] focus-visible:opacity-100 disabled:opacity-60 [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover:opacity-100"
+        >
+          <X className="size-4" aria-hidden />
+        </button>
+      )}
     </div>
   );
 }

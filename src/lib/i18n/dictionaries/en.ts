@@ -730,6 +730,7 @@ const en: Dictionary = {
     notAuthenticated: "Not authenticated",
     deletePhoto: "Delete photo",
     noPhotosYet: "No photos yet.",
+    sharedCoffeePhoto: "Photo from another bag of this coffee. Upload a front photo to use a different one for this bag.",
     noAttemptPhotosYet: "No photos of this attempt yet.",
     photo: "Photo",
     decrease: "Decrease",

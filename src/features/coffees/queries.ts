@@ -4,6 +4,7 @@ import type { Database } from "@/types/database";
 import { attachSignedUrls } from "@/lib/supabase/storage";
 import { sumCups } from "@/features/attempts/cups";
 import { hasBrewableBag } from "./brewable";
+import { pickCoverPhoto } from "./cover";
 
 type Client = SupabaseClient<Database>;
 
@@ -102,41 +103,20 @@ export async function listCoffees(
     bagsByCoffee.set(bag.coffee_id, list);
   }
 
-  // The card shows one cover photo per coffee: the "package_front" shot on
-  // whichever bag is active (same bag CoffeeCard itself treats as active).
+  // The card shows one cover photo per coffee, seen from whichever bag is
+  // active (same bag CoffeeCard itself treats as active).
   const activeBagIdByCoffee = new Map<string, string>();
   for (const [coffeeId, coffeeBags] of bagsByCoffee) {
     const active = coffeeBags.find((b) => b.status === "open") ?? coffeeBags[0];
     if (active) activeBagIdByCoffee.set(coffeeId, active.id);
   }
-  const activeBagIds = [...activeBagIdByCoffee.values()];
+  const coverUrlByCoffee = await listCoverUrlsByCoffee(supabase, bags ?? [], activeBagIdByCoffee);
 
-  const coverUrlByBag = new Map<string, string>();
-  if (activeBagIds.length) {
-    const { data: coverMedia, error: coverError } = await supabase
-      .from("coffee_media")
-      .select("coffee_bag_id, storage_path")
-      .in("coffee_bag_id", activeBagIds)
-      .eq("kind", "package_front")
-      .order("created_at", { ascending: true });
-    if (coverError) throw coverError;
-
-    const withUrls = await attachSignedUrls(supabase, coverMedia ?? []);
-    for (const item of withUrls) {
-      if (item.url && !coverUrlByBag.has(item.coffee_bag_id)) {
-        coverUrlByBag.set(item.coffee_bag_id, item.url);
-      }
-    }
-  }
-
-  let items: CoffeeListItem[] = coffees.map((coffee) => {
-    const activeBagId = activeBagIdByCoffee.get(coffee.id);
-    return {
-      ...coffee,
-      bags: bagsByCoffee.get(coffee.id) ?? [],
-      coverPhotoUrl: (activeBagId && coverUrlByBag.get(activeBagId)) || null,
-    };
-  });
+  let items: CoffeeListItem[] = coffees.map((coffee) => ({
+    ...coffee,
+    bags: bagsByCoffee.get(coffee.id) ?? [],
+    coverPhotoUrl: coverUrlByCoffee.get(coffee.id) ?? null,
+  }));
 
   if (filters.bagStatus) {
     items = items.filter((item) =>
@@ -152,6 +132,52 @@ export async function listCoffees(
   const brewable = items.filter(hasBrewableBag);
   const spent = items.filter((item) => !hasBrewableBag(item));
   return [...brewable, ...spent];
+}
+
+/**
+ * One signed cover URL per coffee, picked by pickCoverPhoto: the
+ * "package_front" shot on the given bag, else the newest one on any other
+ * bag of the same coffee. `bags` must hold every bag of each coffee, not
+ * just the target ones, or the fallback has nothing to fall back to.
+ */
+export async function listCoverUrlsByCoffee(
+  supabase: Client,
+  bags: { id: string; coffee_id: string }[],
+  targetBagIdByCoffee: Map<string, string>,
+): Promise<Map<string, string>> {
+  const coverUrlByCoffee = new Map<string, string>();
+  if (!bags.length) return coverUrlByCoffee;
+
+  const { data: fronts, error } = await supabase
+    .from("coffee_media")
+    .select("coffee_bag_id, storage_path, created_at")
+    .in(
+      "coffee_bag_id",
+      bags.map((b) => b.id),
+    )
+    .eq("kind", "package_front");
+  if (error) throw error;
+
+  const coffeeIdByBag = new Map(bags.map((b) => [b.id, b.coffee_id]));
+  const frontsByCoffee = new Map<string, NonNullable<typeof fronts>>();
+  for (const front of fronts ?? []) {
+    const coffeeId = coffeeIdByBag.get(front.coffee_bag_id);
+    if (!coffeeId) continue;
+    const list = frontsByCoffee.get(coffeeId) ?? [];
+    list.push(front);
+    frontsByCoffee.set(coffeeId, list);
+  }
+
+  const picked: { coffeeId: string; storage_path: string }[] = [];
+  for (const [coffeeId, coffeeFronts] of frontsByCoffee) {
+    const cover = pickCoverPhoto(coffeeFronts, targetBagIdByCoffee.get(coffeeId));
+    if (cover) picked.push({ coffeeId, storage_path: cover.storage_path });
+  }
+
+  for (const item of await attachSignedUrls(supabase, picked)) {
+    if (item.url) coverUrlByCoffee.set(item.coffeeId, item.url);
+  }
+  return coverUrlByCoffee;
 }
 
 export async function getCoffeeWithBags(supabase: Client, coffeeId: string, userId: string) {
@@ -216,5 +242,58 @@ export async function getBagDetail(supabase: Client, bagId: string) {
 
   const mediaWithUrls = await attachSignedUrls(supabase, media ?? []);
 
-  return { bag, media: mediaWithUrls };
+  return {
+    bag,
+    media: mediaWithUrls,
+    sharedPhoto: await getSharedCoverPhoto(supabase, bag.coffee_id, bagId, mediaWithUrls),
+  };
+}
+
+export type SharedCoverPhoto = { url: string; alt: string | null };
+
+/**
+ * The coffee's front photo borrowed from another of its bags, for a bag that
+ * has no front photo of its own (see pickCoverPhoto). Null when the bag has
+ * its own, or when no bag of the coffee has one.
+ */
+export function sharedCoverFromMedia(
+  bagId: string,
+  allMedia: (CoffeeMediaRow & { url: string | null })[],
+): SharedCoverPhoto | null {
+  const fronts = allMedia.filter((m) => m.kind === "package_front" && m.url);
+  const cover = pickCoverPhoto(fronts, bagId);
+  if (!cover?.url || cover.coffee_bag_id === bagId) return null;
+  return { url: cover.url, alt: cover.alt_text };
+}
+
+async function getSharedCoverPhoto(
+  supabase: Client,
+  coffeeId: string,
+  bagId: string,
+  ownMedia: (CoffeeMediaRow & { url: string | null })[],
+): Promise<SharedCoverPhoto | null> {
+  if (ownMedia.some((m) => m.kind === "package_front")) return null;
+
+  const { data: siblings, error } = await supabase
+    .from("coffee_bags")
+    .select("id")
+    .eq("coffee_id", coffeeId)
+    .neq("id", bagId);
+  if (error) throw error;
+  if (!siblings?.length) return null;
+
+  const { data: fronts, error: frontsError } = await supabase
+    .from("coffee_media")
+    .select("*")
+    .in(
+      "coffee_bag_id",
+      siblings.map((b) => b.id),
+    )
+    .eq("kind", "package_front");
+  if (frontsError) throw frontsError;
+
+  const cover = pickCoverPhoto(fronts ?? [], bagId);
+  if (!cover) return null;
+  const [signed] = await attachSignedUrls(supabase, [cover]);
+  return signed?.url ? { url: signed.url, alt: signed.alt_text } : null;
 }

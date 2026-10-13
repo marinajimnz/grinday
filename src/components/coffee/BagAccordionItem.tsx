@@ -6,7 +6,7 @@ import { IconCafe } from "@/components/icons/pencil-icons";
 import { BagStatusBadge } from "./BagStatusBadge";
 import { BagDetailPanel } from "./BagDetailPanel";
 import { BagMediaSection } from "./BagMediaSection";
-import type { CoffeeBagRow, CoffeeMediaRow } from "@/features/coffees/queries";
+import type { CoffeeBagRow, CoffeeMediaRow, SharedCoverPhoto } from "@/features/coffees/queries";
 import { useDictionary, useLocale } from "@/components/i18n/LocaleProvider";
 import { formatDate } from "@/lib/i18n/format-date";
 import { daysSinceRoast, formatRoastAge } from "@/features/coffees/roastAge";
@@ -14,10 +14,12 @@ import { daysSinceRoast, formatRoastAge } from "@/features/coffees/roastAge";
 export function BagAccordionItem({
   bag,
   media,
+  sharedPhoto = null,
   cups = 0,
 }: {
   bag: CoffeeBagRow;
   media: (CoffeeMediaRow & { url: string | null })[];
+  sharedPhoto?: SharedCoverPhoto | null;
   cups?: number;
 }) {
   const dict = useDictionary();
@@ -43,7 +45,7 @@ export function BagAccordionItem({
         <div className="mt-6">
           <h3 className="font-display text-lg text-ink">{dict.inventoryPage.gallery}</h3>
           <div className="mt-3">
-            <BagMediaSection bagId={bag.id} media={media} />
+            <BagMediaSection bagId={bag.id} media={media} sharedPhoto={sharedPhoto} />
           </div>
         </div>
       </div>

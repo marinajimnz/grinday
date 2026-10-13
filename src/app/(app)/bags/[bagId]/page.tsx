@@ -21,7 +21,7 @@ export default async function BagDetailPage({
   const result = await getBagDetail(supabase, bagId);
 
   if (!result) notFound();
-  const { bag, media } = result;
+  const { bag, media, sharedPhoto } = result;
   const dict = getDictionary(await getLocale());
   const cups = (await countCupsByBag(supabase, [bag.id])).get(bag.id) ?? 0;
 
@@ -42,7 +42,7 @@ export default async function BagDetailPage({
       <div className="mt-8">
         <h2 className="font-display text-xl text-ink">{dict.inventoryPage.gallery}</h2>
         <div className="mt-3">
-          <BagMediaSection bagId={bag.id} media={media} />
+          <BagMediaSection bagId={bag.id} media={media} sharedPhoto={sharedPhoto} />
         </div>
       </div>
     </div>
