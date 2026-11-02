@@ -486,6 +486,14 @@
       ]
     },
     {
+      "signature": "stats_by_dimensions(p_from date, p_to date, p_tz text)",
+      "security_definer": false,
+      "callable_by": [
+        "anon",
+        "authenticated"
+      ]
+    },
+    {
       "signature": "stats_by_method(p_from date, p_to date, p_tz text)",
       "security_definer": false,
       "callable_by": [

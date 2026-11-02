@@ -1123,6 +1123,15 @@ export type Database = {
           rated_count: number
         }[]
       }
+      stats_by_dimensions: {
+        Args: { p_from?: string; p_to?: string; p_tz?: string }
+        Returns: {
+          avg_rating: number
+          dimension: string
+          label: string
+          rated_count: number
+        }[]
+      }
       stats_by_method: {
         Args: { p_from?: string; p_to?: string; p_tz?: string }
         Returns: {
