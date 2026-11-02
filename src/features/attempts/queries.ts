@@ -128,16 +128,6 @@ export async function listBrewableCoffees(supabase: Client, userId: string): Pro
     .order("created_at", { ascending: false });
   if (bagsError) throw bagsError;
 
-  const preferredIds = coffees.map((c) => c.preferred_attempt_id).filter((id): id is string => Boolean(id));
-  const { data: preferredAttempts } = preferredIds.length
-    ? await supabase
-        .from("brew_attempts")
-        .select(PREFERRED_ATTEMPT_RECIPE_FIELDS)
-        .in("id", preferredIds)
-        .eq("user_id", userId)
-    : { data: [] };
-  const preferredById = new Map((preferredAttempts ?? []).map((a) => [a.id, a]));
-
   const targetBagByCoffee = new Map<string, { id: string; coffee_id: string; roast_date: string | null }>();
   for (const coffee of coffees) {
     const coffeeBags = (bags ?? []).filter((b) => b.coffee_id === coffee.id);
@@ -152,11 +142,23 @@ export async function listBrewableCoffees(supabase: Client, userId: string): Pro
   // Same idea as the coffee library's card cover photo, seen from the bag
   // you'd actually brew from — makes the picker in /brew/new recognizable at
   // a glance instead of every row showing the same generic cup icon.
-  const coverUrlByCoffee = await listCoverUrlsByCoffee(
-    supabase,
-    bags ?? [],
-    new Map([...targetBagByCoffee].map(([coffeeId, bag]) => [coffeeId, bag.id])),
-  );
+  // The preferred recipes and the covers don't depend on each other.
+  const preferredIds = coffees.map((c) => c.preferred_attempt_id).filter((id): id is string => Boolean(id));
+  const [{ data: preferredAttempts }, coverUrlByCoffee] = await Promise.all([
+    preferredIds.length
+      ? supabase
+          .from("brew_attempts")
+          .select(PREFERRED_ATTEMPT_RECIPE_FIELDS)
+          .in("id", preferredIds)
+          .eq("user_id", userId)
+      : Promise.resolve({ data: [] }),
+    listCoverUrlsByCoffee(
+      supabase,
+      bags ?? [],
+      new Map([...targetBagByCoffee].map(([coffeeId, bag]) => [coffeeId, bag.id])),
+    ),
+  ]);
+  const preferredById = new Map((preferredAttempts ?? []).map((a) => [a.id, a]));
 
   const result: BrewableCoffee[] = [];
   for (const coffee of coffees) {

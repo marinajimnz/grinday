@@ -11,7 +11,14 @@ import type { BrewAttemptRow } from "@/features/attempts/queries";
 import { useDictionary, useLocale } from "@/components/i18n/LocaleProvider";
 import { formatDate } from "@/lib/i18n/format-date";
 
-export function AttemptsTimeline({ attempts }: { attempts: BrewAttemptRow[] }) {
+// Only what a row shows: whatever a Client Component is handed is
+// serialized into the page, and the full rows have 48 columns.
+export type TimelineAttempt = Pick<
+  BrewAttemptRow,
+  "id" | "attempt_no" | "created_at" | "overall_rating" | "favourite_at" | "parent_attempt_id"
+>;
+
+export function AttemptsTimeline({ attempts }: { attempts: TimelineAttempt[] }) {
   const router = useRouter();
   const dict = useDictionary();
   const locale = useLocale();

@@ -3,9 +3,9 @@ import { notFound } from "next/navigation";
 import { createClient, getCurrentUser } from "@/lib/supabase/server";
 import { ChevronLeft } from "lucide-react";
 import {
-  countCupsByBag,
+  cupsByBagFrom,
   getCoffeeWithBags,
-  listMediaForBags,
+  listMediaForCoffee,
   sharedCoverFromMedia,
 } from "@/features/coffees/queries";
 import { listAttemptsForCoffee } from "@/features/attempts/queries";
@@ -13,7 +13,7 @@ import { CoffeeDetailPanel } from "@/components/coffee/CoffeeDetailPanel";
 import { BagAccordionItem } from "@/components/coffee/BagAccordionItem";
 import { AddBagPanel } from "@/components/coffee/AddBagPanel";
 import { CoffeeTabs } from "@/components/coffee/CoffeeTabs";
-import { AttemptsTimeline } from "@/components/attempt/AttemptsTimeline";
+import { AttemptsTimeline, type TimelineAttempt } from "@/components/attempt/AttemptsTimeline";
 import { RecipeCard } from "@/components/attempt/RecipeCard";
 import { Button } from "@/components/ui/Button";
 import { getLocale } from "@/lib/i18n/locale";
@@ -31,14 +31,20 @@ export default async function CoffeeDetailPage({
   const supabase = await createClient();
   const user = await getCurrentUser();
   if (!user) notFound();
-  const result = await getCoffeeWithBags(supabase, coffeeId, user.id);
+  // Everything keys off the coffee id from the URL, so it all goes out at
+  // once. The bags' cup counts come from the attempts loaded here rather
+  // than from a query of their own.
+  const [result, attempts, mediaByBag] = await Promise.all([
+    getCoffeeWithBags(supabase, coffeeId, user.id),
+    listAttemptsForCoffee(supabase, coffeeId, user.id),
+    listMediaForCoffee(supabase, coffeeId),
+  ]);
 
   if (!result) notFound();
   const { coffee, bags } = result;
   const locale = await getLocale();
   const dict = getDictionary(locale);
 
-  const attempts = await listAttemptsForCoffee(supabase, coffeeId, user.id);
   const preferredAttempt = coffee.preferred_attempt_id
     ? (attempts.find((a) => a.id === coffee.preferred_attempt_id) ?? null)
     : null;
@@ -46,11 +52,22 @@ export default async function CoffeeDetailPage({
   const targetBag =
     bags.find((b) => b.status === "open") ?? bags.find((b) => b.status === "sealed") ?? bags[0];
 
-  const bagIds = bags.map((b) => b.id);
-  const [mediaByBag, cupsByBag] = await Promise.all([
-    listMediaForBags(supabase, bagIds),
-    countCupsByBag(supabase, bagIds),
-  ]);
+  const cupsByBag = cupsByBagFrom(
+    attempts,
+    bags.map((b) => b.id),
+  );
+  // The timeline is a Client Component: hand it only the columns a row
+  // shows, not every attempt's whole row.
+  const timelineAttempts: TimelineAttempt[] = attempts.map(
+    ({ id, attempt_no, created_at, overall_rating, favourite_at, parent_attempt_id }) => ({
+      id,
+      attempt_no,
+      created_at,
+      overall_rating,
+      favourite_at,
+      parent_attempt_id,
+    }),
+  );
   const allMedia = [...mediaByBag.values()].flat();
 
   return (
@@ -92,7 +109,7 @@ export default async function CoffeeDetailPage({
                   </>
                 )}
               </div>
-              <AttemptsTimeline attempts={attempts} />
+              <AttemptsTimeline attempts={timelineAttempts} />
             </div>
           }
           bagsContent={

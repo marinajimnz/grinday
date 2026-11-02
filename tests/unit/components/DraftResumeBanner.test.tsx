@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { DraftResumeBanner } from "@/components/dashboard/DraftResumeBanner";
 import { LocaleProvider } from "@/components/i18n/LocaleProvider";
@@ -95,7 +95,8 @@ describe("DraftResumeBanner", () => {
       screen.getAllByRole("button", { name: es.dashboard.draftAbandonedDiscard }).at(-1)!,
     );
 
-    expect(discardDraft).toHaveBeenCalledWith("draft-1");
+    // discardDraft is loaded on demand, so the call lands a tick later.
+    await waitFor(() => expect(discardDraft).toHaveBeenCalledWith("draft-1"));
     expect(screen.queryByText(es.dashboard.draftAbandonedTitle)).not.toBeInTheDocument();
   });
 
