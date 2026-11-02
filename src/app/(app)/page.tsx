@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Bookmark, Search } from "lucide-react";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, getCurrentUser } from "@/lib/supabase/server";
 import { IconAnadir, IconCafe, IconFavorita, IconFavorito } from "@/components/icons/pencil-icons";
 import {
   getBestOfWeek,
@@ -11,6 +11,7 @@ import {
 } from "@/features/dashboard/queries";
 import { buildRecipeStack } from "@/features/dashboard/recipeStack";
 import { countFavouriteRecipes } from "@/features/attempts/queries";
+import { getMyPublicIdentity } from "@/features/profile/queries";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { DraftResumeBanner } from "@/components/dashboard/DraftResumeBanner";
 import { RecipeStack, type RecipeStackCard } from "@/components/dashboard/RecipeStack";
@@ -24,33 +25,30 @@ export default async function DashboardPage() {
   const supabase = await createClient();
   const dict = getDictionary(await getLocale());
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  const { data: profile } = user
-    ? await supabase.from("profiles").select("display_name").eq("id", user.id).single()
-    : { data: null };
+  const user = await getCurrentUser();
 
-  const [hasCoffee, { data: socialEnabled }] = await Promise.all([
-    user ? hasAnyCoffee(supabase, user.id) : Promise.resolve(false),
-    supabase.rpc("social_enabled_for_me"),
-  ]);
-
-  const [recipe, recentAttempts, favouriteCount, bestOfWeek] =
-    hasCoffee && user
-      ? await Promise.all([
-          getDashboardRecipe(supabase, user.id),
-          getRecentAttempts(supabase, user.id, 3, { excludeHiddenFromDashboard: true }),
-          countFavouriteRecipes(supabase, user.id),
-          getBestOfWeek(supabase, user.id),
-        ])
-      : [null, [], 0, null];
+  // All in one go rather than waiting on hasAnyCoffee first: without a coffee
+  // the recipe queries come back empty anyway, and that rare case isn't
+  // worth a round-trip on every visit. The identity is the same cached call
+  // the layout's VisibilityPromptGate makes, so it costs nothing extra.
+  const [identity, hasCoffee, recipe, recentAttempts, favouriteCount, bestOfWeek] = user
+    ? await Promise.all([
+        getMyPublicIdentity(supabase, user.id),
+        hasAnyCoffee(supabase, user.id),
+        getDashboardRecipe(supabase, user.id),
+        getRecentAttempts(supabase, user.id, 3, { excludeHiddenFromDashboard: true }),
+        countFavouriteRecipes(supabase, user.id),
+        getBestOfWeek(supabase, user.id),
+      ])
+    : [null, false, null, [], 0, null];
+  const displayName = identity?.displayName;
+  const socialEnabled = identity?.socialEnabled ?? false;
 
   const lastAttempt = recentAttempts[0];
 
   // The pinned recipe in the same shape as the others; it's usually one of
   // the attempts already loaded, so the extra query only runs when it isn't.
-  const preferredId = recipe?.isPreferred ? recipe.attempt.id : null;
+  const preferredId = hasCoffee && recipe?.isPreferred ? recipe.attempt.id : null;
   const preferred =
     preferredId && user
       ? ([lastAttempt, bestOfWeek].find((a) => a?.id === preferredId) ??
@@ -87,9 +85,9 @@ export default async function DashboardPage() {
         {/* Smaller on a phone so the name, the heart and "grindaily" fit on
             one line next to the two buttons. */}
         <h1 className="flex min-w-0 flex-wrap items-center gap-x-1.5 font-display text-2xl break-words text-ink sm:gap-x-2 sm:text-4xl">
-          {profile?.display_name ? (
+          {displayName ? (
             <>
-              {profile.display_name}
+              {displayName}
               <IconFavorito aria-hidden className="size-4 text-coffee sm:size-6" />
               grindaily
             </>

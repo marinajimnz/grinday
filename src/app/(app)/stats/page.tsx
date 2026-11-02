@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, getCurrentUser } from "@/lib/supabase/server";
 import { IconFavorita } from "@/components/icons/pencil-icons";
 import {
   getCupTotals,
@@ -49,9 +49,7 @@ export default async function StatsPage({
   const range = { from: periodRange.from, to: periodRange.to };
 
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getCurrentUser();
   if (!user) notFound();
   const locale = await getLocale();
   const dict = getDictionary(locale);

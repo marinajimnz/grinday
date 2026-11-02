@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, getCurrentUser } from "@/lib/supabase/server";
 import { getMyPublicIdentity } from "@/features/profile/queries";
 import { VisibilityPrompt } from "./VisibilityPrompt";
 
@@ -8,9 +8,7 @@ import { VisibilityPrompt } from "./VisibilityPrompt";
 // is on for that account — until then there's nothing to decide.
 export async function VisibilityPromptGate() {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getCurrentUser();
   if (!user) return null;
 
   const identity = await getMyPublicIdentity(supabase, user.id);

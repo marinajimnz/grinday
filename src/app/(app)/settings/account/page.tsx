@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { Download } from "lucide-react";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, getCurrentUser } from "@/lib/supabase/server";
 import { SignOutButton } from "@/components/settings/SignOutButton";
 import { ChangeUsernameForm } from "@/components/settings/ChangeUsernameForm";
 import { ChangeEmailForm } from "@/components/settings/ChangeEmailForm";
@@ -18,9 +18,7 @@ export const generateMetadata = titleFrom((d) => d.settings.accountTitle);
 
 export default async function AccountSettingsPage() {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getCurrentUser();
   // Every other authed page guards instead of asserting. Without it a
   // session that's gone by the time this renders — expired, signed out in
   // another tab, or the account itself deleted — turns the proxy's clean

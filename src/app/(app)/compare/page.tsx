@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { ChevronLeft, Scale } from "lucide-react";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, getCurrentUser } from "@/lib/supabase/server";
 import { getAttemptsByIds } from "@/features/attempts/queries";
 import { CompareView } from "@/components/attempt/CompareView";
 import { EmptyState } from "@/components/ui/EmptyState";
@@ -24,9 +24,7 @@ export default async function ComparePage({
     .slice(0, MAX_COMPARE_ATTEMPTS);
 
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getCurrentUser();
   const attempts =
     user && ids.length >= MIN_COMPARE_ATTEMPTS ? await getAttemptsByIds(supabase, ids, user.id) : [];
   const locale = await getLocale();

@@ -1,4 +1,5 @@
 import "server-only";
+import { cache } from "react";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/types/database";
 
@@ -22,7 +23,9 @@ function asVisibility(value: string | null | undefined): Visibility {
   return value === "public" || value === "private" ? value : "unset";
 }
 
-export async function getMyPublicIdentity(supabase: Client, userId: string): Promise<MyPublicIdentity> {
+// Cached per request: the app layout asks for it (VisibilityPromptGate) and
+// so do the home and settings pages, all with the same per-request client.
+export const getMyPublicIdentity = cache(async (supabase: Client, userId: string): Promise<MyPublicIdentity> => {
   const [{ data: profile, error }, { data: socialEnabled }] = await Promise.all([
     supabase.from("profiles").select("display_name, username, bio, visibility").eq("id", userId).single(),
     supabase.rpc("social_enabled_for_me"),
@@ -35,4 +38,4 @@ export async function getMyPublicIdentity(supabase: Client, userId: string): Pro
     visibility: asVisibility(profile.visibility),
     socialEnabled: socialEnabled === true,
   };
-}
+});

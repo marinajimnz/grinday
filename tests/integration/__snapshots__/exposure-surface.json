@@ -7,8 +7,8 @@
       "roles": [
         "public"
       ],
-      "qual": "(auth.uid() = user_id)",
-      "with_check": "(auth.uid() = user_id)"
+      "qual": "(( SELECT auth.uid() AS uid) = user_id)",
+      "with_check": "(( SELECT auth.uid() AS uid) = user_id)"
     },
     {
       "tablename": "brew_attempts",
@@ -17,8 +17,8 @@
       "roles": [
         "public"
       ],
-      "qual": "(auth.uid() = user_id)",
-      "with_check": "(auth.uid() = user_id)"
+      "qual": "(( SELECT auth.uid() AS uid) = user_id)",
+      "with_check": "(( SELECT auth.uid() AS uid) = user_id)"
     },
     {
       "tablename": "coffee_bags",
@@ -27,8 +27,8 @@
       "roles": [
         "public"
       ],
-      "qual": "(auth.uid() = user_id)",
-      "with_check": "(auth.uid() = user_id)"
+      "qual": "(( SELECT auth.uid() AS uid) = user_id)",
+      "with_check": "(( SELECT auth.uid() AS uid) = user_id)"
     },
     {
       "tablename": "coffee_media",
@@ -37,8 +37,8 @@
       "roles": [
         "public"
       ],
-      "qual": "(auth.uid() = user_id)",
-      "with_check": "(auth.uid() = user_id)"
+      "qual": "(( SELECT auth.uid() AS uid) = user_id)",
+      "with_check": "(( SELECT auth.uid() AS uid) = user_id)"
     },
     {
       "tablename": "coffees",
@@ -47,8 +47,8 @@
       "roles": [
         "public"
       ],
-      "qual": "(auth.uid() = user_id)",
-      "with_check": "(auth.uid() = user_id)"
+      "qual": "(( SELECT auth.uid() AS uid) = user_id)",
+      "with_check": "(( SELECT auth.uid() AS uid) = user_id)"
     },
     {
       "tablename": "inventory_events",
@@ -57,8 +57,8 @@
       "roles": [
         "public"
       ],
-      "qual": "(auth.uid() = user_id)",
-      "with_check": "(auth.uid() = user_id)"
+      "qual": "(( SELECT auth.uid() AS uid) = user_id)",
+      "with_check": "(( SELECT auth.uid() AS uid) = user_id)"
     },
     {
       "tablename": "moderation_events",
@@ -77,7 +77,7 @@
       "roles": [
         "public"
       ],
-      "qual": "(auth.uid() = id)",
+      "qual": "(( SELECT auth.uid() AS uid) = id)",
       "with_check": null
     },
     {
@@ -87,8 +87,8 @@
       "roles": [
         "public"
       ],
-      "qual": "(auth.uid() = id)",
-      "with_check": "(auth.uid() = id)"
+      "qual": "(( SELECT auth.uid() AS uid) = id)",
+      "with_check": "(( SELECT auth.uid() AS uid) = id)"
     },
     {
       "tablename": "roaster_applications",
@@ -107,8 +107,8 @@
       "roles": [
         "public"
       ],
-      "qual": "(auth.uid() = user_id)",
-      "with_check": "(auth.uid() = user_id)"
+      "qual": "(( SELECT auth.uid() AS uid) = user_id)",
+      "with_check": "(( SELECT auth.uid() AS uid) = user_id)"
     },
     {
       "tablename": "user_grinders",
@@ -117,8 +117,8 @@
       "roles": [
         "public"
       ],
-      "qual": "(auth.uid() = user_id)",
-      "with_check": "(auth.uid() = user_id)"
+      "qual": "(( SELECT auth.uid() AS uid) = user_id)",
+      "with_check": "(( SELECT auth.uid() AS uid) = user_id)"
     },
     {
       "tablename": "objects",
@@ -127,7 +127,7 @@
       "roles": [
         "public"
       ],
-      "qual": "((bucket_id = 'coffee-photos'::text) AND ((storage.foldername(name))[1] = (auth.uid())::text))",
+      "qual": "((bucket_id = 'coffee-photos'::text) AND ((storage.foldername(name))[1] = (( SELECT auth.uid() AS uid))::text))",
       "with_check": null
     },
     {
@@ -138,7 +138,7 @@
         "public"
       ],
       "qual": null,
-      "with_check": "((bucket_id = 'coffee-photos'::text) AND ((storage.foldername(name))[1] = (auth.uid())::text))"
+      "with_check": "((bucket_id = 'coffee-photos'::text) AND ((storage.foldername(name))[1] = (( SELECT auth.uid() AS uid))::text))"
     },
     {
       "tablename": "objects",
@@ -147,7 +147,7 @@
       "roles": [
         "public"
       ],
-      "qual": "((bucket_id = 'coffee-photos'::text) AND ((storage.foldername(name))[1] = (auth.uid())::text))",
+      "qual": "((bucket_id = 'coffee-photos'::text) AND ((storage.foldername(name))[1] = (( SELECT auth.uid() AS uid))::text))",
       "with_check": null
     },
     {
@@ -157,7 +157,7 @@
       "roles": [
         "public"
       ],
-      "qual": "((bucket_id = 'coffee-photos'::text) AND ((storage.foldername(name))[1] = (auth.uid())::text))",
+      "qual": "((bucket_id = 'coffee-photos'::text) AND ((storage.foldername(name))[1] = (( SELECT auth.uid() AS uid))::text))",
       "with_check": null
     }
   ],

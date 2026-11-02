@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, getCurrentUser } from "@/lib/supabase/server";
 import { getAdminAccess } from "@/features/moderation/queries";
 import {
   ModerateProfileForm,
@@ -30,9 +30,7 @@ type Tab = (typeof TABS)[number];
 // Anyone else gets the same 404 as a page that doesn't exist.
 export default async function AdminPage({ searchParams }: { searchParams: Promise<{ tab?: string }> }) {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getCurrentUser();
   if (!user) notFound();
   const access = await getAdminAccess(supabase, user.id);
   if (access === "denied") notFound();

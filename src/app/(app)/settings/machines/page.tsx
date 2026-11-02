@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, getCurrentUser } from "@/lib/supabase/server";
 import { getLocale } from "@/lib/i18n/locale";
 import { getDictionary } from "@/lib/i18n/get-dictionary";
 import { getUserBrewEquipment, getUserGrinders } from "@/features/equipment/queries";
@@ -11,9 +11,7 @@ export const generateMetadata = titleFrom((d) => d.settings.machinesTitle);
 
 export default async function MachinesSettingsPage() {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getCurrentUser();
   if (!user) notFound();
   const dict = getDictionary(await getLocale());
 
