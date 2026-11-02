@@ -31,22 +31,29 @@ export async function countCupsByBag(
   supabase: Client,
   bagIds: string[],
 ): Promise<Map<string, number>> {
-  const byBag = new Map<string, number>();
-  if (!bagIds.length) return byBag;
+  if (!bagIds.length) return new Map();
 
   const { data, error } = await supabase
     .from("brew_attempts")
     .select("coffee_bag_id, cup_count, moka_cup_size")
     .in("coffee_bag_id", bagIds);
   if (error) throw error;
+  return cupsByBagFrom(data ?? [], bagIds);
+}
 
-  const grouped = new Map<string, { cup_count: number | null; moka_cup_size: number | null }[]>();
-  for (const attempt of data ?? []) {
+/** The same count from attempts already in hand, such as a coffee's history. */
+export function cupsByBagFrom(
+  attempts: { coffee_bag_id: string | null; cup_count: number | null; moka_cup_size: number | null }[],
+  bagIds: string[],
+): Map<string, number> {
+  const grouped = new Map<string, typeof attempts>();
+  for (const attempt of attempts) {
     if (!attempt.coffee_bag_id) continue;
     const list = grouped.get(attempt.coffee_bag_id) ?? [];
     list.push(attempt);
     grouped.set(attempt.coffee_bag_id, list);
   }
+  const byBag = new Map<string, number>();
   for (const id of bagIds) byBag.set(id, sumCups(grouped.get(id) ?? []));
   return byBag;
 }
@@ -181,20 +188,19 @@ export async function listCoverUrlsByCoffee(
 }
 
 export async function getCoffeeWithBags(supabase: Client, coffeeId: string, userId: string) {
-  const { data: coffee, error } = await supabase
-    .from("coffees")
-    .select("*")
-    .eq("id", coffeeId)
-    .eq("user_id", userId)
-    .maybeSingle();
+  // Side by side: the bags only need the id, so there's nothing to wait for
+  // the coffee row for.
+  const [{ data: coffee, error }, { data: bags, error: bagsError }] = await Promise.all([
+    supabase.from("coffees").select("*").eq("id", coffeeId).eq("user_id", userId).maybeSingle(),
+    supabase
+      .from("coffee_bags")
+      .select("*")
+      .eq("coffee_id", coffeeId)
+      .eq("user_id", userId)
+      .order("created_at", { ascending: false }),
+  ]);
   if (error) throw error;
   if (!coffee) return null;
-
-  const { data: bags, error: bagsError } = await supabase
-    .from("coffee_bags")
-    .select("*")
-    .eq("coffee_id", coffeeId)
-    .order("created_at", { ascending: false });
   if (bagsError) throw bagsError;
 
   return { coffee, bags: bags ?? [] };
@@ -203,17 +209,17 @@ export async function getCoffeeWithBags(supabase: Client, coffeeId: string, user
 // The coffee detail page shows every bag's full panel inline (dates,
 // inventory, photos) instead of linking out to a separate page per bag, so
 // it needs each bag's media up front, grouped by bag id.
-export async function listMediaForBags(supabase: Client, bagIds: string[]) {
-  if (!bagIds.length) return new Map<string, (CoffeeMediaRow & { url: string | null })[]>();
-
-  const { data: media, error } = await supabase
+// Filtered through each photo's bag rather than by a list of bag ids, so it
+// can go out alongside the bags instead of after them.
+export async function listMediaForCoffee(supabase: Client, coffeeId: string) {
+  const { data, error } = await supabase
     .from("coffee_media")
-    .select("*")
-    .in("coffee_bag_id", bagIds)
+    .select("*, coffee_bags!inner()")
+    .eq("coffee_bags.coffee_id", coffeeId)
     .order("created_at", { ascending: true });
   if (error) throw error;
 
-  const mediaWithUrls = await attachSignedUrls(supabase, media ?? []);
+  const mediaWithUrls = await attachSignedUrls(supabase, data ?? []);
 
   const byBag = new Map<string, (CoffeeMediaRow & { url: string | null })[]>();
   for (const item of mediaWithUrls) {
