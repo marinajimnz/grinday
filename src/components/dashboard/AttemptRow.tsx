@@ -21,11 +21,17 @@ import { formatRelativeDay } from "@/lib/i18n/format-date";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { LoadingLabel } from "@/components/ui/LoadingLabel";
 import { useLongPress } from "@/components/ui/useLongPress";
-import { buildDraftFromRecipe, saveDraft } from "@/features/brew/draft";
-import { startBrewFromAttemptAction } from "@/features/brew/actions";
+import { startBrewFromAttempt } from "@/features/brew/startFromAttempt";
 import { deleteAttemptAction, setAttemptDashboardVisibilityAction } from "@/features/attempts/actions";
 
-export function AttemptRow({ attempt }: { attempt: RecentAttempt }) {
+export function AttemptRow({
+  attempt,
+  compact = false,
+}: {
+  attempt: RecentAttempt;
+  /** One line — method, coffee, day — for the home page, under the recipe stack. */
+  compact?: boolean;
+}) {
   const dict = useDictionary();
   const locale = useLocale();
   const router = useRouter();
@@ -59,24 +65,13 @@ export function AttemptRow({ attempt }: { attempt: RecentAttempt }) {
   function handlePrepare() {
     setError(null);
     startTransition(async () => {
-      const result = await startBrewFromAttemptAction({ attemptId: attempt.id });
-      if (!result.success) {
-        setError(result.message);
+      const result = await startBrewFromAttempt(attempt.id, method);
+      if ("error" in result) {
+        setError(result.error);
         return;
       }
-      const draft = buildDraftFromRecipe({
-        userId: result.data.userId,
-        coffeeId: result.data.coffeeId,
-        coffeeBagId: result.data.coffeeBagId,
-        coffeeName: result.data.coffeeName,
-        roaster: result.data.roaster,
-        roastDate: result.data.roastDate,
-        method,
-        sourceAttempt: result.data.sourceAttempt,
-      });
-      saveDraft(draft);
       setMenuOpen(false);
-      router.push(`/brew/live/${draft.draftId}`);
+      router.push(`/brew/live/${result.draftId}`);
     });
   }
 
@@ -118,56 +113,88 @@ export function AttemptRow({ attempt }: { attempt: RecentAttempt }) {
           perform the gesture at all, so for anyone not holding a finger down
           those three actions did not exist. The hold still works — this is
           the way you can see. */}
-      <div className="flex items-stretch rounded-card border border-border bg-surface">
-        <Link
-          href={`/attempts/${attempt.id}`}
-          {...longPress}
-          className="flex min-w-0 flex-1 items-center gap-2.5 rounded-card py-4 pl-4 select-none"
-        >
-          <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-canvas text-ink">
-            <Icon aria-hidden className="size-5" />
-          </span>
-          <div className="min-w-0 flex-1">
-            {/* The stars sit up here with the method and the day rather
-                than in a column of their own: down the right they squeezed
-                the line that carries the actual numbers, and they read as a
-                heading for the row anyway. */}
-            <div className="flex items-baseline gap-2">
-              <span className="font-semibold text-ink">
-                {dict.equipment.methodLabels[method] ?? attempt.method}
-              </span>
-              <span className="text-xs text-ink-muted">
-                {formatRelativeDay(attempt.created_at, locale, {
-                  today: dict.dashboard.today,
-                  yesterday: dict.dashboard.yesterday,
-                })}
-              </span>
-              <span className="ml-auto shrink-0">
-                <StarRating value={attempt.overall_rating} size="sm" />
-              </span>
+      {compact ? (
+        <div className="flex items-stretch border-b border-border">
+          <Link
+            href={`/attempts/${attempt.id}`}
+            {...longPress}
+            className="flex min-h-12 min-w-0 flex-1 items-center gap-2.5 select-none"
+          >
+            <Icon aria-hidden className="size-5 shrink-0 text-ink" />
+            <span className="shrink-0 text-sm font-semibold text-ink">
+              {dict.equipment.methodLabels[method] ?? attempt.method}
+            </span>
+            <span className="min-w-0 flex-1 truncate text-xs text-ink-muted">{attempt.coffee?.name}</span>
+            <span className="shrink-0 text-xs text-ink-muted">
+              {formatRelativeDay(attempt.created_at, locale, {
+                today: dict.dashboard.today,
+                yesterday: dict.dashboard.yesterday,
+              })}
+            </span>
+          </Link>
+          <button
+            type="button"
+            onClick={openMenu}
+            aria-label={dict.dashboard.attemptMenuLabel}
+            aria-haspopup="menu"
+            aria-expanded={menuOpen}
+            className="flex w-11 shrink-0 items-center justify-center text-ink-muted outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ink"
+          >
+            <MoreVertical aria-hidden className="size-5" />
+          </button>
+        </div>
+      ) : (
+        <div className="flex items-stretch rounded-card border border-border bg-surface">
+          <Link
+            href={`/attempts/${attempt.id}`}
+            {...longPress}
+            className="flex min-w-0 flex-1 items-center gap-2.5 rounded-card py-4 pl-4 select-none"
+          >
+            <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-canvas text-ink">
+              <Icon aria-hidden className="size-5" />
+            </span>
+            <div className="min-w-0 flex-1">
+              {/* The stars sit up here with the method and the day rather
+                  than in a column of their own: down the right they squeezed
+                  the line that carries the actual numbers, and they read as a
+                  heading for the row anyway. */}
+              <div className="flex items-baseline gap-2">
+                <span className="font-semibold text-ink">
+                  {dict.equipment.methodLabels[method] ?? attempt.method}
+                </span>
+                <span className="text-xs text-ink-muted">
+                  {formatRelativeDay(attempt.created_at, locale, {
+                    today: dict.dashboard.today,
+                    yesterday: dict.dashboard.yesterday,
+                  })}
+                </span>
+                <span className="ml-auto shrink-0">
+                  <StarRating value={attempt.overall_rating} size="sm" />
+                </span>
+              </div>
+              {attempt.coffee?.name && (
+                <p className="mt-0.5 truncate text-sm text-ink-muted">{attempt.coffee.name}</p>
+              )}
+              {/* Cups, dose against ratio, and the clock — the three numbers
+                  that say what this brew was, in the same shape the preferred
+                  recipe card shows them. The time moves here from the right
+                  column, where it sat under the stars as if it were part of
+                  the rating. */}
+              <BrewSummary attempt={attempt} dict={dict} className="mt-1" />
             </div>
-            {attempt.coffee?.name && (
-              <p className="mt-0.5 truncate text-sm text-ink-muted">{attempt.coffee.name}</p>
-            )}
-            {/* Cups, dose against ratio, and the clock — the three numbers
-                that say what this brew was, in the same shape the preferred
-                recipe card shows them. The time moves here from the right
-                column, where it sat under the stars as if it were part of
-                the rating. */}
-            <BrewSummary attempt={attempt} dict={dict} className="mt-1" />
-          </div>
-        </Link>
-        <button
-          type="button"
-          onClick={openMenu}
-          aria-label={dict.dashboard.attemptMenuLabel}
-          aria-haspopup="menu"
-          aria-expanded={menuOpen}
-          className="flex w-11 shrink-0 items-center justify-center rounded-r-card text-ink-muted outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ink"
-        >
-          <MoreVertical aria-hidden className="size-5" />
-        </button>
-      </div>
+          </Link>
+          <button
+            type="button"
+            onClick={openMenu}
+            aria-label={dict.dashboard.attemptMenuLabel}
+            aria-haspopup="menu"
+            aria-expanded={menuOpen}
+            className="flex w-11 shrink-0 items-center justify-center rounded-r-card text-ink-muted outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ink"
+          >
+            <MoreVertical aria-hidden className="size-5" />
+          </button>
+        </div>
+      )}
 
       {menuOpen && (
         <div

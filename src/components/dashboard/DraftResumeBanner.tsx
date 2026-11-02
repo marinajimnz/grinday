@@ -8,6 +8,7 @@ import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { getMostRecentDraft, saveDraft, type BrewDraft } from "@/features/brew/draft";
 import { discardDraft } from "@/features/brew/discardDraft";
 import { useDictionary } from "@/components/i18n/LocaleProvider";
+import { IconPreparar } from "@/components/icons/pencil-icons";
 
 export function DraftResumeBanner({ currentUserId }: { currentUserId: string }) {
   const dict = useDictionary();
@@ -116,18 +117,17 @@ export function DraftResumeBanner({ currentUserId }: { currentUserId: string }) 
   }
 
   return (
+    // A slim strip above the recipe stack rather than a card of its own:
+    // the stack is what the page is about, and this only needs to be found.
     <Link
       href={`/brew/live/${draft.draftId}`}
-      className="flex items-center justify-between gap-3 rounded-card border border-ink bg-canvas p-4"
+      className="flex min-h-12 items-center gap-2.5 rounded-input bg-coffee/15 px-3.5 text-coffee"
     >
-      <div>
-        <p className="text-xs font-medium uppercase tracking-wide text-ink-muted">{dict.dashboard.draftInProgress}</p>
-        <p className="font-display text-xl text-ink">{draft.coffeeName}</p>
-      </div>
-      <span className="flex shrink-0 items-center gap-1 rounded-input bg-ink px-3 py-2 text-sm font-medium text-surface">
-        {dict.dashboard.resumeDraft}
-        <ArrowRight aria-hidden className="size-4" />
-      </span>
+      <IconPreparar aria-hidden className="size-[18px] shrink-0" />
+      <p className="min-w-0 flex-1 truncate text-[13px] font-semibold">
+        {dict.dashboard.draftInProgress} · {draft.coffeeName}
+      </p>
+      <span className="shrink-0 text-[13px] font-bold">{dict.dashboard.resumeDraft}</span>
     </Link>
   );
 }
