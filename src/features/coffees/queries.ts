@@ -129,7 +129,7 @@ export async function listCoverUrlsByCoffee(
 
   const { data: fronts, error } = await supabase
     .from("coffee_media")
-    .select("coffee_bag_id, storage_path, created_at")
+    .select("coffee_bag_id, storage_path, has_thumbnail, created_at")
     .in(
       "coffee_bag_id",
       bags.map((b) => b.id),
@@ -147,10 +147,10 @@ export async function listCoverUrlsByCoffee(
     frontsByCoffee.set(coffeeId, list);
   }
 
-  const picked: { coffeeId: string; storage_path: string }[] = [];
+  const picked: { coffeeId: string; storage_path: string; has_thumbnail: boolean }[] = [];
   for (const [coffeeId, coffeeFronts] of frontsByCoffee) {
     const cover = pickCoverPhoto(coffeeFronts, targetBagIdByCoffee.get(coffeeId));
-    if (cover) picked.push({ coffeeId, storage_path: cover.storage_path });
+    if (cover) picked.push({ coffeeId, storage_path: cover.storage_path, has_thumbnail: cover.has_thumbnail });
   }
 
   for (const item of await attachSignedUrls(supabase, picked)) {

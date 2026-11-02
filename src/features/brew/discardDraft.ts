@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/client";
+import { withThumbnails } from "@/lib/media/thumbnail";
 import { clearDraft, loadDraft } from "./draft";
 
 // Throwing a draft away has to throw its photo-step uploads away too. Those
@@ -18,7 +19,7 @@ export async function discardDraft(draftId: string) {
   if (paths.length) {
     // Best-effort: a file we couldn't delete is invisible to the user
     // anyway, and shouldn't stop the draft itself from going away.
-    const { error } = await createClient().storage.from("coffee-photos").remove(paths);
+    const { error } = await createClient().storage.from("coffee-photos").remove(withThumbnails(paths));
     if (error) console.error("[brew-draft] failed to delete discarded photos:", error.message);
   }
 

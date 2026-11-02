@@ -75,6 +75,12 @@ npx supabase gen types typescript --linked > src/types/database.ts
   un borrador aún sin guardar. Solo informa; con `-- --delete` las borra, y
   eso no se puede deshacer.
 
+- `npm run backfill:thumbnails` — crea la miniatura (`{nombre}.thumb.jpg`,
+  480 px) de las fotos subidas antes de que existieran y marca su fila con
+  `has_thumbnail`. Hasta entonces esas fotos se ven con la original, así
+  que se puede lanzar cuando sea y repetir. Solo informa; con `-- --apply`
+  las crea. Necesita la migración 0056 aplicada.
+
 GitHub Actions (`.github/workflows/ci.yml`) corre `typecheck`, `lint` y
 `test:unit` en cada push y PR. E2E e integración necesitan el proyecto de
 Supabase, así que siguen siendo manuales.

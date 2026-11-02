@@ -6,6 +6,7 @@ import { PhotoTile } from "@/components/ui/PhotoTile";
 import { PhotoUploader } from "@/components/ui/PhotoUploader";
 import { ATTEMPT_MEDIA_KINDS, type AttemptMediaKind } from "@/features/attempts/constants";
 import type { BrewDraftPhoto } from "@/features/brew/draft";
+import { thumbnailPathFor, withThumbnails } from "@/lib/media/thumbnail";
 import { useDictionary } from "@/components/i18n/LocaleProvider";
 
 const SIGNED_URL_TTL_SECONDS = 60 * 10;
@@ -35,7 +36,10 @@ export function BrewPhotoStage({
   // The paths themselves, not the array holding them: `photos` is rebuilt on
   // every parent render, and depending on its identity would re-run this on
   // renders that changed no photo at all.
-  const photoPathsKey = photos.map((p) => p.storagePath).join("|");
+  // The tile loads the small copy when there is one (lib/media/thumbnail.ts).
+  const tilePath = (photo: BrewDraftPhoto) =>
+    photo.hasThumbnail ? thumbnailPathFor(photo.storagePath) : photo.storagePath;
+  const photoPathsKey = photos.map(tilePath).join("|");
 
   useEffect(() => {
     const missing = photoPathsKey.split("|").filter((p) => p && !requested.current.has(p));
@@ -68,7 +72,7 @@ export function BrewPhotoStage({
     // Best-effort: a file left behind in Storage is invisible to the user
     // (nothing references it) and shouldn't block removing it from the draft.
     const supabase = createClient();
-    const { error } = await supabase.storage.from("coffee-photos").remove([storagePath]);
+    const { error } = await supabase.storage.from("coffee-photos").remove(withThumbnails([storagePath]));
     if (error) console.error("[brew-photo] failed to delete discarded photo:", error.message);
   }
 
@@ -82,8 +86,8 @@ export function BrewPhotoStage({
         defaultKind="espresso"
         refreshOnUpload={false}
         buildPath={(userId) => `${userId}/attempts/drafts/${draftId}/${Date.now()}.jpg`}
-        onRegister={async (kind: AttemptMediaKind, storagePath: string) => {
-          onChange([...photos, { kind, storagePath }]);
+        onRegister={async (kind: AttemptMediaKind, storagePath: string, hasThumbnail: boolean) => {
+          onChange([...photos, { kind, storagePath, hasThumbnail }]);
           return { success: true };
         }}
       />
@@ -93,7 +97,7 @@ export function BrewPhotoStage({
           {photos.map((photo) => (
             <PhotoTile
               key={photo.storagePath}
-              src={urls[photo.storagePath] ?? null}
+              src={urls[tilePath(photo)] ?? null}
               alt={dict.enums.attemptMediaKind[photo.kind]}
               onRemove={() => handleRemove(photo.storagePath)}
             />

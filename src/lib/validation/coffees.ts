@@ -107,6 +107,7 @@ export const registerMediaSchema = z.object({
   coffeeBagId: z.uuid(),
   kind: z.enum(MEDIA_KINDS).default("package_front"),
   storagePath: z.string().min(1),
+  hasThumbnail: z.boolean().default(false),
   altText: z.string().trim().max(300).optional(),
 });
 

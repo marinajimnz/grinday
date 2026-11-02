@@ -31,8 +31,8 @@ export function BagMediaSection({
         kindLabels={dict.enums.mediaKind}
         defaultKind="package_front"
         buildPath={(userId) => `${userId}/${bagId}/${Date.now()}.jpg`}
-        onRegister={(kind, storagePath) =>
-          registerCoffeeMediaAction({ coffeeBagId: bagId, kind, storagePath })
+        onRegister={(kind, storagePath, hasThumbnail) =>
+          registerCoffeeMediaAction({ coffeeBagId: bagId, kind, storagePath, hasThumbnail })
         }
       />
       {sharedPhoto && (

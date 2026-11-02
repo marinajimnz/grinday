@@ -14,6 +14,7 @@ import {
 } from "@/lib/validation/attempts";
 import type { Database, Json } from "@/types/database";
 import { todayISO } from "@/lib/time";
+import { withThumbnails } from "@/lib/media/thumbnail";
 import { fail } from "@/lib/i18n/serverErrors";
 
 type ActionResult<T = undefined> =
@@ -97,6 +98,7 @@ async function attachBrewPhotos(
       user_id: userId,
       kind: m.kind,
       storage_path: m.storagePath,
+      has_thumbnail: m.hasThumbnail,
     }));
   if (!rows.length) return;
 
@@ -367,7 +369,7 @@ export async function deleteAttemptAction(attemptId: string): Promise<ActionResu
   // couldn't be removed shouldn't undo deleting the attempt.
   const paths = (media ?? []).map((m) => m.storage_path);
   if (deleted && paths.length) {
-    const { error: storageError } = await supabase.storage.from("coffee-photos").remove(paths);
+    const { error: storageError } = await supabase.storage.from("coffee-photos").remove(withThumbnails(paths));
     if (storageError) console.error("[attempts] failed to delete attempt photos:", storageError.message);
   }
 
@@ -384,7 +386,7 @@ export async function registerAttemptMediaAction(
   if (!parsed.success) {
     return fail("invalidData");
   }
-  const { attemptId, kind, storagePath, altText } = parsed.data;
+  const { attemptId, kind, storagePath, hasThumbnail, altText } = parsed.data;
 
   const supabase = await createClient();
   const {
@@ -399,6 +401,7 @@ export async function registerAttemptMediaAction(
       user_id: user.id,
       kind,
       storage_path: storagePath,
+      has_thumbnail: hasThumbnail,
       alt_text: altText ?? null,
     })
     .select("id")
@@ -423,7 +426,7 @@ export async function deleteAttemptMediaAction(
 
   const { error: storageError } = await supabase.storage
     .from("coffee-photos")
-    .remove([media.storage_path]);
+    .remove(withThumbnails([media.storage_path]));
   if (storageError) {
     console.error("[storage] failed to delete attempt photo:", storageError.message);
   }

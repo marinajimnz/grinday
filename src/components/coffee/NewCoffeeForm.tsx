@@ -101,9 +101,9 @@ export function NewCoffeeForm() {
       // Dynamically imported so the (fairly heavy) Supabase browser client
       // and canvas-based compressor only load for the wizard's less common
       // path — most coffees get created without a cover photo.
-      const [{ createClient }, { compressImage }] = await Promise.all([
+      const [{ createClient }, { uploadPhoto }] = await Promise.all([
         import("@/lib/supabase/client"),
-        import("@/lib/media/compressImage"),
+        import("@/lib/media/uploadPhoto"),
       ]);
 
       const supabase = createClient();
@@ -112,14 +112,15 @@ export function NewCoffeeForm() {
       } = await supabase.auth.getUser();
       if (!user) return;
 
-      const blob = await compressImage(file);
       const path = `${user.id}/${bagId}/${Date.now()}.jpg`;
-      const { error: uploadError } = await supabase.storage
-        .from("coffee-photos")
-        .upload(path, blob, { contentType: "image/jpeg" });
-      if (uploadError) throw uploadError;
+      const { hasThumbnail } = await uploadPhoto(supabase, path, file);
 
-      await registerCoffeeMediaAction({ coffeeBagId: bagId, kind: "package_front", storagePath: path });
+      await registerCoffeeMediaAction({
+        coffeeBagId: bagId,
+        kind: "package_front",
+        storagePath: path,
+        hasThumbnail,
+      });
     } catch (err) {
       console.error("[coffee-photo] failed to upload cover photo:", err);
     }
