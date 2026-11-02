@@ -50,6 +50,45 @@ export async function getRecentAttempts(
   return data ?? [];
 }
 
+// One attempt by id, in the same shape as the recent list — the recipe
+// stack shows the pinned recipe with the same card as every other attempt.
+export async function getDashboardAttempt(
+  supabase: Client,
+  userId: string,
+  attemptId: string,
+): Promise<RecentAttempt | null> {
+  const { data, error } = await supabase
+    .from("brew_attempts")
+    .select(RECENT_ATTEMPT_FIELDS)
+    .eq("id", attemptId)
+    .eq("user_id", userId)
+    .maybeSingle();
+  if (error) throw error;
+  return data;
+}
+
+// The best-rated attempt of the last seven days, for the "Lo mejor de la
+// semana" card. Only a brew rated 4 or more earns it: a week of 2-star
+// shots has no best worth repeating. Ties go to the newer one.
+export const BEST_OF_WEEK_MIN_RATING = 4;
+
+export async function getBestOfWeek(supabase: Client, userId: string): Promise<RecentAttempt | null> {
+  const since = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+  const { data, error } = await supabase
+    .from("brew_attempts")
+    .select(RECENT_ATTEMPT_FIELDS)
+    .eq("user_id", userId)
+    .eq("hidden_from_dashboard", false)
+    .gte("created_at", since)
+    .gte("overall_rating", BEST_OF_WEEK_MIN_RATING)
+    .order("overall_rating", { ascending: false })
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  if (error) throw error;
+  return data;
+}
+
 export type DashboardRecipe = {
   attempt: RecipeCardAttempt;
   coffeeId: string;
