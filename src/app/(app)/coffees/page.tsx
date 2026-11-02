@@ -3,7 +3,8 @@ import { Library } from "lucide-react";
 import { IconAnadir, IconArchivar, IconFavorita } from "@/components/icons/pencil-icons";
 import { createClient } from "@/lib/supabase/server";
 import { listCoffees } from "@/features/coffees/queries";
-import { CoffeeCard } from "@/components/coffee/CoffeeCard";
+import { CoffeeShelf } from "@/components/coffee/shelf/CoffeeShelf";
+import { shelfCounts } from "@/features/coffees/shelf";
 import { CoffeeFilters } from "@/components/coffee/CoffeeFilters";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Button } from "@/components/ui/Button";
@@ -35,13 +36,20 @@ export default async function CoffeesPage({
     : [];
   const hasFilters = Boolean(q || process || roastLevel || bagStatus);
   const dict = getDictionary(await getLocale());
+  const counts = shelfCounts(coffees);
+  const shelfCount = dict.coffees.shelf.count
+    .replace(
+      "{coffees}",
+      `${counts.coffees} ${counts.coffees === 1 ? dict.coffees.shelf.coffee : dict.coffees.shelf.coffees}`,
+    )
+    .replace("{bags}", `${counts.bags} ${counts.bags === 1 ? dict.coffees.bag : dict.coffees.bags}`);
 
   return (
-    <div className="mx-auto max-w-5xl px-4 py-8 md:px-8">
+    <div className="mx-auto max-w-5xl px-4 pb-6 pt-7 md:px-8 md:py-8">
       <div className="flex items-start justify-between gap-4">
         <div>
           <h1 className="font-display text-3xl text-ink">{dict.coffees.title}</h1>
-          <p className="mt-1 text-sm text-ink-muted">{dict.coffees.subtitle}</p>
+          <p className="mt-1 text-sm text-ink-muted">{coffees.length ? shelfCount : dict.coffees.subtitle}</p>
         </div>
         <div className="flex gap-2">
           {/* Next to the library, because this is where you stand when you're
@@ -58,17 +66,15 @@ export default async function CoffeesPage({
         </div>
       </div>
 
-      <div className="mt-6">
+      <div className="mt-4">
         <CoffeeFilters />
       </div>
 
-      <div className="mt-6">
+      <div className={coffees.length ? "mt-1" : "mt-6"}>
         {coffees.length ? (
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {coffees.map((coffee) => (
-              <CoffeeCard key={coffee.id} coffee={coffee} dict={dict} />
-            ))}
-          </div>
+          // Keyed on the filters so a new search starts again from the first
+          // bag instead of keeping a position in a list that no longer exists.
+          <CoffeeShelf key={`${q}|${process}|${roastLevel}|${bagStatus}`} coffees={coffees} />
         ) : (
           <EmptyState
             icon={Library}
