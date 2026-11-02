@@ -14,9 +14,12 @@ import { StepHeader } from "@/components/ui/StepHeader";
 export function NewBrewWizard({
   availableMethods,
   coffees,
+  preselected = null,
 }: {
   availableMethods: BrewMethod[];
   coffees: BrewableCoffee[];
+  /** A coffee chosen before arriving (from the shelf): picking the method starts the brew. */
+  preselected?: BrewableCoffee | null;
 }) {
   const router = useRouter();
   const dict = useDictionary();
@@ -25,7 +28,15 @@ export function NewBrewWizard({
   const [error, setError] = useState<string | null>(null);
 
   function handleSelectCoffee(coffee: BrewableCoffee) {
-    if (!method) return;
+    if (method) startBrew(coffee, method);
+  }
+
+  function handleSelectMethod(chosen: BrewMethod) {
+    setMethod(chosen);
+    if (preselected) startBrew(preselected, chosen);
+  }
+
+  function startBrew(coffee: BrewableCoffee, method: BrewMethod) {
     setError(null);
     startTransition(async () => {
       const result = await startBrewAction({ coffeeId: coffee.coffeeId, method });
@@ -56,7 +67,7 @@ export function NewBrewWizard({
         <StepHeader step={1} name={dict.brew.stepNameMethod} heading={dict.brew.chooseMethodTitle} />
         <p className="mt-1 text-sm text-ink-muted">{dict.brew.chooseMethodSubtitle}</p>
         <div className="mt-6">
-          <BrewMethodSelectCards methods={availableMethods} onSelect={setMethod} />
+          <BrewMethodSelectCards methods={availableMethods} onSelect={handleSelectMethod} />
         </div>
       </div>
     );

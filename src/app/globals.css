@@ -19,6 +19,17 @@
   --radius-input: 14px;
 
   --shadow-soft: 0 1px 2px rgba(27, 42, 110, 0.04), 0 8px 24px rgba(27, 42, 110, 0.06);
+
+  /* The coffee shelf: five paper tints a bag can be printed on (each
+     coffee keeps the same one, picked from its id) and the wooden plank. */
+  --bag-tint-1: #ffffff;
+  --bag-tint-2: #e8d7b5;
+  --bag-tint-3: #dce2f2;
+  --bag-tint-4: #f1dccd;
+  --bag-tint-5: #e4e6d4;
+  --shelf-top: #efe1c3;
+  --shelf-front: #e3cfa6;
+  --bag-label: #f6f2e6;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -34,6 +45,16 @@
     --color-danger: #f47174;
 
     --shadow-soft: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 24px rgba(0, 0, 0, 0.4);
+
+    /* Dark prints are mid-tones a clear step above the page: kept near
+       the background they read as see-through, the label as a hole. */
+    --bag-tint-1: #3e4a86;
+    --bag-tint-2: #6e5634;
+    --bag-tint-3: #35618a;
+    --bag-tint-4: #7a4536;
+    --bag-tint-5: #4c6450;
+    --shelf-top: #6b5638;
+    --shelf-front: #54432b;
   }
 }
 
@@ -47,6 +68,16 @@
   --color-danger: #f47174;
 
   --shadow-soft: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 24px rgba(0, 0, 0, 0.4);
+
+  /* Dark prints are mid-tones a clear step above the page: kept near
+     the background they read as see-through, the label as a hole. */
+  --bag-tint-1: #3e4a86;
+  --bag-tint-2: #6e5634;
+  --bag-tint-3: #35618a;
+  --bag-tint-4: #7a4536;
+  --bag-tint-5: #4c6450;
+  --shelf-top: #6b5638;
+  --shelf-front: #54432b;
 }
 
 @theme inline {
@@ -169,6 +200,18 @@ button:not(:disabled),
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
+}
+
+/* A bag's label is cream paper in every theme, like a printed sticker, so
+   whatever sits on it keeps the light theme's ink. Redefining the tokens
+   here re-scopes every text-ink / text-coffee / bg-border utility inside. */
+.bag-label {
+  --color-canvas: #f6f2e6;
+  --color-ink: #1b2a6e;
+  --color-ink-muted: #5b6485;
+  --color-coffee: #8a4b2a;
+  --color-border: #d9d3c2;
+  color: var(--color-ink);
 }
 
 .tabular-nums {
