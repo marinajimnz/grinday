@@ -6,7 +6,6 @@ import { ArrowRight } from "lucide-react";
 import { Button, buttonClassName } from "@/components/ui/Button";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { getMostRecentDraft, saveDraft, type BrewDraft } from "@/features/brew/draft";
-import { discardDraft } from "@/features/brew/discardDraft";
 import { useDictionary } from "@/components/i18n/LocaleProvider";
 import { IconPreparar } from "@/components/icons/pencil-icons";
 
@@ -58,7 +57,9 @@ export function DraftResumeBanner({ currentUserId }: { currentUserId: string }) 
     const discard = () => {
       // Deliberately not awaited: the banner should go the moment it's
       // dismissed, and the Storage cleanup inside has nothing to report.
-      void discardDraft(draft.draftId);
+      // Loaded here rather than imported at the top: it pulls in the
+      // browser Supabase client, which the home page needs for nothing else.
+      void import("@/features/brew/discardDraft").then(({ discardDraft }) => discardDraft(draft.draftId));
       setConfirmDiscardOpen(false);
       setDraft(null);
     };
