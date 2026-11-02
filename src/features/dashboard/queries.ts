@@ -1,6 +1,5 @@
 import "server-only";
 import type { SupabaseClient } from "@supabase/supabase-js";
-import type { RecipeCardAttempt } from "@/components/attempt/RecipeCard";
 import { RECIPE_SOURCE_ATTEMPT_FIELDS } from "@/features/attempts/queries";
 import type { Database } from "@/types/database";
 
@@ -26,45 +25,19 @@ export type RecentAttempt = {
 const RECENT_ATTEMPT_FIELDS =
   "id, attempt_no, method, created_at, dose_g, water_g, dilution_water_g, cup_count, target_weight_g, output_weight_g, extraction_ms, overall_rating, hidden_from_dashboard, coffee:coffees!brew_attempts_coffee_id_fkey(id, name, roaster)";
 
-// The dashboard's own "recent" list respects "Quitar del inicio" (a
-// per-attempt opt-out that keeps the attempt everywhere else — its coffee's
-// history, /attempts — just off this specific list); every other caller of
-// this query (the full /attempts page included) leaves it out on purpose.
-export async function getRecentAttempts(
-  supabase: Client,
-  userId: string,
-  limit = 4,
-  options?: { excludeHiddenFromDashboard?: boolean },
-): Promise<RecentAttempt[]> {
-  let query = supabase
+// Every attempt, newest first: what /attempts lists. "Quitar del inicio" (a
+// per-attempt opt-out that keeps the attempt everywhere else) is left out
+// on purpose here; only the home page's own list, getHomeRecentAttempts,
+// respects it.
+export async function getRecentAttempts(supabase: Client, userId: string, limit = 4): Promise<RecentAttempt[]> {
+  const { data, error } = await supabase
     .from("brew_attempts")
     .select(RECENT_ATTEMPT_FIELDS)
     .eq("user_id", userId)
     .order("created_at", { ascending: false })
     .limit(limit);
-  if (options?.excludeHiddenFromDashboard) {
-    query = query.eq("hidden_from_dashboard", false);
-  }
-  const { data, error } = await query;
   if (error) throw error;
   return data ?? [];
-}
-
-// One attempt by id, in the same shape as the recent list — the recipe
-// stack shows the pinned recipe with the same card as every other attempt.
-export async function getDashboardAttempt(
-  supabase: Client,
-  userId: string,
-  attemptId: string,
-): Promise<RecentAttempt | null> {
-  const { data, error } = await supabase
-    .from("brew_attempts")
-    .select(RECENT_ATTEMPT_FIELDS)
-    .eq("id", attemptId)
-    .eq("user_id", userId)
-    .maybeSingle();
-  if (error) throw error;
-  return data;
 }
 
 // The best-rated attempt of the last seven days, for the "Lo mejor de la
@@ -90,7 +63,8 @@ export async function getBestOfWeek(supabase: Client, userId: string): Promise<R
 }
 
 export type DashboardRecipe = {
-  attempt: RecipeCardAttempt;
+  // Wide enough for the recipe card and for the stack's own attempt card.
+  attempt: HomeRecentAttempt;
   coffeeId: string;
   coffeeName: string;
   roaster: string;
@@ -102,6 +76,25 @@ export type DashboardRecipe = {
 
 const RECIPE_CARD_FIELDS = `${RECIPE_SOURCE_ATTEMPT_FIELDS}, grind_seconds, extraction_ms, output_weight_g`;
 
+// The recent list's fields, plus what the newest row needs to stand in as
+// the dashboard's recipe card (see getDashboardRecipe).
+const HOME_RECENT_ATTEMPT_FIELDS = `${RECIPE_CARD_FIELDS}, created_at, overall_rating, hidden_from_dashboard, coffee_id, coffee_bag_id, coffee:coffees!brew_attempts_coffee_id_fkey(id, name, roaster, preferred_attempt_id)`;
+
+/** The home page's recent list, which respects "Quitar del inicio". */
+export async function getHomeRecentAttempts(supabase: Client, userId: string, limit: number) {
+  const { data, error } = await supabase
+    .from("brew_attempts")
+    .select(HOME_RECENT_ATTEMPT_FIELDS)
+    .eq("user_id", userId)
+    .eq("hidden_from_dashboard", false)
+    .order("created_at", { ascending: false })
+    .limit(limit);
+  if (error) throw error;
+  return data ?? [];
+}
+
+export type HomeRecentAttempt = Awaited<ReturnType<typeof getHomeRecentAttempts>>[number];
+
 // What the dashboard puts in its prime slot: the recipe for the coffee
 // you're currently drinking. The coffee's pinned preferred recipe wins when
 // there is one — repeating the brew that worked is the point — and the last
@@ -109,21 +102,15 @@ const RECIPE_CARD_FIELDS = `${RECIPE_SOURCE_ATTEMPT_FIELDS}, grind_seconds, extr
 // which coffee that is, the same way the recent list does it; a pinned
 // preferred recipe still shows, because hiding one attempt from a list isn't
 // the same as unpinning the coffee's recipe.
+//
+// It starts from the newest attempt of the home page's own recent list
+// (getHomeRecentAttempts), which is selected wide enough to serve as the
+// recipe too, rather than asking for that same row a second time.
 export async function getDashboardRecipe(
   supabase: Client,
   userId: string,
+  recent: HomeRecentAttempt | undefined,
 ): Promise<DashboardRecipe | null> {
-  const { data: recent, error } = await supabase
-    .from("brew_attempts")
-    .select(
-      `${RECIPE_CARD_FIELDS}, coffee_id, coffee_bag_id, coffee:coffees!brew_attempts_coffee_id_fkey(id, name, roaster, preferred_attempt_id)`,
-    )
-    .eq("user_id", userId)
-    .eq("hidden_from_dashboard", false)
-    .order("created_at", { ascending: false })
-    .limit(1)
-    .maybeSingle();
-  if (error) throw error;
   if (!recent?.coffee) return null;
 
   const { coffee } = recent;
@@ -133,7 +120,7 @@ export async function getDashboardRecipe(
     preferredId && preferredId !== recent.id
       ? supabase
           .from("brew_attempts")
-          .select(RECIPE_CARD_FIELDS)
+          .select(HOME_RECENT_ATTEMPT_FIELDS)
           .eq("id", preferredId)
           .eq("user_id", userId)
           .maybeSingle()
