@@ -1,14 +1,20 @@
 import Link from "next/link";
 import { Bookmark, Search } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
-import { IconCafe, IconFavorito, IconPreparar } from "@/components/icons/pencil-icons";
-import { getDashboardRecipe, getRecentAttempts, hasAnyCoffee } from "@/features/dashboard/queries";
+import { IconAnadir, IconCafe, IconFavorita, IconFavorito } from "@/components/icons/pencil-icons";
+import {
+  getBestOfWeek,
+  getDashboardAttempt,
+  getDashboardRecipe,
+  getRecentAttempts,
+  hasAnyCoffee,
+} from "@/features/dashboard/queries";
+import { buildRecipeStack } from "@/features/dashboard/recipeStack";
 import { countFavouriteRecipes } from "@/features/attempts/queries";
 import { EmptyState } from "@/components/ui/EmptyState";
-import { NewBrewCta } from "@/components/dashboard/NewBrewCta";
 import { DraftResumeBanner } from "@/components/dashboard/DraftResumeBanner";
-import { RecipeCard } from "@/components/attempt/RecipeCard";
-import { RecentAttemptsList } from "@/components/dashboard/RecentAttemptsList";
+import { RecipeStack, type RecipeStackCard } from "@/components/dashboard/RecipeStack";
+import { AttemptRow } from "@/components/dashboard/AttemptRow";
 import { DashboardSnapshotWriter } from "@/components/dashboard/DashboardSnapshotWriter";
 import { Button } from "@/components/ui/Button";
 import { getLocale } from "@/lib/i18n/locale";
@@ -30,16 +36,50 @@ export default async function DashboardPage() {
     supabase.rpc("social_enabled_for_me"),
   ]);
 
-  const [recipe, recentAttempts, favouriteCount] =
+  const [recipe, recentAttempts, favouriteCount, bestOfWeek] =
     hasCoffee && user
       ? await Promise.all([
           getDashboardRecipe(supabase, user.id),
-          getRecentAttempts(supabase, user.id, 4, { excludeHiddenFromDashboard: true }),
+          getRecentAttempts(supabase, user.id, 3, { excludeHiddenFromDashboard: true }),
           countFavouriteRecipes(supabase, user.id),
+          getBestOfWeek(supabase, user.id),
         ])
-      : [null, [], 0];
+      : [null, [], 0, null];
 
   const lastAttempt = recentAttempts[0];
+
+  // The pinned recipe in the same shape as the others; it's usually one of
+  // the attempts already loaded, so the extra query only runs when it isn't.
+  const preferredId = recipe?.isPreferred ? recipe.attempt.id : null;
+  const preferred =
+    preferredId && user
+      ? ([lastAttempt, bestOfWeek].find((a) => a?.id === preferredId) ??
+        (await getDashboardAttempt(supabase, user.id, preferredId)))
+      : null;
+
+  const stack: RecipeStackCard[] = buildRecipeStack({
+    preferred,
+    last: lastAttempt ?? null,
+    best: bestOfWeek,
+  }).map(({ kind, attempt }) =>
+    kind === "preferred" && recipe
+      ? {
+          kind,
+          attempt,
+          recipe: {
+            coffeeId: recipe.coffeeId,
+            coffeeBagId: recipe.targetBagId,
+            coffeeName: recipe.coffeeName,
+            roaster: recipe.roaster,
+            sourceAttempt: recipe.attempt,
+          },
+        }
+      : { kind, attempt },
+  );
+
+  // Only when there's more to see than what's already in the pile: one
+  // favourite that is the pinned card on top would lead back to itself.
+  const showAllFavourites = favouriteCount > (preferred ? 1 : 0);
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-8 md:px-8">
@@ -57,26 +97,34 @@ export default async function DashboardPage() {
             dict.dashboard.title
           )}
         </h1>
-        {/* Only once the public side is on for this account: until then
-            there's nobody to find. */}
-        {socialEnabled && (
-          <nav aria-label={dict.search.headerNav} className="flex shrink-0 gap-2">
-            <Link
-              href="/search"
-              aria-label={dict.search.openSearch}
-              className="inline-flex size-11 items-center justify-center rounded-input border border-border bg-surface text-ink"
-            >
-              <Search aria-hidden className="size-5" />
-            </Link>
-            <Link
-              href="/favorites"
-              aria-label={dict.favorites.open}
-              className="inline-flex size-11 items-center justify-center rounded-input border border-border bg-surface text-ink"
-            >
-              <Bookmark aria-hidden className="size-5" />
-            </Link>
-          </nav>
-        )}
+        <div className="flex shrink-0 gap-2">
+          {/* Only once the public side is on for this account: until then
+              there's nobody to find. */}
+          {socialEnabled && (
+            <nav aria-label={dict.search.headerNav} className="flex gap-2">
+              <Link
+                href="/search"
+                aria-label={dict.search.openSearch}
+                className="inline-flex size-11 items-center justify-center rounded-input border border-border bg-surface text-ink"
+              >
+                <Search aria-hidden className="size-5" />
+              </Link>
+              <Link
+                href="/favorites"
+                aria-label={dict.favorites.open}
+                className="inline-flex size-11 items-center justify-center rounded-input border border-border bg-surface text-ink"
+              >
+                <Bookmark aria-hidden className="size-5" />
+              </Link>
+            </nav>
+          )}
+          {hasCoffee && (
+            <Button href="/brew/new" aria-label={dict.dashboard.newBrew} className="gap-1.5 px-3.5">
+              <IconAnadir aria-hidden className="size-[18px]" />
+              {dict.dashboard.newBrewShort}
+            </Button>
+          )}
+        </div>
       </div>
 
       {!hasCoffee ? (
@@ -97,7 +145,9 @@ export default async function DashboardPage() {
         </>
       ) : (
         <>
-          <p className="mt-1 text-sm text-ink-muted">{dict.dashboard.whatToday}</p>
+          <p className="mt-1 text-sm text-ink-muted">
+            {stack.length ? dict.dashboard.pickRecipe : dict.dashboard.whatToday}
+          </p>
 
           {lastAttempt && (
             <DashboardSnapshotWriter
@@ -109,43 +159,20 @@ export default async function DashboardPage() {
             />
           )}
 
-          <div className="mt-6 space-y-6">
+          <div className="mt-4 space-y-4">
             {user && <DraftResumeBanner currentUserId={user.id} />}
 
-            <NewBrewCta />
-
-            {recipe && (
-              <div>
-                <RecipeCard
-                  attempt={recipe.attempt}
-                  coffeeId={recipe.coffeeId}
-                  coffeeName={recipe.coffeeName}
-                  roaster={recipe.roaster}
-                  targetBagId={recipe.targetBagId}
-                  userId={user?.id ?? ""}
-                  label={recipe.isPreferred ? undefined : dict.dashboard.lastAttempt}
-                  icon={recipe.isPreferred ? undefined : IconPreparar}
-                />
-
-                {/* Only when there is more to see than what's already on screen:
-                    the card itself is one favourite when it is starred, none when
-                    it's standing in for one. */}
-                {favouriteCount > (recipe.isPreferred ? 1 : 0) && (
-                  <div className="flex justify-end">
-                    <Link
-                      href="/recipes"
-                      className="-mr-3 inline-flex min-h-11 items-center px-3 text-sm font-medium text-ink-muted underline"
-                    >
-                      {dict.recipes.viewAll}
-                    </Link>
-                  </div>
-                )}
-              </div>
+            {stack.length > 0 && (
+              <RecipeStack
+                cards={stack}
+                favouriteCount={showAllFavourites ? favouriteCount : null}
+                userId={user?.id ?? ""}
+              />
             )}
 
             <div>
               <div className="flex items-center justify-between">
-                <h2 className="text-lg font-semibold text-ink">{dict.dashboard.recentBrews}</h2>
+                <h2 className="text-base font-semibold text-ink">{dict.dashboard.recentBrews}</h2>
                 <Link
                   href="/attempts"
                   className="-mr-3 inline-flex min-h-11 items-center px-3 text-sm font-medium text-ink-muted underline"
@@ -153,9 +180,23 @@ export default async function DashboardPage() {
                   {dict.dashboard.viewAll}
                 </Link>
               </div>
-              <div className="mt-3">
-                <RecentAttemptsList attempts={recentAttempts} />
-              </div>
+              {recentAttempts.length ? (
+                <ul>
+                  {recentAttempts.map((attempt) => (
+                    <li key={attempt.id}>
+                      <AttemptRow attempt={attempt} compact />
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="text-sm text-ink-muted">{dict.dashboard.noBrewsYet}</p>
+              )}
+              {showAllFavourites && (
+                <Button href="/recipes" variant="secondary" fullWidth className="mt-3.5 min-h-12 bg-surface">
+                  <IconFavorita aria-hidden className="size-4 text-coffee" />
+                  {dict.dashboard.viewAllFavourites}
+                </Button>
+              )}
             </div>
           </div>
         </>

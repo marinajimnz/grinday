@@ -190,18 +190,19 @@ test("guided brew: recipe, timer, photo step, and result", async ({ page, testUs
   await expect(page.getByText(es.brew.basketType, { exact: true })).toBeVisible();
   await expect(page.getByText(es.enums.basketType.non_pressurized, { exact: true })).toBeVisible();
 
-  // The dashboard summarises the same brew the same way in both of its
-  // cards: cups, dose against ratio, and the clock. These are the numbers
-  // that say what a preparation was, so they have to survive the trip from
-  // the guided flow to the two places you read it back.
+  // The dashboard summarises the same brew on its recipe card: cups, dose
+  // against ratio, and the clock. These are the numbers that say what a
+  // preparation was, so they have to survive the trip from the guided flow
+  // to where you read it back.
   const attemptUrl = page.url();
   await page.goto("/");
-  // Both cards, so each value appears exactly twice. The cups group is
-  // checked through its screen-reader label, since a bare "2" on a
-  // dashboard could be almost anything.
-  await expect(page.getByText("21 g", { exact: true })).toHaveCount(2);
-  await expect(page.getByText("1:2", { exact: true })).toHaveCount(2);
-  await expect(page.getByText("Tazas", { exact: true })).toHaveCount(2);
+  // One card: this brew is the last attempt, and the recipe stack shows an
+  // attempt once even when it is the week's best too. The recent rows carry no
+  // numbers. The cups group is checked through its screen-reader label,
+  // since a bare "2" on a dashboard could be almost anything.
+  await expect(page.getByText("21 g", { exact: true })).toHaveCount(1);
+  await expect(page.getByText("1:2", { exact: true })).toHaveCount(1);
+  await expect(page.getByText("Tazas", { exact: true })).toHaveCount(1);
   // And the row still opens the attempt it summarises.
   await expect(page.getByRole("link", { name: new RegExp(name) }).first()).toHaveAttribute(
     "href",
