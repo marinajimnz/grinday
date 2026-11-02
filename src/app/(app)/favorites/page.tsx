@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { IconFavorito, IconPerfil } from "@/components/icons/pencil-icons";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, getCurrentUser } from "@/lib/supabase/server";
 import { getMyFavourites, parseProfileKind } from "@/features/profile/publicQueries";
 import { ProfileRow } from "@/components/profile/ProfileRow";
 import { SaveProfileButton } from "@/components/profile/SaveProfileButton";
@@ -20,9 +20,7 @@ export const generateMetadata = titleFrom((d) => d.favorites.title);
 // name — until you remove it.
 export default async function FavoritesPage({ searchParams }: { searchParams: Promise<{ tipo?: string }> }) {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getCurrentUser();
   if (!user) notFound();
   const { data: socialEnabled } = await supabase.rpc("social_enabled_for_me");
   if (!socialEnabled) notFound();

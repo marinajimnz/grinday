@@ -3,7 +3,7 @@ import { ChevronRight } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { ThemeToggle } from "@/components/settings/ThemeToggle";
 import { ProfilePrivacyCard } from "@/components/settings/ProfilePrivacyCard";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, getCurrentUser } from "@/lib/supabase/server";
 import { getMyPublicIdentity } from "@/features/profile/queries";
 import { getMyModerationNotices } from "@/features/moderation/queries";
 import { formatDate } from "@/lib/i18n/format-date";
@@ -18,9 +18,7 @@ export const generateMetadata = titleFrom((d) => d.settings.title);
 export default async function SettingsPage() {
   const dict = getDictionary(await getLocale());
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getCurrentUser();
   const [identity, role, notices] = user
     ? await Promise.all([
         getMyPublicIdentity(supabase, user.id),

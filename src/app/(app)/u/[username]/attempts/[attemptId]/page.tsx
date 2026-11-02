@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { IconCafe, IconFavorita, IconMolinillo } from "@/components/icons/pencil-icons";
 import { METHOD_ICONS } from "@/features/equipment/methodIcons";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, getCurrentUser } from "@/lib/supabase/server";
 import { getPublicAttempt, isUuid } from "@/features/profile/publicQueries";
 import { AttemptRecipeSummary } from "@/components/attempt/AttemptRecipeSummary";
 import { StarRating } from "@/components/ui/StarRating";
@@ -30,9 +30,7 @@ export default async function PublicAttemptPage({
   if (!isUuid(attemptId)) notFound();
 
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getCurrentUser();
   if (!user) notFound();
 
   const [attempt, { data: me }] = await Promise.all([

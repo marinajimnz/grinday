@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, getCurrentUser } from "@/lib/supabase/server";
 import { getMyRoasterApplication } from "@/features/moderation/queries";
 import { RoasterApplicationPanel } from "@/components/roaster/RoasterApplicationPanel";
 import { BackButton } from "@/components/ui/BackButton";
@@ -13,9 +13,7 @@ export const generateMetadata = titleFrom((d) => d.roaster.title);
 // only while the public side is on for them.
 export default async function RoasterSettingsPage() {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getCurrentUser();
   if (!user) notFound();
   const [{ data: socialEnabled }, { data: profile }] = await Promise.all([
     supabase.rpc("social_enabled_for_me"),

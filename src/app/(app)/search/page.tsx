@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { IconPerfil } from "@/components/icons/pencil-icons";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, getCurrentUser } from "@/lib/supabase/server";
 import { getMyFavourites, parseProfileKind, searchProfiles } from "@/features/profile/publicQueries";
 import { SaveProfileButton } from "@/components/profile/SaveProfileButton";
 import { ProfileSearchBox } from "@/components/profile/ProfileSearchBox";
@@ -21,9 +21,7 @@ export default async function SearchPage({
   searchParams: Promise<{ q?: string; tipo?: string }>;
 }) {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getCurrentUser();
   if (!user) notFound();
   const { data: socialEnabled } = await supabase.rpc("social_enabled_for_me");
   if (!socialEnabled) notFound();

@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Library } from "lucide-react";
 import { IconAnadir, IconArchivar, IconFavorita } from "@/components/icons/pencil-icons";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, getCurrentUser } from "@/lib/supabase/server";
 import { listCoffees } from "@/features/coffees/queries";
 import { CoffeeShelf } from "@/components/coffee/shelf/CoffeeShelf";
 import { shelfCounts } from "@/features/coffees/shelf";
@@ -28,9 +28,7 @@ export default async function CoffeesPage({
     typeof params.bagStatus === "string" ? params.bagStatus : undefined;
 
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getCurrentUser();
   const coffees = user
     ? await listCoffees(supabase, user.id, { q, process, roastLevel, bagStatus })
     : [];
