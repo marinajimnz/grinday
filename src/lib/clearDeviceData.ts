@@ -1,11 +1,12 @@
 // What a signed-out device shouldn't keep of the account that was on it.
 // Run when signing out and after deleting the account.
 //
-// Two things hold someone's data in the browser past their session:
+// Three things hold someone's data in the browser past their session:
 // - the service worker's runtime caches, which keep copies of every page
 //   visited (Home, coffees, attempts…) so they open offline;
+// - the photo cache, which keeps the account's own photos (lib/photoCache.ts);
 // - the dashboard snapshot behind /offline, which isn't tied to an account.
-// On a shared device, whoever came next could open either while offline.
+// On a shared device, whoever came next could open any of them while offline.
 //
 // Kept on purpose: the precache (the app's own files, nobody's data), the
 // theme preference, and brew drafts — those are already scoped to their
