@@ -14,7 +14,14 @@ import { titleFrom } from "@/lib/i18n/metadata";
 
 export const generateMetadata = titleFrom((d) => d.brew.title);
 
-export default async function BrewNewPage() {
+export default async function BrewNewPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+}) {
+  // Set by "Preparar este café" on the coffee shelf: the coffee is already
+  // chosen, so only the method is left to pick.
+  const { coffee: coffeeParam } = await searchParams;
   const supabase = await createClient();
   const {
     data: { user },
@@ -27,6 +34,9 @@ export default async function BrewNewPage() {
     getUserBrewEquipment(supabase, user.id),
   ]);
 
+  const preselected =
+    typeof coffeeParam === "string" ? (coffees.find((c) => c.coffeeId === coffeeParam) ?? null) : null;
+
   const availableMethods: BrewMethod[] = BREW_METHODS.filter((method) =>
     equipment.some((e) => e.method === method),
   );
@@ -34,7 +44,9 @@ export default async function BrewNewPage() {
   return (
     <div className="mx-auto max-w-2xl px-4 py-8 md:px-8">
       <h1 className="font-display text-4xl text-ink">{dict.brew.title}</h1>
-      <p className="mt-1 text-sm text-ink-muted">{dict.brew.subtitle}</p>
+      <p className="mt-1 text-sm text-ink-muted">
+        {preselected ? dict.brew.preparingCoffee.replace("{name}", preselected.name) : dict.brew.subtitle}
+      </p>
 
       <div className="mt-8">
         {!availableMethods.length ? (
@@ -55,7 +67,7 @@ export default async function BrewNewPage() {
             description={dict.brew.noCoffeeDescription}
           />
         ) : (
-          <NewBrewWizard availableMethods={availableMethods} coffees={coffees} />
+          <NewBrewWizard availableMethods={availableMethods} coffees={coffees} preselected={preselected} />
         )}
       </div>
     </div>
