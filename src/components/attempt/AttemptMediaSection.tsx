@@ -26,8 +26,8 @@ export function AttemptMediaSection({
         kindLabels={dict.enums.attemptMediaKind}
         defaultKind="espresso"
         buildPath={(userId) => `${userId}/attempts/${attemptId}/${Date.now()}.jpg`}
-        onRegister={(kind, storagePath) =>
-          registerAttemptMediaAction({ attemptId, kind, storagePath })
+        onRegister={(kind, storagePath, hasThumbnail) =>
+          registerAttemptMediaAction({ attemptId, kind, storagePath, hasThumbnail })
         }
       />
       <div className="mt-4">

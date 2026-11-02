@@ -4,7 +4,7 @@ import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ImagePlus } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
-import { compressImage } from "@/lib/media/compressImage";
+import { uploadPhoto } from "@/lib/media/uploadPhoto";
 import { useDictionary } from "@/components/i18n/LocaleProvider";
 import { Button } from "@/components/ui/Button";
 import { noZoomTextClassName } from "@/components/ui/Field";
@@ -26,7 +26,7 @@ export function PhotoUploader<K extends string>({
   kindLabels: Record<K, string>;
   defaultKind: K;
   buildPath: (userId: string) => string;
-  onRegister: (kind: K, storagePath: string) => Promise<{ success: boolean; message?: string }>;
+  onRegister: (kind: K, storagePath: string, hasThumbnail: boolean) => Promise<{ success: boolean; message?: string }>;
   refreshOnUpload?: boolean;
 }) {
   const router = useRouter();
@@ -46,15 +46,10 @@ export function PhotoUploader<K extends string>({
       } = await supabase.auth.getUser();
       if (!user) throw new Error(dict.ui.notAuthenticated);
 
-      const blob = await compressImage(file);
       const path = buildPath(user.id);
+      const { hasThumbnail } = await uploadPhoto(supabase, path, file);
 
-      const { error: uploadError } = await supabase.storage
-        .from("coffee-photos")
-        .upload(path, blob, { contentType: "image/jpeg" });
-      if (uploadError) throw uploadError;
-
-      const result = await onRegister(kind, path);
+      const result = await onRegister(kind, path, hasThumbnail);
       if (!result.success) throw new Error(result.message);
 
       if (refreshOnUpload) router.refresh();

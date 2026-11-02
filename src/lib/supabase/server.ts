@@ -34,13 +34,30 @@ export const createClient = cache(async () => {
   );
 });
 
+export type SessionUser = { id: string; email: string | undefined };
+
 /**
- * The signed-in user, validated against the auth server once per request.
- * getUser() is a network call, and the app layout (VisibilityPromptGate)
- * and the page each needed it, so every navigation paid for it twice on
- * top of the proxy's own.
+ * The signed-in user as the session token states it, once per request.
+ *
+ * getClaims() checks the token's signature locally against the project's
+ * published keys (asymmetric, fetched once and cached), so unlike
+ * getUser() it costs no call to the auth server. That's enough here
+ * because the proxy has already run getUser() on this same request, which
+ * is what catches a session revoked server-side; a page only needs to know
+ * whose it is.
+ *
+ * The token's email can trail a change by up to its lifetime (an hour), so
+ * a page that shows the address uses getVerifiedUser() instead.
  */
-export const getCurrentUser = cache(async () => {
+export const getCurrentUser = cache(async (): Promise<SessionUser | null> => {
+  const supabase = await createClient();
+  const { data, error } = await supabase.auth.getClaims();
+  if (error || !data) return null;
+  return { id: data.claims.sub, email: data.claims.email };
+});
+
+/** The user straight from the auth server: one network call per request. */
+export const getVerifiedUser = cache(async () => {
   const supabase = await createClient();
   const {
     data: { user },

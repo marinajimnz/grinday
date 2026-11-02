@@ -146,7 +146,9 @@ test("saves a profile to favourites, and shows it as unavailable once it goes pr
   try {
     await page.goto(`/u/${lucia.username}`);
     await page.getByRole("button", { name: "Guardar en favoritos" }).click();
-    await expect(page.getByRole("button", { name: "Quitar de favoritos" })).toBeVisible();
+    // The label flips at once (optimistic); the button stays disabled until
+    // the save has actually gone through. Leaving before that aborted it.
+    await expect(page.getByRole("button", { name: "Quitar de favoritos" })).toBeEnabled();
 
     await page.goto("/favorites");
     await expect(page.getByRole("link", { name: /Lucía V60/ })).toBeVisible();

@@ -104,6 +104,7 @@ export const createAttemptSchema = z.object({
       z.object({
         kind: z.enum(ATTEMPT_MEDIA_KINDS).default("espresso"),
         storagePath: z.string().min(1),
+        hasThumbnail: z.boolean().default(false),
       }),
     )
     .optional(),
@@ -157,5 +158,6 @@ export const registerAttemptMediaSchema = z.object({
   attemptId: z.uuid(),
   kind: z.enum(ATTEMPT_MEDIA_KINDS).default("espresso"),
   storagePath: z.string().min(1),
+  hasThumbnail: z.boolean().default(false),
   altText: z.string().trim().max(300).optional(),
 });

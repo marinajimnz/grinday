@@ -62,6 +62,7 @@ export type Database = {
           alt_text: string | null
           attempt_id: string
           created_at: string
+          has_thumbnail: boolean
           id: string
           is_cover: boolean
           kind: string
@@ -72,6 +73,7 @@ export type Database = {
           alt_text?: string | null
           attempt_id: string
           created_at?: string
+          has_thumbnail?: boolean
           id?: string
           is_cover?: boolean
           kind?: string
@@ -82,6 +84,7 @@ export type Database = {
           alt_text?: string | null
           attempt_id?: string
           created_at?: string
+          has_thumbnail?: boolean
           id?: string
           is_cover?: boolean
           kind?: string
@@ -364,6 +367,7 @@ export type Database = {
           alt_text: string | null
           coffee_bag_id: string
           created_at: string
+          has_thumbnail: boolean
           id: string
           is_cover: boolean
           kind: string
@@ -374,6 +378,7 @@ export type Database = {
           alt_text?: string | null
           coffee_bag_id: string
           created_at?: string
+          has_thumbnail?: boolean
           id?: string
           is_cover?: boolean
           kind?: string
@@ -384,6 +389,7 @@ export type Database = {
           alt_text?: string | null
           coffee_bag_id?: string
           created_at?: string
+          has_thumbnail?: boolean
           id?: string
           is_cover?: boolean
           kind?: string
@@ -1119,6 +1125,15 @@ export type Database = {
         }
         Returns: {
           avg_rating: number
+          label: string
+          rated_count: number
+        }[]
+      }
+      stats_by_dimensions: {
+        Args: { p_from?: string; p_to?: string; p_tz?: string }
+        Returns: {
+          avg_rating: number
+          dimension: string
           label: string
           rated_count: number
         }[]

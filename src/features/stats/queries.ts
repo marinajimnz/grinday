@@ -44,19 +44,23 @@ export async function getTopCoffees(supabase: Client, range: StatsDateRange) {
   return data ?? [];
 }
 
-export async function getStatsByDimension(
+/** Every dimension's ranking in one request, keyed by dimension. */
+export async function getStatsByDimensions(
   supabase: Client,
-  dimension: StatsDimension,
   range: StatsDateRange,
-) {
-  const { data, error } = await supabase.rpc("stats_by_dimension", {
-    p_dimension: dimension,
+): Promise<Map<StatsDimension, DimensionStatRow[]>> {
+  const { data, error } = await supabase.rpc("stats_by_dimensions", {
     p_from: range.from,
     p_to: range.to,
     p_tz: STATS_TIME_ZONE,
   });
   if (error) throw error;
-  return data ?? [];
+  const byDimension = new Map<StatsDimension, DimensionStatRow[]>();
+  for (const { dimension, ...row } of data ?? []) {
+    const key = dimension as StatsDimension;
+    byDimension.set(key, [...(byDimension.get(key) ?? []), row]);
+  }
+  return byDimension;
 }
 
 export async function getStatsByMethod(supabase: Client, range: StatsDateRange) {

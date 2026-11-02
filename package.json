@@ -12,7 +12,8 @@
     "test:e2e": "playwright test",
     "db:push": "supabase db push --linked --include-seed",
     "test:integration": "vitest run --config vitest.integration.config.mts",
-    "cleanup:photos": "node scripts/cleanup-orphan-photos.mjs"
+    "cleanup:photos": "node scripts/cleanup-orphan-photos.mjs",
+    "backfill:thumbnails": "node scripts/backfill-thumbnails.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.9.1",

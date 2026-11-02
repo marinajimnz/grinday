@@ -16,6 +16,7 @@ import {
 } from "@/lib/validation/coffees";
 import type { Database } from "@/types/database";
 import { todayISO } from "@/lib/time";
+import { withThumbnails } from "@/lib/media/thumbnail";
 import { fail } from "@/lib/i18n/serverErrors";
 
 type Client = SupabaseClient<Database>;
@@ -364,7 +365,7 @@ async function removeCoffeePhotos(supabase: Client, coffeeId: string, userId: st
 
   // Best-effort: a file we couldn't remove is already unreachable from the
   // app, and shouldn't keep the user from deleting the coffee itself.
-  const { error } = await supabase.storage.from("coffee-photos").remove(paths);
+  const { error } = await supabase.storage.from("coffee-photos").remove(withThumbnails(paths));
   if (error) console.error("[coffees] failed to delete coffee photos:", error.message);
 }
 
@@ -445,7 +446,7 @@ async function removeBagPhotos(supabase: Client, bagId: string, userId: string) 
   );
   if (!paths.length) return;
 
-  const { error } = await supabase.storage.from("coffee-photos").remove(paths);
+  const { error } = await supabase.storage.from("coffee-photos").remove(withThumbnails(paths));
   if (error) console.error("[coffees] failed to delete bag photos:", error.message);
 }
 
@@ -475,7 +476,7 @@ export async function registerCoffeeMediaAction(
   if (!parsed.success) {
     return fail("invalidData");
   }
-  const { coffeeBagId, kind, storagePath, altText } = parsed.data;
+  const { coffeeBagId, kind, storagePath, hasThumbnail, altText } = parsed.data;
 
   const supabase = await createClient();
   const {
@@ -490,6 +491,7 @@ export async function registerCoffeeMediaAction(
       user_id: user.id,
       kind,
       storage_path: storagePath,
+      has_thumbnail: hasThumbnail,
       alt_text: altText ?? null,
     })
     .select("id")
@@ -517,7 +519,7 @@ export async function deleteCoffeeMediaAction(
 
   const { error: storageError } = await supabase.storage
     .from("coffee-photos")
-    .remove([media.storage_path]);
+    .remove(withThumbnails([media.storage_path]));
   if (storageError) {
     console.error("[storage] failed to delete coffee photo:", storageError.message);
   }

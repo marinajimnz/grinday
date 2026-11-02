@@ -30,7 +30,13 @@ describe("deleteAttemptAction", () => {
     deleteResult = { data: { coffee_id: "coffee-1" }, error: null };
 
     expect(await deleteAttemptAction("attempt-1")).toEqual({ success: true, data: undefined });
-    expect(remove).toHaveBeenCalledWith(["user-1/attempt-1/a.jpg", "user-1/attempt-1/b.jpg"]);
+    // Each photo with its tile copy.
+    expect(remove).toHaveBeenCalledWith([
+      "user-1/attempt-1/a.jpg",
+      "user-1/attempt-1/a.thumb.jpg",
+      "user-1/attempt-1/b.jpg",
+      "user-1/attempt-1/b.thumb.jpg",
+    ]);
   });
 
   it("keeps the photos when the attempt couldn't be deleted", async () => {

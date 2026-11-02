@@ -18,12 +18,16 @@ export default async function BagDetailPage({
 }) {
   const { bagId } = await params;
   const supabase = await createClient();
-  const result = await getBagDetail(supabase, bagId);
+  // The cup count only needs the bag id too, so it runs alongside.
+  const [result, cupsByBag] = await Promise.all([
+    getBagDetail(supabase, bagId),
+    countCupsByBag(supabase, [bagId]),
+  ]);
 
   if (!result) notFound();
   const { bag, media, sharedPhoto } = result;
   const dict = getDictionary(await getLocale());
-  const cups = (await countCupsByBag(supabase, [bag.id])).get(bag.id) ?? 0;
+  const cups = cupsByBag.get(bag.id) ?? 0;
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-8 md:px-8">

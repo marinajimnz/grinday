@@ -4,9 +4,8 @@ import { createClient, getCurrentUser } from "@/lib/supabase/server";
 import { IconAnadir, IconCafe, IconFavorita, IconFavorito } from "@/components/icons/pencil-icons";
 import {
   getBestOfWeek,
-  getDashboardAttempt,
   getDashboardRecipe,
-  getRecentAttempts,
+  getHomeRecentAttempts,
   hasAnyCoffee,
 } from "@/features/dashboard/queries";
 import { buildRecipeStack } from "@/features/dashboard/recipeStack";
@@ -31,29 +30,26 @@ export default async function DashboardPage() {
   // the recipe queries come back empty anyway, and that rare case isn't
   // worth a round-trip on every visit. The identity is the same cached call
   // the layout's VisibilityPromptGate makes, so it costs nothing extra.
-  const [identity, hasCoffee, recipe, recentAttempts, favouriteCount, bestOfWeek] = user
+  const [identity, hasCoffee, recentAttempts, favouriteCount, bestOfWeek] = user
     ? await Promise.all([
         getMyPublicIdentity(supabase, user.id),
         hasAnyCoffee(supabase, user.id),
-        getDashboardRecipe(supabase, user.id),
-        getRecentAttempts(supabase, user.id, 3, { excludeHiddenFromDashboard: true }),
+        getHomeRecentAttempts(supabase, user.id, 3),
         countFavouriteRecipes(supabase, user.id),
         getBestOfWeek(supabase, user.id),
       ])
-    : [null, false, null, [], 0, null];
+    : [null, false, [], 0, null];
   const displayName = identity?.displayName;
   const socialEnabled = identity?.socialEnabled ?? false;
 
   const lastAttempt = recentAttempts[0];
+  // Built on the newest attempt just loaded; the one query it still makes
+  // (the coffee's bags, and its pinned recipe when that's another attempt)
+  // can't start before knowing which coffee that is.
+  const recipe = user && hasCoffee ? await getDashboardRecipe(supabase, user.id, lastAttempt) : null;
 
-  // The pinned recipe in the same shape as the others; it's usually one of
-  // the attempts already loaded, so the extra query only runs when it isn't.
-  const preferredId = hasCoffee && recipe?.isPreferred ? recipe.attempt.id : null;
-  const preferred =
-    preferredId && user
-      ? ([lastAttempt, bestOfWeek].find((a) => a?.id === preferredId) ??
-        (await getDashboardAttempt(supabase, user.id, preferredId)))
-      : null;
+  // The pinned recipe comes back in the same shape as the other cards.
+  const preferred = recipe?.isPreferred ? recipe.attempt : null;
 
   const stack: RecipeStackCard[] = buildRecipeStack({
     preferred,

@@ -14,7 +14,6 @@ export type CoffeeMediaRow = Database["public"]["Tables"]["coffee_media"]["Row"]
 
 export type CoffeeListItem = CoffeeRow & {
   bags: Pick<CoffeeBagRow, "id" | "status" | "roast_date">[];
-  coverPhotoUrl: string | null;
 };
 
 /**
@@ -70,9 +69,11 @@ export async function listCoffees(
   userId: string,
   filters: CoffeeLibraryFilters = {},
 ): Promise<CoffeeListItem[]> {
+  // The bags come embedded in the same request. No cover photos: the shelf
+  // draws every bag itself, so signing them was work nothing displayed.
   let query = supabase
     .from("coffees")
-    .select("*")
+    .select("*, bags:coffee_bags(id, status, roast_date)")
     .eq("user_id", userId)
     .is("archived_at", null)
     .order("updated_at", { ascending: false });
@@ -94,36 +95,7 @@ export async function listCoffees(
   if (error) throw error;
   if (!coffees?.length) return [];
 
-  const { data: bags, error: bagsError } = await supabase
-    .from("coffee_bags")
-    .select("id, coffee_id, status, roast_date")
-    .in(
-      "coffee_id",
-      coffees.map((c) => c.id),
-    );
-  if (bagsError) throw bagsError;
-
-  const bagsByCoffee = new Map<string, CoffeeListItem["bags"]>();
-  for (const bag of bags ?? []) {
-    const list = bagsByCoffee.get(bag.coffee_id) ?? [];
-    list.push({ id: bag.id, status: bag.status, roast_date: bag.roast_date });
-    bagsByCoffee.set(bag.coffee_id, list);
-  }
-
-  // The card shows one cover photo per coffee, seen from whichever bag is
-  // active (same bag CoffeeCard itself treats as active).
-  const activeBagIdByCoffee = new Map<string, string>();
-  for (const [coffeeId, coffeeBags] of bagsByCoffee) {
-    const active = coffeeBags.find((b) => b.status === "open") ?? coffeeBags[0];
-    if (active) activeBagIdByCoffee.set(coffeeId, active.id);
-  }
-  const coverUrlByCoffee = await listCoverUrlsByCoffee(supabase, bags ?? [], activeBagIdByCoffee);
-
-  let items: CoffeeListItem[] = coffees.map((coffee) => ({
-    ...coffee,
-    bags: bagsByCoffee.get(coffee.id) ?? [],
-    coverPhotoUrl: coverUrlByCoffee.get(coffee.id) ?? null,
-  }));
+  let items: CoffeeListItem[] = coffees;
 
   if (filters.bagStatus) {
     items = items.filter((item) =>
@@ -157,7 +129,7 @@ export async function listCoverUrlsByCoffee(
 
   const { data: fronts, error } = await supabase
     .from("coffee_media")
-    .select("coffee_bag_id, storage_path, created_at")
+    .select("coffee_bag_id, storage_path, has_thumbnail, created_at")
     .in(
       "coffee_bag_id",
       bags.map((b) => b.id),
@@ -175,10 +147,10 @@ export async function listCoverUrlsByCoffee(
     frontsByCoffee.set(coffeeId, list);
   }
 
-  const picked: { coffeeId: string; storage_path: string }[] = [];
+  const picked: { coffeeId: string; storage_path: string; has_thumbnail: boolean }[] = [];
   for (const [coffeeId, coffeeFronts] of frontsByCoffee) {
     const cover = pickCoverPhoto(coffeeFronts, targetBagIdByCoffee.get(coffeeId));
-    if (cover) picked.push({ coffeeId, storage_path: cover.storage_path });
+    if (cover) picked.push({ coffeeId, storage_path: cover.storage_path, has_thumbnail: cover.has_thumbnail });
   }
 
   for (const item of await attachSignedUrls(supabase, picked)) {
@@ -231,27 +203,29 @@ export async function listMediaForCoffee(supabase: Client, coffeeId: string) {
 }
 
 export async function getBagDetail(supabase: Client, bagId: string) {
-  const { data: bag, error } = await supabase
-    .from("coffee_bags")
-    .select("*, coffee:coffees(id, name, roaster)")
-    .eq("id", bagId)
-    .maybeSingle();
+  // The bag and its own photos only need the bag id, so they go out together.
+  const [{ data: bag, error }, { data: media, error: mediaError }] = await Promise.all([
+    supabase.from("coffee_bags").select("*, coffee:coffees(id, name, roaster)").eq("id", bagId).maybeSingle(),
+    supabase.from("coffee_media").select("*").eq("coffee_bag_id", bagId).order("created_at", { ascending: true }),
+  ]);
   if (error) throw error;
   if (!bag) return null;
-
-  const { data: media, error: mediaError } = await supabase
-    .from("coffee_media")
-    .select("*")
-    .eq("coffee_bag_id", bagId)
-    .order("created_at", { ascending: true });
   if (mediaError) throw mediaError;
 
-  const mediaWithUrls = await attachSignedUrls(supabase, media ?? []);
+  // A bag without a front photo of its own borrows the coffee's (see
+  // pickCoverPhoto), which needs the coffee id the bag row just gave us.
+  const borrowed = (media ?? []).some((m) => m.kind === "package_front")
+    ? undefined
+    : await getSiblingCover(supabase, bag.coffee_id, bagId);
+
+  // One signing call for the bag's photos and the borrowed cover.
+  const signed = await attachSignedUrls(supabase, borrowed ? [...(media ?? []), borrowed] : (media ?? []));
+  const sharedCover = borrowed ? signed.pop() : undefined;
 
   return {
     bag,
-    media: mediaWithUrls,
-    sharedPhoto: await getSharedCoverPhoto(supabase, bag.coffee_id, bagId, mediaWithUrls),
+    media: signed,
+    sharedPhoto: sharedCover?.url ? { url: sharedCover.url, alt: sharedCover.alt_text } : null,
   };
 }
 
@@ -272,34 +246,18 @@ export function sharedCoverFromMedia(
   return { url: cover.url, alt: cover.alt_text };
 }
 
-async function getSharedCoverPhoto(
+/** The other bags' front photo this bag would borrow, unsigned. */
+async function getSiblingCover(
   supabase: Client,
   coffeeId: string,
   bagId: string,
-  ownMedia: (CoffeeMediaRow & { url: string | null })[],
-): Promise<SharedCoverPhoto | null> {
-  if (ownMedia.some((m) => m.kind === "package_front")) return null;
-
-  const { data: siblings, error } = await supabase
-    .from("coffee_bags")
-    .select("id")
-    .eq("coffee_id", coffeeId)
-    .neq("id", bagId);
-  if (error) throw error;
-  if (!siblings?.length) return null;
-
-  const { data: fronts, error: frontsError } = await supabase
+): Promise<CoffeeMediaRow | undefined> {
+  const { data: fronts, error } = await supabase
     .from("coffee_media")
-    .select("*")
-    .in(
-      "coffee_bag_id",
-      siblings.map((b) => b.id),
-    )
+    .select("*, coffee_bags!inner()")
+    .eq("coffee_bags.coffee_id", coffeeId)
+    .neq("coffee_bag_id", bagId)
     .eq("kind", "package_front");
-  if (frontsError) throw frontsError;
-
-  const cover = pickCoverPhoto(fronts ?? [], bagId);
-  if (!cover) return null;
-  const [signed] = await attachSignedUrls(supabase, [cover]);
-  return signed?.url ? { url: signed.url, alt: signed.alt_text } : null;
+  if (error) throw error;
+  return pickCoverPhoto(fronts ?? [], bagId);
 }

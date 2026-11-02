@@ -72,6 +72,9 @@ export type BrewDraftPostShot = {
 export type BrewDraftPhoto = {
   kind: AttemptMediaKind;
   storagePath: string;
+  // Whether a tile copy was stored beside it (lib/media/thumbnail.ts).
+  // Missing on drafts saved before copies existed, which means no.
+  hasThumbnail?: boolean;
 };
 
 export type BrewDraft = {

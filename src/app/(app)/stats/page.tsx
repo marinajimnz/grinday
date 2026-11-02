@@ -8,7 +8,7 @@ import {
   getFrequentNotes,
   getGrindDistribution,
   getPeriodHighlights,
-  getStatsByDimension,
+  getStatsByDimensions,
   getStatsByMethod,
   getTopCoffees,
   getTotalRatedAttempts,
@@ -73,7 +73,7 @@ export default async function StatsPage({
     getTotalRatedAttempts(supabase, user.id, range),
     getTopCoffees(supabase, range),
     getStatsByMethod(supabase, range),
-    Promise.all(DIMENSION_CONFIG.map((d) => getStatsByDimension(supabase, d.key, range))),
+    getStatsByDimensions(supabase, range),
     getFrequentNotes(supabase, range),
     getExtractionDistribution(supabase, range),
     getGrindDistribution(supabase, range),
@@ -131,8 +131,8 @@ export default async function StatsPage({
         />
       ) : null,
     },
-    ...DIMENSION_CONFIG.map((dim, i) => {
-      const rows = dimensionResults[i];
+    ...DIMENSION_CONFIG.map((dim) => {
+      const rows = dimensionResults.get(dim.key) ?? [];
       return {
         title: dim.title,
         body: rows.length ? (

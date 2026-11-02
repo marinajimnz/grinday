@@ -4,7 +4,8 @@
 // the files, unreachable from the app but still stored.
 //
 // A file counts as orphaned when no coffee_media or attempt_media row names
-// it AND it's older than ORPHAN_MIN_AGE_DAYS (30 by default). The age matters:
+// it (a photo's tile copy, `{name}.thumb.jpg`, counts as named by its
+// original's row: see src/lib/media/thumbnail.ts) AND it's older than ORPHAN_MIN_AGE_DAYS (30 by default). The age matters:
 // a brew's photo step uploads under {user}/attempts/drafts/{draft}/ before the
 // attempt exists, and that draft lives only in someone's browser — it can be
 // resumed days later, and until it's saved no row points at its photos. So a
@@ -48,6 +49,12 @@ async function listAllFiles(supabase, prefix = "") {
   return files;
 }
 
+// Same rule as thumbnailPathFor in src/lib/media/thumbnail.ts, which this
+// plain-Node script can't import.
+export function thumbnailPathFor(storagePath) {
+  return storagePath.replace(/(\.[^./]+)?$/, ".thumb.jpg");
+}
+
 async function listReferencedPaths(supabase) {
   const referenced = new Set();
   for (const table of ["coffee_media", "attempt_media"]) {
@@ -58,7 +65,10 @@ async function listReferencedPaths(supabase) {
         .order("storage_path")
         .range(from, from + PAGE - 1);
       if (error) throw error;
-      for (const row of data) referenced.add(row.storage_path);
+      for (const row of data) {
+        referenced.add(row.storage_path);
+        referenced.add(thumbnailPathFor(row.storage_path));
+      }
       if (data.length < PAGE) break;
     }
   }

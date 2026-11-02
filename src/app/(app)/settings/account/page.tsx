@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { Download } from "lucide-react";
-import { createClient, getCurrentUser } from "@/lib/supabase/server";
+import { createClient, getVerifiedUser } from "@/lib/supabase/server";
 import { SignOutButton } from "@/components/settings/SignOutButton";
 import { ChangeUsernameForm } from "@/components/settings/ChangeUsernameForm";
 import { ChangeEmailForm } from "@/components/settings/ChangeEmailForm";
@@ -18,7 +18,9 @@ export const generateMetadata = titleFrom((d) => d.settings.accountTitle);
 
 export default async function AccountSettingsPage() {
   const supabase = await createClient();
-  const user = await getCurrentUser();
+  // From the auth server rather than the token: this page shows the email,
+  // which the token can still have from before a change.
+  const user = await getVerifiedUser();
   // Every other authed page guards instead of asserting. Without it a
   // session that's gone by the time this renders — expired, signed out in
   // another tab, or the account itself deleted — turns the proxy's clean
