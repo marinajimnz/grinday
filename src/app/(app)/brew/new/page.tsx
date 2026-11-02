@@ -1,7 +1,7 @@
 import { Coffee } from "lucide-react";
 import { notFound } from "next/navigation";
 import { Button } from "@/components/ui/Button";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, getCurrentUser } from "@/lib/supabase/server";
 import { listBrewableCoffees } from "@/features/attempts/queries";
 import { getUserBrewEquipment } from "@/features/equipment/queries";
 import { BREW_METHODS, type BrewMethod } from "@/features/equipment/constants";
@@ -23,9 +23,7 @@ export default async function BrewNewPage({
   // chosen, so only the method is left to pick.
   const { coffee: coffeeParam } = await searchParams;
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getCurrentUser();
   if (!user) notFound();
   const dict = getDictionary(await getLocale());
 

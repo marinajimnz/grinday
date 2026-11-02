@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { IconCafe } from "@/components/icons/pencil-icons";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, getCurrentUser } from "@/lib/supabase/server";
 import { getPublicCoffee, isUuid } from "@/features/profile/publicQueries";
 import { CoffeeFacts } from "@/components/coffee/CoffeeFacts";
 import { PublicAttemptRow } from "@/components/profile/PublicProfileSections";
@@ -27,9 +27,7 @@ export default async function PublicCoffeePage({
   if (!isUuid(coffeeId)) notFound();
 
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getCurrentUser();
   if (!user) notFound();
 
   const result = await getPublicCoffee(supabase, username, coffeeId);

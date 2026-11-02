@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ChevronLeft } from "lucide-react";
 import { IconFavorita } from "@/components/icons/pencil-icons";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, getCurrentUser } from "@/lib/supabase/server";
 import { getAttempt, getAttemptMedia } from "@/features/attempts/queries";
 import { AttemptDetailPanel } from "@/components/attempt/AttemptDetailPanel";
 import { AttemptMediaSection } from "@/components/attempt/AttemptMediaSection";
@@ -19,9 +19,7 @@ export default async function AttemptDetailPage({
 }) {
   const { attemptId } = await params;
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getCurrentUser();
   if (!user) notFound();
   const attempt = await getAttempt(supabase, attemptId, user.id);
 

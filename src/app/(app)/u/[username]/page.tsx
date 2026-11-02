@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, getCurrentUser } from "@/lib/supabase/server";
 import {
   getPublicCoffee,
   getPublicProfile,
@@ -40,9 +40,7 @@ export async function generateMetadata({ params }: { params: Promise<{ username:
 export default async function PublicProfilePage({ params }: { params: Promise<{ username: string }> }) {
   const { username } = await params;
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getCurrentUser();
   if (!user) notFound();
 
   const profile = await getPublicProfile(supabase, decodeURIComponent(username));

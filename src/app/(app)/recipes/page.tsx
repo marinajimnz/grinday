@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { IconFavorita } from "@/components/icons/pencil-icons";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, getCurrentUser } from "@/lib/supabase/server";
 import { listFavouriteRecipes } from "@/features/attempts/queries";
 import { RecipeCard } from "@/components/attempt/RecipeCard";
 import { BackButton } from "@/components/ui/BackButton";
@@ -20,9 +20,7 @@ export const generateMetadata = titleFrom((d) => d.recipes.title);
 // reason the star moved off the coffee and onto the attempt.
 export default async function RecipesPage() {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getCurrentUser();
   if (!user) notFound();
 
   const locale = await getLocale();

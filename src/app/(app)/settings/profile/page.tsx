@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, getCurrentUser } from "@/lib/supabase/server";
 import { ProfileForm } from "@/components/settings/ProfileForm";
 import { ProfileLanguageToggle } from "@/components/settings/ProfileLanguageToggle";
 import { getMyPublicIdentity } from "@/features/profile/queries";
@@ -11,9 +11,7 @@ export const generateMetadata = titleFrom((d) => d.settings.profileTitle);
 
 export default async function ProfilePage() {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getCurrentUser();
   // Every other authed page guards instead of asserting. Without it a
   // session that's gone by the time this renders — expired, signed out in
   // another tab, or the account itself deleted — turns the proxy's clean

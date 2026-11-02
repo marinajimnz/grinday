@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, getCurrentUser } from "@/lib/supabase/server";
 import { ChevronLeft } from "lucide-react";
 import {
   countCupsByBag,
@@ -29,9 +29,7 @@ export default async function CoffeeDetailPage({
 }) {
   const { coffeeId } = await params;
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getCurrentUser();
   if (!user) notFound();
   const result = await getCoffeeWithBags(supabase, coffeeId, user.id);
 

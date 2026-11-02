@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, getCurrentUser } from "@/lib/supabase/server";
 import { getRecentAttempts } from "@/features/dashboard/queries";
 import { RecentAttemptsList } from "@/components/dashboard/RecentAttemptsList";
 import { getLocale } from "@/lib/i18n/locale";
@@ -10,9 +10,7 @@ export const generateMetadata = titleFrom((d) => d.pageTitles.attempts);
 
 export default async function AttemptsPage() {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getCurrentUser();
   if (!user) notFound();
   const dict = getDictionary(await getLocale());
   const attempts = await getRecentAttempts(supabase, user.id, 50);
